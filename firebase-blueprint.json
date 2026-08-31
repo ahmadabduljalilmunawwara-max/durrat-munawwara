@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "Bus": {
+      "title": "Bus",
+      "description": "Information about buses and their assigned drivers.",
+      "type": "object",
+      "properties": {
+        "busNumber": { "type": "string", "description": "The unique number of the bus." },
+        "driverName": { "type": "string", "description": "The name of the driver assigned to the bus." }
+      },
+      "required": ["busNumber", "driverName"]
+    },
+    "Voucher": {
+      "title": "Voucher",
+      "description": "Records of bus movements and payments.",
+      "type": "object",
+      "properties": {
+        "voucherNumber": { "type": "integer" },
+        "approvalNumber": { "type": "string" },
+        "delegateNumber": { "type": "string" },
+        "organization": { "type": "string" },
+        "busesQuantity": { "type": "string" },
+        "ticketsCount": { "type": "string" },
+        "busNumber": { "type": "string", "description": "Primary bus number (legacy or first in list)" },
+        "driverName": { "type": "string", "description": "Primary driver name (legacy or first in list)" },
+        "buses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "busNumber": { "type": "string" },
+              "driverName": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "hijriDate": { "type": "string" },
+        "customDate": { "type": "string" },
+        "dateKey": { "type": "string" },
+        "eventTime": { "type": "string" },
+        "directionFrom": { "type": "string" },
+        "directionTo": { "type": "string" },
+        "notes": { "type": "string" },
+        "receiverName": { "type": "string" },
+        "receiverMobile": { "type": "string" },
+        "deviceName": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" }
+      },
+      "required": ["voucherNumber", "timestamp", "dateKey", "userName"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "App-wide settings.",
+      "type": "object",
+      "properties": {
+        "nextVoucherNumber": { "type": "integer" }
+      }
+    },
+    "AppUser": {
+      "title": "App User",
+      "description": "Custom credentials for app access.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "authUid": { "type": "string", "description": "The anonymous UID assigned by Firebase." },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "password", "displayName", "role"]
+    }
+  },
+  "firestore": {
+    "buses/{busNumber}": {
+      "schema": "Bus",
+      "description": "Master list of buses."
+    },
+    "vouchers/{voucherId}": {
+      "schema": "Voucher",
+      "description": "Historical archive of transactions."
+    },
+    "settings/app": {
+      "schema": "Settings",
+      "description": "Global settings like next voucher ID."
+    },
+    "app_users/{username}": {
+      "schema": "AppUser",
+      "description": "Custom user credentials."
+    }
+  }
+}

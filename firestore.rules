@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isGoogleAdmin() {
+      // Direct email check for the super admin
+      return isSignedIn() && request.auth.token.email == 'ahmad.abduljalilmunawwara@gmail.com';
+    }
+
+    // 1. Buses
+    match /buses/{busId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // 2. Vouchers
+    match /vouchers/{voucherId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // 3. Settings (App settings, logo, print margins, next voucher number)
+    match /settings/{docId} {
+      allow read: if true;
+      allow write, create, update, delete: if true;
+    }
+
+    // 4. App Users (Custom Credentials and Roles)
+    match /app_users/{username} {
+      allow read, get, list: if true;
+      allow create, write, update, delete: if true;
+    }
+  }
+}

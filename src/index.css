@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@200..1000&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-arabic-elegant: "Amiri", serif;
+  
+  /* DMTC Brand Palette derived from Logo (Golden Amber & Sapphire Blue) */
+  --color-brand-gold-50: #fffbeb;
+  --color-brand-gold-100: #fef3c7;
+  --color-brand-gold-200: #fde68a;
+  --color-brand-gold-400: #fbbf24;
+  --color-brand-gold-500: #f59e0b;
+  --color-brand-gold-600: #d97706;
+  --color-brand-gold-700: #b45309;
+
+  --color-brand-blue-50: #eff6ff;
+  --color-brand-blue-100: #dbeafe;
+  --color-brand-blue-200: #bfdbfe;
+  --color-brand-blue-400: #60a5fa;
+  --color-brand-blue-500: #3b82f6;
+  --color-brand-blue-600: #2563eb;
+  --color-brand-blue-700: #1d4ed8;
+  --color-brand-blue-800: #1e40af;
+  --color-brand-blue-900: #1e3a8a;
+
+  --color-brand-navy-800: #1e1b4b;
+  --color-brand-navy-900: #0f172a;
+}
+
+body {
+  font-family: "Cairo", var(--font-sans);
+  background-color: #F8FAFC;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL Specific Overrides if needed */
+[dir="rtl"] .font-sans {
+  font-family: "Cairo", "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.font-arabic-elegant {
+  font-family: var(--font-arabic-elegant);
+}
+
+/* Brand Decorative Gradients */
+.bg-brand-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 60%, #0f172a 100%);
+}
+
+.bg-brand-gold-gradient {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+}
+
+.bg-brand-blue-gradient {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+}
+
+.bg-brand-dual-gradient {
+  background: linear-gradient(135deg, #f59e0b 0%, #3b82f6 50%, #1e3a8a 100%);
+}
+
+.border-brand-dual {
+  border-image: linear-gradient(to right, #f59e0b, #2563eb, #1e3a8a) 1;
+}
+
+/* Custom Scrollbar with Brand Colors */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+

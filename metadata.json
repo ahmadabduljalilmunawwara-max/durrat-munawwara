@@ -1,0 +1,8 @@
+{
+  "name": "Remix: درة المنورة - إدارة الحافلات",
+  "description": "نظام شامل لإدارة سجلات حركة وتسديد حافلات شركة درة المنورة، يدعم العمل المتعدد والمزامنة اللحظية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
