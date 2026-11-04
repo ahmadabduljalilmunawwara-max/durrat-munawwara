@@ -190,6 +190,8 @@ export function VoucherSearch() {
         const driver = String(v.driverName || '').toLowerCase();
         const busNum = String(v.busNumber || '').toLowerCase();
         const receiver = String(v.receiverName || '').toLowerCase();
+        const receiverMobile = String(v.receiverMobile || '').toLowerCase();
+        const receiverId = String(v.receiverId || '').toLowerCase();
         const hotel = String(v.hotelName || '').toLowerCase();
         const loading = String(v.loadingLocation || '').toLowerCase();
         const from = String(v.directionFrom || '').toLowerCase();
@@ -212,6 +214,8 @@ export function VoucherSearch() {
           driver.includes(term) ||
           busNum.includes(term) ||
           receiver.includes(term) ||
+          receiverMobile.includes(term) ||
+          receiverId.includes(term) ||
           hotel.includes(term) ||
           loading.includes(term) ||
           from.includes(term) ||
@@ -857,9 +861,21 @@ export function VoucherSearch() {
                         </span>
                       )}
 
+                      {v.receiverMobile && (
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                          موبايل المستلم: {v.receiverMobile}
+                        </span>
+                      )}
+
+                      {v.receiverId && (
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                          هوية المستلم: {v.receiverId}
+                        </span>
+                      )}
+
                       {v.delegateNumber && (
                         <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
-                          مندوب: {v.delegateNumber}
+                          رقم المكتب: {v.delegateNumber}
                         </span>
                       )}
 
@@ -1255,6 +1271,29 @@ export function VoucherSearch() {
                         type="text"
                         value={voucherToEdit.receiverMobile || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, receiverMobile: e.target.value })}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 mb-1">رقم هوية المستلم</label>
+                      <input
+                        type="text"
+                        value={voucherToEdit.receiverId || ''}
+                        onChange={(e) => setVoucherToEdit({ ...voucherToEdit, receiverId: e.target.value.replace(/[^0-9]/g, '') })}
+                        placeholder="10xxxxxxxx"
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 mb-1">رقم المكتب</label>
+                      <input
+                        type="text"
+                        value={voucherToEdit.delegateNumber || ''}
+                        onChange={(e) => setVoucherToEdit({ ...voucherToEdit, delegateNumber: e.target.value.replace(/[^0-9]/g, '') })}
+                        placeholder="رقم المكتب..."
                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
                       />
                     </div>

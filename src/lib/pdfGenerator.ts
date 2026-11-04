@@ -135,7 +135,7 @@ export async function generateVoucherPDF(data: any, options: { save?: boolean, p
         <div style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; font-weight: 900;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 6px; gap: 10px;">
             <div style="white-space: nowrap;">${clean_and_reshape_text('استلمت أنا : ')} <span style="font-weight: 500; padding: 0 5px; display: inline-block; min-width: 180px; text-align: center;">${clean_and_reshape_text(data.receiverName)}</span></div>
-            <div style="white-space: nowrap;">${clean_and_reshape_text('مندوب رقم : ')} <span style="font-weight: 500; padding: 0 5px; display: inline-block; min-width: 80px; text-align: center;">${clean_and_reshape_text(data.delegateNumber)}</span></div>
+            <div style="white-space: nowrap;">${clean_and_reshape_text('رقم المكتب : ')} <span style="font-weight: 500; padding: 0 5px; display: inline-block; min-width: 80px; text-align: center;">${clean_and_reshape_text(data.delegateNumber)}</span></div>
             <div style="white-space: nowrap;">${clean_and_reshape_text('التابع لمؤسسة : ')} <span style="font-weight: 500; padding: 0 5px; display: inline-block; min-width: 160px; text-align: center;">${clean_and_reshape_text(data.organization)}</span></div>
           </div>
 
@@ -225,8 +225,9 @@ export async function generateVoucherPDF(data: any, options: { save?: boolean, p
 
           <div style="width: 45%; text-align: center;">
             <div style="font-size: 14px; margin-bottom: 12px;">${clean_and_reshape_text('المستلم ( مندوب مجموعة الخدمة الميدانية )')}</div>
-            <div style="text-align: right; font-size: 13px; margin-bottom: 8px;">${clean_and_reshape_text('الأسم : ')}</div>
-            <div style="text-align: right; font-size: 13px; margin-bottom: 8px;">${clean_and_reshape_text('رقم الموبايل : ')}</div>
+            <div style="text-align: right; font-size: 13px; margin-bottom: 6px;">${clean_and_reshape_text('الأسم : ')} <span style="font-weight: 700;">${hasValue(data.receiverName) ? clean_and_reshape_text(data.receiverName) : ''}</span></div>
+            <div style="text-align: right; font-size: 13px; margin-bottom: 6px;">${clean_and_reshape_text('رقم الموبايل : ')} <span style="font-weight: 700;">${hasValue(data.receiverMobile) ? data.receiverMobile : ''}</span></div>
+            <div style="text-align: right; font-size: 13px; margin-bottom: 6px;">${clean_and_reshape_text('رقم الهوية : ')} <span style="font-weight: 700;">${hasValue(data.receiverId) ? data.receiverId : ''}</span></div>
             <div style="text-align: right; font-size: 13px;">${clean_and_reshape_text('التوقيع : ')}</div>
           </div>
         </div>
@@ -768,7 +769,7 @@ export async function generateStatementReportPDF(
                     <td style="border: 1px solid #cbd5e1; text-align: center; font-weight: 800; font-size: 10.5px; padding: 0 4px; vertical-align: middle;">${clean_and_reshape_text(v.organization || '-')}</td>
                     <td style="border: 1px solid #cbd5e1; text-align: center; font-size: 10.5px; padding: 0 4px; vertical-align: middle;">
                       <div style="font-weight: 800;">${clean_and_reshape_text(v.receiverName || v.userName || '-')}</div>
-                      ${v.delegateNumber ? `<div style="font-size: 9.5px; color: #475569;">${clean_and_reshape_text('مندوب')} ${clean_and_reshape_text(v.delegateNumber)}</div>` : ''}
+                      ${v.delegateNumber ? `<div style="font-size: 9.5px; color: #475569;">${clean_and_reshape_text('رقم المكتب')} ${clean_and_reshape_text(v.delegateNumber)}</div>` : ''}
                     </td>
                     <td style="border: 1px solid #cbd5e1; text-align: center; font-weight: 900; font-size: 12px; color: #047857; vertical-align: middle;">${bArray.length}</td>
                     <td style="border: 1px solid #cbd5e1; text-align: center; font-size: 10px; font-weight: 700; padding: 0 4px; vertical-align: middle;">

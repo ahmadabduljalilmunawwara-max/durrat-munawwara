@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, doc, query, where, getDocs, onSnapshot, runTransaction, updateDoc, limit } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { Printer, AlertCircle, CheckCircle2, Loader2, Bus, ClipboardList, Trash2, PlusCircle, RefreshCw, Layers, User as UserIcon, Phone, MapPin, Clock, Calendar, Keyboard } from 'lucide-react';
+import { Printer, AlertCircle, CheckCircle2, Loader2, Bus, ClipboardList, Trash2, PlusCircle, RefreshCw, Layers, User as UserIcon, Phone, MapPin, Clock, Calendar, Keyboard, CreditCard } from 'lucide-react';
 import { generateVoucherPDF } from '../lib/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -40,6 +40,7 @@ export function VoucherEntry() {
   const [driverPhone, setDriverPhone] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [receiverMobile, setReceiverMobile] = useState('');
+  const [receiverId, setReceiverId] = useState('');
   const [delegateName, setDelegateName] = useState(sessionUser?.displayName || '');
   const [hijriDate, setHijriDate] = useState('');
   const [customDate, setCustomDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -49,11 +50,13 @@ export function VoucherEntry() {
   const [history, setHistory] = useState<{
     receiverNames: string[];
     receiverMobiles: string[];
+    receiverIds: string[];
     delegateNumbers: string[];
     organizations: string[];
   }>({
     receiverNames: [],
     receiverMobiles: [],
+    receiverIds: [],
     delegateNumbers: [],
     organizations: [],
   });
@@ -65,6 +68,7 @@ export function VoucherEntry() {
     getDocs(q).then(snap => {
       const names = new Set<string>();
       const mobiles = new Set<string>();
+      const ids = new Set<string>();
       const delegates = new Set<string>();
       const orgs = new Set<string>();
 
@@ -72,6 +76,7 @@ export function VoucherEntry() {
         const d = doc.data();
         if (d.receiverName) names.add(d.receiverName);
         if (d.receiverMobile) mobiles.add(d.receiverMobile);
+        if (d.receiverId) ids.add(d.receiverId);
         if (d.delegateNumber) delegates.add(d.delegateNumber);
         if (d.organization) orgs.add(d.organization);
       });
@@ -79,6 +84,7 @@ export function VoucherEntry() {
       setHistory({
         receiverNames: Array.from(names).slice(0, 10),
         receiverMobiles: Array.from(mobiles).slice(0, 10),
+        receiverIds: Array.from(ids).slice(0, 10),
         delegateNumbers: Array.from(delegates).slice(0, 10),
         organizations: Array.from(orgs).slice(0, 10),
       });
@@ -338,6 +344,7 @@ export function VoucherEntry() {
         notes: notes || '',
         receiverName: receiverName || '',
         receiverMobile: receiverMobile || '',
+        receiverId: receiverId || '',
         deviceName: window.navigator.userAgent.substring(0, 50),
         userId: sessionUser?.uid || 'anonymous',
         userName: delegateName || 'غير معروف'
@@ -402,6 +409,7 @@ export function VoucherEntry() {
       setNotes('');
       setReceiverName('');
       setReceiverMobile('');
+      setReceiverId('');
     } catch (error) {
       setStatus({ type: 'error', msg: 'حدث خطأ أثناء التسجيل' });
       console.error(error);
@@ -426,6 +434,7 @@ export function VoucherEntry() {
     driverPhone !== '' ||
     receiverName !== '' ||
     receiverMobile !== '' ||
+    receiverId !== '' ||
     hijriDate !== '' ||
     selectedBuses.length > 0;
 
@@ -448,6 +457,7 @@ export function VoucherEntry() {
       setSelectedBuses([]);
       setReceiverName('');
       setReceiverMobile('');
+      setReceiverId('');
       setHijriDate('');
       setStatus({ type: null, msg: '' });
     }
@@ -499,6 +509,7 @@ export function VoucherEntry() {
     notes,
     receiverName,
     receiverMobile,
+    receiverId,
     customDate,
     hijriDate,
     finalVoucherNumber,
@@ -692,9 +703,46 @@ export function VoucherEntry() {
               </AnimatePresence>
             </div>
 
+            <div className="group relative">
+              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">
+                <CreditCard size={12} />
+                رقم هوية المستلم
+              </label>
+              <input
+                type="text"
+                value={receiverId}
+                onFocus={() => setActiveSuggestionField('receiverId')}
+                onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
+                onChange={(e) => setReceiverId(e.target.value.replace(/[^0-9]/g, ''))}
+                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                placeholder="10xxxxxxxx"
+              />
+              <AnimatePresence>
+                {activeSuggestionField === 'receiverId' && history.receiverIds.filter(id => id.includes(receiverId)).length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                  >
+                    {history.receiverIds.filter(id => id.includes(receiverId)).map((idNum, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setReceiverId(idNum)}
+                        className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                      >
+                        {idNum}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <div className="grid grid-cols-2 gap-6">
               <div className="group relative">
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">المندوب رقم</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">رقم المكتب</label>
                 <input
                   type="text"
                   value={delegateNumber}
@@ -702,7 +750,7 @@ export function VoucherEntry() {
                   onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                   onChange={(e) => setDelegateNumber(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
-                  placeholder="ID"
+                  placeholder="رقم المكتب..."
                 />
                 <AnimatePresence>
                   {activeSuggestionField === 'delegateNumber' && history.delegateNumbers.filter(d => d.includes(delegateNumber)).length > 0 && (
