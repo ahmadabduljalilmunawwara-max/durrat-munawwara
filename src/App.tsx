@@ -161,7 +161,17 @@ const getHijriDate = () => {
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('entry');
+  const [initialVoucherSearch] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search).get('voucher')?.trim() || '';
+      }
+    } catch {
+      // ignore URL parse error
+    }
+    return '';
+  });
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => (initialVoucherSearch ? 'search' : 'entry'));
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
   const [lastNotification, setLastNotification] = useState<{ msg: string; id: string } | null>(null);
@@ -874,7 +884,7 @@ export default function App() {
 
         {/* Desktop Sidebar (Collapsible on md+) */}
         <aside
-          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-[1.75rem] border border-[var(--border)] shadow-sm overflow-hidden relative shrink-0 transition-all duration-300 md:sticky md:top-[var(--space-4)] md:h-[calc(100vh-2rem)] ${
+          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-[1.75rem] border border-[var(--border)] shadow-sm overflow-hidden relative shrink-0 transition-all duration-300 md:sticky md:top-0 md:h-screen ${
             sidebarCollapsed ? 'md:w-[84px]' : 'md:w-72'
           }`}
         >
@@ -951,9 +961,11 @@ export default function App() {
                 {PAGE_TITLES[activeTab]}
               </h1>
 
-              <span className="hidden sm:inline-flex items-center px-[var(--space-3)] py-[var(--space-1)] rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 text-[var(--primary)] text-xs font-extrabold whitespace-nowrap tabular-nums">
-                موسم حج 1448هـ
-              </span>
+              {activeTab !== 'dashboard' && (
+                <span className="hidden sm:inline-flex items-center px-[var(--space-3)] py-[var(--space-1)] rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 text-[var(--primary)] text-xs font-extrabold whitespace-nowrap tabular-nums">
+                  موسم حج 1448هـ
+                </span>
+              )}
             </div>
 
             {/* Left Group: Combined Date Badge + Connection Status + Dark Mode + Notifications + User Menu */}
@@ -1157,8 +1169,12 @@ export default function App() {
                   ) : (
                     <VoucherEntry />
                   ))}
-                {activeTab === 'dashboard' && user.role !== 'pending' && <Dashboard />}
-                {activeTab === 'search' && user.role !== 'pending' && <VoucherSearch />}
+                {activeTab === 'dashboard' && user.role !== 'pending' && (
+                  <Dashboard onNavigateToEntry={() => handleSelectTab('entry')} />
+                )}
+                {activeTab === 'search' && user.role !== 'pending' && (
+                  <VoucherSearch initialSearchTerm={initialVoucherSearch} />
+                )}
                 {activeTab === 'buses' && canManageBuses && <BusesManagement />}
                 {activeTab === 'users' && canManageAdmin && <UsersManagement />}
                 {activeTab === 'settings' && canManageAdmin && <AppSettings />}

@@ -14,11 +14,11 @@ import { motion, AnimatePresence } from 'motion/react';
 type SeasonFilter = '1448' | '1447' | 'all';
 type PeriodFilter = 'all' | 'today' | 'week' | 'month' | 'custom_month' | 'custom_range';
 
-export function VoucherSearch() {
+export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: string }) {
   // Raw Data and Real-time Stream
   const [allVouchers, setAllVouchers] = useState<any[]>([]);
   const [isLoadingAll, setIsLoadingAll] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   
   // Filter States
   const [selectedSeason, setSelectedSeason] = useState<SeasonFilter>('1448');
@@ -49,8 +49,16 @@ export function VoucherSearch() {
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [sloganUrl, setSloganUrl] = useState<string>('');
   const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
-  const [printCopies, setPrintCopies] = useState(1);
+  const [printTwoCopies, setPrintTwoCopies] = useState(false);
   const [allBusesMaster, setAllBusesMaster] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (initialSearchTerm) {
+      setSearchTerm(initialSearchTerm);
+      setSelectedSeason('all');
+      setSelectedPeriod('all');
+    }
+  }, [initialSearchTerm]);
 
   // Report Modal Config
   const [reportType, setReportType] = useState<'monthly' | 'seasonal' | 'custom' | 'filtered'>('monthly');
@@ -83,7 +91,9 @@ export function VoucherSearch() {
         setLogoUrl(data.logoUrl || '');
         setSloganUrl(data.sloganUrl || '');
         if (data.pdfMargins) setPdfMargins(data.pdfMargins);
-        if (data.printCopies) setPrintCopies(data.printCopies);
+        if (data.printCopies !== undefined) {
+          setPrintTwoCopies(Number(data.printCopies) >= 2);
+        }
       }
     });
     return unsub;
@@ -276,12 +286,7 @@ export function VoucherSearch() {
     setIsPrinting(v.id);
     const fullData = { ...v, logoUrl, sloganUrl, pdfMargins };
     try {
-      for (let i = 0; i < printCopies; i++) {
-        await generateVoucherPDF(fullData, { save: false, print: true });
-        if (i < printCopies - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-      }
+      await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
     } catch (err) {
       console.error('Print error:', err);
     } finally {
@@ -694,12 +699,23 @@ export function VoucherSearch() {
       <div className="bg-[var(--surface)] rounded-[2.5rem] shadow-sm border border-[var(--border)] overflow-hidden flex flex-col">
         {/* Header Bar */}
         <div className="px-[var(--space-6)] py-[var(--space-4)] bg-[var(--surface-subtle)] border-b border-[var(--border)] flex items-center justify-between gap-[var(--space-3)]">
-          <div className="flex items-center gap-[var(--space-2)]">
-            <History size={16} className="text-[var(--primary)]" />
-            <span className="text-xs font-black text-[var(--text)]">سجلات السندات والعمليات</span>
-            <span className="text-xs font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/50 px-[var(--space-3)] py-[var(--space-1)] rounded-full border border-blue-200/80 dark:border-blue-800/70 mr-[var(--space-2)] tabular-nums">
-              {filteredVouchers.length} سند
-            </span>
+          <div className="flex flex-wrap items-center gap-[var(--space-3)]">
+            <div className="flex items-center gap-[var(--space-2)]">
+              <History size={16} className="text-[var(--primary)]" />
+              <span className="text-xs font-black text-[var(--text)]">سجلات السندات والعمليات</span>
+              <span className="text-xs font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/50 px-[var(--space-3)] py-[var(--space-1)] rounded-full border border-blue-200/80 dark:border-blue-800/70 mr-[var(--space-2)] tabular-nums">
+                {filteredVouchers.length} سند
+              </span>
+            </div>
+            <label className="inline-flex items-center gap-[var(--space-2)] text-xs font-bold text-[var(--text-secondary)] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={printTwoCopies}
+                onChange={(e) => setPrintTwoCopies(e.target.checked)}
+                className="w-4 h-4 rounded border-[var(--border)] accent-[var(--primary)] cursor-pointer"
+              />
+              <span>طباعة نسختين (المكتب + الشركة)</span>
+            </label>
           </div>
 
           {totalPages > 1 && (

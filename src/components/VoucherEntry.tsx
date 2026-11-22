@@ -185,7 +185,7 @@ export function VoucherEntry() {
   const [nextVoucherNum, setNextVoucherNum] = useState<number>(1001);
   const [logoUrl, setLogoUrl] = useState<string>('/logo.png');
   const [sloganUrl, setSloganUrl] = useState<string>('');
-  const [printCopies, setPrintCopies] = useState<number>(2);
+  const [printTwoCopies, setPrintTwoCopies] = useState<boolean>(true);
   const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -242,7 +242,9 @@ export function VoucherEntry() {
           if (data.nextVoucherNumber) setNextVoucherNum(data.nextVoucherNumber);
           if (data.logoUrl) setLogoUrl(data.logoUrl);
           if (data.sloganUrl) setSloganUrl(data.sloganUrl);
-          if (data.printCopies) setPrintCopies(data.printCopies);
+          if (data.printCopies !== undefined) {
+            setPrintTwoCopies(Number(data.printCopies) >= 2);
+          }
           if (data.pdfMargins) setPdfMargins(data.pdfMargins);
         } else {
           setNextVoucherNum(1000);
@@ -492,16 +494,9 @@ export function VoucherEntry() {
           pdfMargins,
         };
 
-        await generateVoucherPDF(fullData, { save: true, print: false });
-
         setIsPrinting(true);
         try {
-          for (let i = 0; i < printCopies; i++) {
-            await generateVoucherPDF(fullData, { save: false, print: true });
-            if (i < printCopies - 1) {
-              await new Promise((resolve) => setTimeout(resolve, 1500));
-            }
-          }
+          await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
         } catch (printErr) {
           console.error('Print Error:', printErr);
         } finally {
@@ -646,7 +641,7 @@ export function VoucherEntry() {
     logoUrl,
     sloganUrl,
     pdfMargins,
-    printCopies,
+    printTwoCopies,
   ]);
 
   const inputClass =
@@ -1425,11 +1420,22 @@ export function VoucherEntry() {
             <span>مسح الحقول</span>
           </button>
         </div>
-        {selectedBuses.length === 0 && !isSubmitting && (
-          <p className="text-center text-xs text-[var(--gold-text)] font-bold mt-[var(--space-2)]">
-            يجب إضافة حافلة واحدة على الأقل للإرسال
-          </p>
-        )}
+        <div className="mt-[var(--space-2)] flex flex-wrap items-center justify-between gap-[var(--space-2)]">
+          <label className="inline-flex items-center gap-[var(--space-2)] text-xs font-bold text-[var(--text-secondary)] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={printTwoCopies}
+              onChange={(e) => setPrintTwoCopies(e.target.checked)}
+              className="w-4 h-4 rounded border-[var(--border)] accent-[var(--primary)] cursor-pointer"
+            />
+            <span>تضمين نسختين في ملف PDF (نسخة المكتب + نسخة الشركة)</span>
+          </label>
+          {selectedBuses.length === 0 && !isSubmitting && (
+            <p className="text-xs text-[var(--gold-text)] font-bold">
+              يجب إضافة حافلة واحدة على الأقل للإرسال
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
