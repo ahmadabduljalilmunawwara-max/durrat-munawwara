@@ -190,143 +190,140 @@ export function AppSettings() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6" dir="rtl">
+    <div className="max-w-7xl mx-auto pb-[var(--space-12)] space-y-[var(--space-6)]" dir="rtl">
       {/* شريط العنوان والترويسة */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 rounded-[1.75rem] border border-slate-200/90 shadow-2xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl flex items-center justify-center shadow-sm">
-            <Settings size={20} className="text-amber-400" />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-8)] rounded-[1.75rem] border border-[var(--border)] shadow-2xs relative overflow-hidden">
+        <div className="absolute top-0 right-0 left-0 h-1.5 bg-[var(--primary)]"></div>
+        <div className="flex items-center gap-[var(--space-4)]">
+          <div className="w-11 h-11 bg-[var(--navy)] text-white rounded-2xl flex items-center justify-center shadow-sm">
+            <Settings size={20} className="text-[var(--gold)]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-extrabold text-slate-900">إعدادات النظام والتهيئة</h2>
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            </div>
-            <p className="text-xs text-slate-500 font-semibold mt-0.5">تخصيص الخيارات والطباعة والشعارات - درة المنورة</p>
+            <h2 className="text-lg font-extrabold text-[var(--text)]">إعدادات النظام والتهيئة</h2>
+            <p className="text-xs text-[var(--text-secondary)] font-semibold mt-[var(--space-1)]">تخصيص الخيارات والطباعة والشعارات - درة المنورة</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-[var(--space-6)]">
         {/* قسم إعدادات التطبيق العامة */}
-        <div className="bg-white rounded-[2rem] p-7 md:p-8 shadow-sm border border-slate-200/90 relative overflow-hidden">
-          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-blue-900 to-blue-600"></div>
-          <div className="flex items-center gap-3.5 mb-7">
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 border border-blue-200/80">
+        <div className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border border-[var(--border)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)]"></div>
+          <div className="flex items-center gap-[var(--space-4)] mb-[var(--space-6)]">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 rounded-xl flex items-center justify-center text-[var(--primary)] border border-blue-200/80 dark:border-blue-800/70">
                <Settings size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900 leading-snug">إعدادات التطبيق العامة</h3>
-              <p className="text-xs text-slate-500 font-semibold mt-0.5">تخصيص هوامش الطباعة والشعارات</p>
+              <h3 className="text-lg font-extrabold text-[var(--text)] leading-snug">إعدادات التطبيق العامة</h3>
+              <p className="text-xs text-[var(--text-secondary)] font-semibold mt-[var(--space-1)]">تخصيص هوامش الطباعة والشعارات</p>
             </div>
           </div>
 
-        <form onSubmit={handleSave} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
+        <form onSubmit={handleSave} className="space-y-[var(--space-5)]">
+          <div className="grid grid-cols-1 gap-[var(--space-5)]">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">رقم السند القادم</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">رقم السند القادم</label>
               <div className="relative">
-                <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Printer className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                 <input
                   type="number"
                   required
                   value={nextVoucherNumber}
                   onChange={(e) => setNextVoucherNumber(parseInt(e.target.value) || 0)}
-                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-900 tabular-nums"
+                  className="w-full pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-2xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-[var(--text)] tabular-nums"
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">سيتم تحديث هذا الرقم تلقائياً مع كل عملية تسجيل، يمكنك تعديله يدوياً هنا.</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-[var(--space-2)] font-medium">سيتم تحديث هذا الرقم تلقائياً مع كل عملية تسجيل، يمكنك تعديله يدوياً هنا.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">رسالة الترحيب</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">رسالة الترحيب</label>
               <textarea
                 value={welcomeMessage}
                 onChange={(e) => setWelcomeMessage(e.target.value)}
                 placeholder="أدخل رسالة الترحيب التي تظهر للمستخدمين عند تسجيل الدخول..."
-                className="w-full px-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold min-h-[100px] text-sm text-slate-900"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-2xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold min-h-[100px] text-sm text-[var(--text)]"
               />
-              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">هذه الرسالة تظهر لجميع المستخدمين عند الدخول للتطبيق لأول مرة في الجلسة.</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-[var(--space-2)] font-medium">هذه الرسالة تظهر لجميع المستخدمين عند الدخول للتطبيق لأول مرة في الجلسة.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-5)] pb-[var(--space-6)] border-b border-[var(--border)]">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">عدد النسخ المطبوعة تلقائياً</label>
+                <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">عدد النسخ المطبوعة تلقائياً</label>
                 <div className="relative">
-                  <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Printer className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                   <input
                     type="number"
                     value={printCopies}
                     min={1}
                     max={5}
                     onChange={(e) => setPrintCopies(parseInt(e.target.value) || 1)}
-                    className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-900 tabular-nums"
+                    className="w-full pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-2xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-[var(--text)] tabular-nums"
                   />
                 </div>
               </div>
               <div className="flex flex-col justify-end">
-                <p className="text-xs text-slate-500 font-medium">حدد عدد نسخ السند التي سيتم طباعتها تلقائياً عند الحفظ.</p>
+                <p className="text-xs text-[var(--text-secondary)] font-medium">حدد عدد نسخ السند التي سيتم طباعتها تلقائياً عند الحفظ.</p>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="block text-xs font-bold text-slate-700 mr-1">هوامش ملف الـ PDF (بكسل)</label>
-              <div className="grid grid-cols-4 gap-4">
+            <div className="space-y-[var(--space-3)]">
+              <label className="block text-xs font-bold text-[var(--text-secondary)]">هوامش ملف الـ PDF (بكسل)</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--space-5)]">
                 <div>
-                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">أعلى</span>
+                  <span className="block text-xs text-[var(--text-secondary)] mb-[var(--space-2)] text-center font-bold">أعلى</span>
                   <input
                     type="number"
                     value={pdfMargins.top}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, top: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
+                    className="w-full text-center py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] outline-none transition-all font-bold text-xs text-[var(--text)] tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">أسفل</span>
+                  <span className="block text-xs text-[var(--text-secondary)] mb-[var(--space-2)] text-center font-bold">أسفل</span>
                   <input
                     type="number"
                     value={pdfMargins.bottom}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, bottom: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
+                    className="w-full text-center py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] outline-none transition-all font-bold text-xs text-[var(--text)] tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">يمين (قليلاً)</span>
+                  <span className="block text-xs text-[var(--text-secondary)] mb-[var(--space-2)] text-center font-bold">يمين (قليلاً)</span>
                   <input
                     type="number"
                     value={pdfMargins.right}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, right: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
+                    className="w-full text-center py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] outline-none transition-all font-bold text-xs text-[var(--text)] tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">يسار (قليلاً)</span>
+                  <span className="block text-xs text-[var(--text-secondary)] mb-[var(--space-2)] text-center font-bold">يسار (قليلاً)</span>
                   <input
                     type="number"
                     value={pdfMargins.left}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, left: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
+                    className="w-full text-center py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] outline-none transition-all font-bold text-xs text-[var(--text)] tabular-nums"
                   />
                 </div>
               </div>
-              <p className="text-xs text-slate-500 font-medium">تحكم في المساحات الفارغة حول محتوى السند لضمان التوافق مع ورق الطابعة.</p>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">تحكم في المساحات الفارغة حول محتوى السند لضمان التوافق مع ورق الطابعة.</p>
             </div>
 
             {/* قسم شعار الشركة المعتمد */}
-            <div className="p-6 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+            <div className="p-[var(--space-4)] lg:p-[var(--space-6)] bg-[var(--surface-subtle)] rounded-2xl border border-[var(--border)] space-y-[var(--space-5)]">
+              <div className="flex items-center justify-between gap-[var(--space-3)]">
+                <div className="flex items-center gap-[var(--space-3)]">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-[var(--gold-text)] flex items-center justify-center font-bold">
                     <ImageIcon size={18} />
                   </div>
                   <div>
-                    <label className="block text-xs font-extrabold text-slate-900">شعار شركة درة المنورة الرسمي</label>
-                    <p className="text-xs text-slate-500 font-medium">يظهر في القائمة الجانبية، شاشات الدخول، وجميع كشوفات وسندات الـ PDF</p>
+                    <label className="block text-xs font-extrabold text-[var(--text)]">شعار شركة درة المنورة الرسمي</label>
+                    <p className="text-xs text-[var(--text-secondary)] font-medium">يظهر في القائمة الجانبية، شاشات الدخول، وجميع كشوفات وسندات الـ PDF</p>
                   </div>
                 </div>
                 {logoUrl && (
-                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold flex items-center gap-1">
+                  <span className="px-[var(--space-3)] py-[var(--space-1)] bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] border border-emerald-200 dark:border-emerald-800/70 rounded-full text-xs font-bold flex items-center gap-[var(--space-1)]">
                     <Check size={12} />
                     شعار مخصص معتمد
                   </span>
@@ -334,9 +331,9 @@ export function AppSettings() {
               </div>
 
               {/* معاينة الشعار الحالي */}
-              <div className="p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-slate-50 rounded-2xl border border-slate-200/80 p-2 flex items-center justify-center overflow-hidden">
+              <div className="p-[var(--space-4)] lg:p-[var(--space-5)] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-[var(--space-4)]">
+                <div className="flex items-center gap-[var(--space-4)]">
+                  <div className="w-20 h-20 bg-[var(--surface-subtle)] rounded-2xl border border-[var(--border)] p-[var(--space-2)] flex items-center justify-center overflow-hidden">
                     {logoUrl ? (
                       <img 
                         src={logoUrl} 
@@ -356,8 +353,8 @@ export function AppSettings() {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs font-extrabold text-slate-900">{logoUrl ? 'شعار الشركة المرفوع' : 'الشعار الافتراضي للنظام'}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                    <p className="text-xs font-extrabold text-[var(--text)]">{logoUrl ? 'شعار الشركة المرفوع' : 'الشعار الافتراضي للنظام'}</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-[var(--space-1)] font-medium">
                       {logoUrl ? 'تم ضبط الشعار بنجاح وسيتم اعتماده عبر كامل التطبيق فور الحفظ' : 'يمكنك رفع شعار مخصص بدقة عالية (PNG, JPG, SVG)'}
                     </p>
                   </div>
@@ -367,7 +364,7 @@ export function AppSettings() {
                   <button 
                     type="button"
                     onClick={() => setLogoUrl('')}
-                    className="px-3.5 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shrink-0"
+                    className="px-[var(--space-3)] py-[var(--space-2)] bg-red-50 dark:bg-red-950/40 text-[var(--danger)] hover:bg-red-100 dark:hover:bg-red-950/60 rounded-xl text-xs font-bold transition-all border border-red-200 dark:border-red-800/70 flex items-center gap-[var(--space-2)] cursor-pointer shrink-0"
                     title="استعادة الشعار الافتراضي"
                   >
                     <span>استعادة الشعار الافتراضي</span>
@@ -376,7 +373,7 @@ export function AppSettings() {
               </div>
 
               {/* حقول رفع وتعيين الشعار */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)]">
                 <div className="relative">
                   <input
                     type="file"
@@ -387,37 +384,37 @@ export function AppSettings() {
                   />
                   <label 
                     htmlFor="logo-upload"
-                    className="w-full h-full py-3.5 px-4 bg-white rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+                    className="w-full h-full py-[var(--space-3)] px-[var(--space-4)] bg-[var(--surface)] rounded-xl border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all cursor-pointer flex items-center justify-center gap-[var(--space-2)] group"
                   >
-                    <Upload className="text-slate-400 group-hover:text-blue-700 transition-colors" size={18} />
-                    <span className="text-xs font-bold text-slate-700 group-hover:text-blue-800 transition-colors">رفع ملف صورة من جهازك</span>
+                    <Upload className="text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors" size={18} />
+                    <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--primary)] transition-colors">رفع ملف صورة من جهازك</span>
                   </label>
                 </div>
 
                 <div className="relative">
-                  <ImageIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <ImageIcon className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
                   <input
                     type="url"
                     value={logoUrl.startsWith('data:') ? '' : logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
                     placeholder="أو ضع رابط صورة مباشر (HTTPS)..."
-                    className="w-full pr-10 pl-4 py-3.5 bg-white rounded-xl border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-xs"
+                    className="w-full pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-xs text-[var(--text)]"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">صورة شعار (خدمة الحاج شرف لنا) (رابط أو ملف)</label>
-              <div className="space-y-3">
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">صورة شعار (خدمة الحاج شرف لنا) (رابط أو ملف)</label>
+              <div className="space-y-[var(--space-3)]">
                 <div className="relative">
-                  <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <ImageIcon className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                   <input
                     type="url"
                     value={sloganUrl.startsWith('data:') ? '' : sloganUrl}
                     onChange={(e) => setSloganUrl(e.target.value)}
                     placeholder="ضع رابط الصورة هنا (HTTPS)..."
-                    className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-sm"
+                    className="w-full pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] rounded-2xl focus:bg-[var(--surface)] border border-[var(--border)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-sm text-[var(--text)]"
                   />
                 </div>
 
@@ -431,29 +428,29 @@ export function AppSettings() {
                   />
                   <label 
                     htmlFor="slogan-upload"
-                    className="w-full py-5 bg-slate-50/90 rounded-2xl focus:bg-white border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/20 outline-none transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
+                    className="w-full py-[var(--space-5)] bg-[var(--surface-subtle)] rounded-2xl focus:bg-[var(--surface)] border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] hover:bg-blue-50/20 dark:hover:bg-blue-950/20 outline-none transition-all cursor-pointer flex flex-col items-center justify-center gap-[var(--space-2)] group"
                   >
-                    <div className="flex items-center gap-2">
-                       <ImageIcon className="text-slate-400 group-hover:text-blue-700 transition-colors" size={22} />
-                       <span className="text-xs font-bold text-slate-600 group-hover:text-blue-800 transition-colors">أو ارفع ملف من جهازك</span>
+                    <div className="flex items-center gap-[var(--space-2)]">
+                       <ImageIcon className="text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors" size={22} />
+                       <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--primary)] transition-colors">أو ارفع ملف من جهازك</span>
                     </div>
                   </label>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">يمكنك رفع صورة تصميم عبارة (خدمة الحاج شرف لنا) الخاصة بك لتظهر في الزاوية العلوية للسند.</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-[var(--space-2)] font-medium">يمكنك رفع صورة تصميم عبارة (خدمة الحاج شرف لنا) الخاصة بك لتظهر في الزاوية العلوية للسند.</p>
             </div>
 
             {sloganUrl && (
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col items-center gap-4 relative">
+              <div className="p-[var(--space-4)] lg:p-[var(--space-6)] bg-[var(--surface-subtle)] rounded-2xl border border-[var(--border)] flex flex-col items-center gap-[var(--space-4)] relative">
                 <button 
                   type="button"
                   onClick={() => setSloganUrl('')}
-                  className="absolute left-4 top-4 w-8 h-8 bg-white text-slate-500 rounded-full flex items-center justify-center hover:text-red-600 hover:shadow-sm transition-all border border-slate-200"
+                  className="absolute left-[var(--space-4)] top-[var(--space-4)] w-8 h-8 bg-[var(--surface)] text-[var(--text-secondary)] rounded-full flex items-center justify-center hover:text-[var(--danger)] hover:shadow-sm transition-all border border-[var(--border)]"
                   title="إزالة شعار العبارة"
                 >
                   <Settings size={14} className="rotate-45" />
                 </button>
-                <span className="text-xs font-bold text-slate-500">معاينة شعار العبارة الحالي</span>
+                <span className="text-xs font-bold text-[var(--text-secondary)]">معاينة شعار العبارة الحالي</span>
                 <img 
                   src={sloganUrl} 
                   alt="Slogan Preview" 
@@ -469,10 +466,12 @@ export function AppSettings() {
             )}
           </div>
 
-          <div className="pt-2">
+          <div className="pt-[var(--space-2)]">
             {status.type && (
-              <div className={`p-4 rounded-xl mb-5 text-sm font-bold flex items-center gap-2 ${
-                status.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
+              <div className={`p-[var(--space-4)] rounded-xl mb-[var(--space-5)] text-sm font-bold flex items-center gap-[var(--space-2)] ${
+                status.type === 'success'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] border border-emerald-200 dark:border-emerald-800/70'
+                  : 'bg-red-50 dark:bg-red-950/40 text-[var(--danger)] border border-red-200 dark:border-red-800/70'
               }`}>
                 {status.msg}
               </div>
@@ -481,9 +480,9 @@ export function AppSettings() {
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full py-4 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md disabled:bg-slate-200 disabled:text-slate-400 cursor-pointer"
+              className="w-full py-[var(--space-4)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-[var(--space-2)] transition-all shadow-md disabled:opacity-50 cursor-pointer"
             >
-              {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} className="text-amber-400" />}
+              {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} className="text-[var(--gold)]" />}
               حفظ الإعدادات
             </button>
           </div>
@@ -491,33 +490,30 @@ export function AppSettings() {
         </div>
 
         {/* قسم النسخ الاحتياطي واستعادة البيانات */}
-        <div className="bg-white rounded-[2rem] p-7 md:p-8 shadow-sm border border-slate-200/90 relative overflow-hidden" dir="rtl">
-          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-amber-500 to-blue-700"></div>
-          <div className="flex items-center gap-3.5 mb-6">
-            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-700 border border-amber-200/80">
+        <div className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border border-[var(--border)] relative overflow-hidden" dir="rtl">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--gold)]"></div>
+          <div className="flex items-center gap-[var(--space-4)] mb-[var(--space-6)]">
+            <div className="w-10 h-10 bg-amber-50 dark:bg-amber-950/40 rounded-xl flex items-center justify-center text-[var(--gold-text)] border border-amber-200/80 dark:border-amber-800/70">
                <Database size={20} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-extrabold text-slate-900 leading-snug">النسخ الاحتياطي للبيانات</h3>
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              </div>
-              <p className="text-xs text-slate-500 font-semibold mt-0.5">تصدير واستيراد نسخة احتياطية من قواعد البيانات</p>
+              <h3 className="text-lg font-extrabold text-[var(--text)] leading-snug">النسخ الاحتياطي للبيانات</h3>
+              <p className="text-xs text-[var(--text-secondary)] font-semibold mt-[var(--space-1)]">تصدير واستيراد نسخة احتياطية من قواعد البيانات</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
             <button
               type="button"
               onClick={exportAllDataAsJSON}
-              className="py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="py-[var(--space-3)] bg-[var(--surface-subtle)] hover:bg-blue-50/40 dark:hover:bg-blue-950/30 border border-[var(--border)] text-[var(--text)] rounded-xl font-bold text-xs flex items-center justify-center gap-[var(--space-2)] transition-all cursor-pointer"
             >
-              <Download size={16} className="text-blue-700" />
+              <Download size={16} className="text-[var(--primary)]" />
               تصدير نسخة احتياطية (JSON)
             </button>
 
-            <label className="py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer text-center">
-              <Upload size={16} className="text-amber-600" />
+            <label className="py-[var(--space-3)] bg-[var(--surface-subtle)] hover:bg-amber-50/40 dark:hover:bg-amber-950/30 border border-[var(--border)] text-[var(--text)] rounded-xl font-bold text-xs flex items-center justify-center gap-[var(--space-2)] transition-all cursor-pointer text-center">
+              <Upload size={16} className="text-[var(--gold-text)]" />
               استيراد نسخة احتياطية
               <input
                 type="file"
@@ -529,12 +525,12 @@ export function AppSettings() {
           </div>
 
           {fileImportStatus.state !== 'idle' && (
-            <div className={`mt-4 p-4 rounded-xl text-xs font-bold leading-relaxed ${
-              fileImportStatus.state === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-              fileImportStatus.state === 'running' ? 'bg-blue-50 text-blue-800 border border-blue-200' :
-              'bg-red-50 text-red-700 border border-red-200'
+            <div className={`mt-[var(--space-4)] p-[var(--space-4)] rounded-xl text-xs font-bold leading-relaxed ${
+              fileImportStatus.state === 'success' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] border border-emerald-200 dark:border-emerald-800/70' :
+              fileImportStatus.state === 'running' ? 'bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] border border-blue-200 dark:border-blue-800/70' :
+              'bg-red-50 dark:bg-red-950/40 text-[var(--danger)] border border-red-200 dark:border-red-800/70'
             }`}>
-              <div className="flex items-center gap-2 font-bold">
+              <div className="flex items-center gap-[var(--space-2)] font-bold">
                 {fileImportStatus.state === 'running' && <Loader2 className="animate-spin" size={14} />}
                 {fileImportStatus.state === 'success' && <Check size={14} />}
                 {fileImportStatus.state === 'error' && <AlertCircle size={14} />}

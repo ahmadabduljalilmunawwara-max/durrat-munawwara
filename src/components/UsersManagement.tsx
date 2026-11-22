@@ -172,31 +172,31 @@ export function UsersManagement() {
     const formattedUpdateDate = formatUserDate(u.updatedAt);
     return (
     <div 
-      className={`group flex items-center justify-between p-5 border rounded-[1.5rem] transition-all ${
+      className={`group flex items-center justify-between p-[var(--space-4)] lg:p-[var(--space-6)] border rounded-[1.5rem] transition-all ${
         u.role === 'pending' 
-          ? 'bg-amber-50/50 border-amber-200 hover:bg-amber-50 hover:shadow-xl hover:shadow-amber-100/50' 
-          : 'bg-slate-50 border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-100 hover:border-slate-200'
+          ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-800/70 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:shadow-md' 
+          : 'bg-[var(--surface-subtle)] border-[var(--border)] hover:bg-[var(--surface)] hover:shadow-md'
       }`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-[var(--space-4)]">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm ${
-          u.role === 'general_manager' ? 'bg-amber-500 text-white shadow-amber-200' : 
-          u.role === 'supervisor' ? 'bg-indigo-500 text-white shadow-indigo-200' : 
-          u.role === 'pending' ? 'bg-white text-amber-600 border-2 border-amber-200' :
-          'bg-white text-slate-600 border border-slate-200'
+          u.role === 'general_manager' ? 'bg-[var(--gold)] text-[#0F172A]' : 
+          u.role === 'supervisor' ? 'bg-[var(--btn-primary)] text-white' : 
+          u.role === 'pending' ? 'bg-[var(--surface)] text-[var(--gold-text)] border-2 border-amber-300 dark:border-amber-700' :
+          'bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)]'
         }`}>
           {u.displayName ? u.displayName[0].toUpperCase() : u.username?.[0].toUpperCase() || '?'}
         </div>
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-1)]">
             {editingUserId === u.id ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-[var(--space-2)]">
                 <input
                   type="text"
                   value={editingName}
                   onChange={(e) => setEditingName(e.target.value)}
                   autoFocus
-                  className="px-2 py-1 bg-white border border-indigo-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-100 outline-none"
+                  className="px-[var(--space-2)] py-[var(--space-1)] bg-[var(--surface)] text-[var(--text)] border border-[var(--primary)] rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleNameUpdate(u.id);
                     if (e.key === 'Escape') setEditingUserId(null);
@@ -205,22 +205,22 @@ export function UsersManagement() {
                 <button
                   onClick={() => handleNameUpdate(u.id)}
                   disabled={isSaving}
-                  className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="p-[var(--space-2)] bg-[var(--btn-primary)] text-white rounded-lg hover:bg-[var(--btn-primary-hover)] transition-colors"
                 >
                   <Save size={14} />
                 </button>
                 <button
                   onClick={() => setEditingUserId(null)}
-                  className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors"
+                  className="p-[var(--space-2)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface)] transition-colors"
                 >
                   <span className="text-[10px] font-bold">إلغاء</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <h3 className="font-black text-slate-800 leading-none">{u.displayName}</h3>
+              <div className="flex items-center gap-[var(--space-2)]">
+                <h3 className="font-black text-[var(--text)] leading-none">{u.displayName}</h3>
                 {u.forcePasswordChange && (
-                  <div className="flex items-center gap-1 bg-red-50 text-red-600 px-2 py-0.5 rounded-lg text-[9px] font-black animate-pulse border border-red-100">
+                  <div className="flex items-center gap-[var(--space-1)] bg-red-50 dark:bg-red-950/40 text-[var(--danger)] px-[var(--space-2)] py-[var(--space-1)] rounded-lg text-[9px] font-black animate-pulse border border-red-200 dark:border-red-800/70">
                     <AlertTriangle size={10} />
                     <span>مطلوب تغيير كلمة المرور</span>
                   </div>
@@ -231,7 +231,7 @@ export function UsersManagement() {
                       setEditingUserId(u.id);
                       setEditingName(u.displayName || '');
                     }}
-                    className="p-1 text-slate-300 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-[var(--space-1)] text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <UserCog size={14} />
                   </button>
@@ -243,8 +243,8 @@ export function UsersManagement() {
                 <select
                   value={u.role}
                   onChange={(e) => handleRoleUpdate(u.id, e.target.value as UserRole)}
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-white border border-slate-200 focus:ring-2 focus:ring-indigo-100 outline-none cursor-pointer hover:border-indigo-300 transition-all font-sans ${
-                    u.role === 'pending' ? 'text-amber-600 border-amber-200' : 'text-slate-600'
+                  className={`text-[10px] px-[var(--space-2)] py-[var(--space-1)] rounded-full font-bold bg-[var(--surface)] border border-[var(--border)] focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer hover:border-[var(--primary)] transition-all font-sans ${
+                    u.role === 'pending' ? 'text-[var(--gold-text)] border-amber-300 dark:border-amber-700' : 'text-[var(--text-secondary)]'
                   }`}
                 >
                   <option value="pending">قيد الانتظار</option>
@@ -252,45 +252,45 @@ export function UsersManagement() {
                   <option value="supervisor">مشرف</option>
                 </select>
               ) : (
-                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${
-                  u.role === 'general_manager' ? 'bg-amber-100 text-amber-700' : 
-                  u.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 
-                  u.role === 'pending' ? 'bg-amber-50 text-amber-600' :
-                  'bg-slate-100 text-slate-600'
+                <span className={`text-[10px] px-[var(--space-3)] py-[var(--space-1)] rounded-full font-bold ${
+                  u.role === 'general_manager' ? 'bg-amber-100 text-[#B45309] dark:bg-amber-900/40 dark:text-[#FBBF24]' : 
+                  u.role === 'supervisor' ? 'bg-blue-50 text-[#1D4ED8] dark:bg-blue-900/40 dark:text-[#93C5FD]' : 
+                  u.role === 'pending' ? 'bg-amber-50 text-[var(--gold-text)] dark:bg-amber-950/40' :
+                  'bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)]'
                 }`}>
                   {u.role === 'general_manager' ? 'المدير العام' : u.role === 'supervisor' ? 'مشرف' : u.role === 'pending' ? 'قيد الانتظار' : 'مدخل بيانات'}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{u.username || u.email}</span>
+          <div className="flex items-center gap-[var(--space-2)] flex-wrap">
+            <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{u.username || u.email}</span>
             {u.password && (
               <>
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span className="text-[10px] bg-white border border-slate-100 px-2 py-0.5 rounded-full text-slate-400 font-bold tracking-tighter">Pass: {u.password}</span>
+                <span className="text-[var(--text-muted)] text-xs font-bold">·</span>
+                <span className="text-[10px] bg-[var(--surface)] border border-[var(--border)] px-[var(--space-2)] py-[var(--space-1)] rounded-full text-[var(--text-secondary)] font-bold tracking-tighter">Pass: {u.password}</span>
               </>
             )}
             {u.isGoogle && (
               <>
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full font-bold">Google Auth</span>
+                <span className="text-[var(--text-muted)] text-xs font-bold">·</span>
+                <span className="text-[10px] bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] px-[var(--space-2)] py-[var(--space-1)] rounded-full font-bold">Google Auth</span>
               </>
             )}
             {formattedUpdateDate && (
               <>
-                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span className="text-[9px] text-slate-400 font-medium border-b border-slate-100">تحديث: {formattedUpdateDate}</span>
+                <span className="text-[var(--text-muted)] text-xs font-bold">·</span>
+                <span className="text-[10px] text-[var(--text-muted)] font-medium border-b border-[var(--border)]">تحديث: {formattedUpdateDate}</span>
               </>
             )}
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-[var(--space-2)]">
         {isGM && u.isCustom && (
           <button 
             onClick={() => handleResetPassword(u.id)}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all opacity-0 group-hover:opacity-100"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-all opacity-0 group-hover:opacity-100"
             title="إعادة تعيين كلمة المرور"
           >
             <Key size={18} />
@@ -301,8 +301,8 @@ export function UsersManagement() {
             onClick={() => deleteUser(u.id)}
             className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all ${
               deletingId === u.id
-                ? 'bg-red-600 text-white animate-pulse opacity-100'
-                : 'bg-white text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100'
+                ? 'bg-[#B91C1C] text-white animate-pulse opacity-100'
+                : 'bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)] hover:text-[var(--danger)] hover:bg-red-50 dark:hover:bg-red-950/40 opacity-0 group-hover:opacity-100'
             }`}
             title={deletingId === u.id ? "تأكيد الحذف" : "حذف المستخدم"}
           >
@@ -323,125 +323,125 @@ export function UsersManagement() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-[var(--space-6)]">
       {/* User Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-[var(--space-6)]">
+        <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div className="w-8 h-8 bg-[var(--navy)] text-white rounded-xl flex items-center justify-center">
               <Users size={16} />
             </div>
-            <span className="text-xs font-bold text-slate-600">الإجمالي</span>
+            <span className="text-xs font-bold text-[var(--text-secondary)]">الإجمالي</span>
           </div>
-          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.total}</div>
-          <div className="text-xs font-medium text-slate-500 mt-1">مستخدم مسجل</div>
+          <div className="text-3xl font-extrabold text-[var(--text)] tabular-nums">{stats.total}</div>
+          <div className="text-xs font-medium text-[var(--text-muted)] mt-[var(--space-1)]">مستخدم مسجل</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 bg-amber-500 text-white rounded-xl flex items-center justify-center">
+        <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div className="w-8 h-8 bg-[var(--gold)] text-[#0F172A] rounded-xl flex items-center justify-center">
               <Crown size={16} />
             </div>
-            <span className="text-xs font-bold text-amber-700">المدراء</span>
+            <span className="text-xs font-bold text-[var(--gold-text)]">المدراء</span>
           </div>
-          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.gm}</div>
-          <div className="text-xs font-medium text-slate-500 mt-1">مدير عام</div>
+          <div className="text-3xl font-extrabold text-[var(--text)] tabular-nums">{stats.gm}</div>
+          <div className="text-xs font-medium text-[var(--text-muted)] mt-[var(--space-1)]">مدير عام</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 bg-blue-800 text-white rounded-xl flex items-center justify-center">
+        <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div className="w-8 h-8 bg-[var(--navy)] text-[var(--gold)] rounded-xl flex items-center justify-center">
               <UserCog size={16} />
             </div>
-            <span className="text-xs font-bold text-blue-800">المشرفين</span>
+            <span className="text-xs font-bold text-[var(--primary)]">المشرفين</span>
           </div>
-          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.supervisor}</div>
-          <div className="text-xs font-medium text-slate-500 mt-1">مشرف نشط</div>
+          <div className="text-3xl font-extrabold text-[var(--text)] tabular-nums">{stats.supervisor}</div>
+          <div className="text-xs font-medium text-[var(--text-muted)] mt-[var(--space-1)]">مشرف نشط</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center">
+        <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div className="w-8 h-8 bg-[var(--btn-primary)] text-white rounded-xl flex items-center justify-center">
               <UserCircle size={16} />
             </div>
-            <span className="text-xs font-bold text-blue-700">المدخلين</span>
+            <span className="text-xs font-bold text-[var(--primary)]">المدخلين</span>
           </div>
-          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.dataEntry}</div>
-          <div className="text-xs font-medium text-slate-500 mt-1">مدخل بيانات</div>
+          <div className="text-3xl font-extrabold text-[var(--text)] tabular-nums">{stats.dataEntry}</div>
+          <div className="text-xs font-medium text-[var(--text-muted)] mt-[var(--space-1)]">مدخل بيانات</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-amber-200 shadow-2xs transition-all hover:shadow-sm">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 bg-amber-50 border border-amber-200 text-amber-600 rounded-xl flex items-center justify-center">
+        <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-amber-300 dark:border-amber-800/80 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-[var(--gold-text)] rounded-xl flex items-center justify-center">
               <UserPlus size={16} />
             </div>
-            <span className="text-xs font-bold text-amber-700">الانتظار</span>
+            <span className="text-xs font-bold text-[var(--gold-text)]">الانتظار</span>
           </div>
-          <div className="text-3xl font-extrabold text-amber-600 tabular-nums">{stats.pending}</div>
-          <div className="text-xs font-medium text-slate-500 mt-1">بانتظار الموافقة</div>
+          <div className="text-3xl font-extrabold text-[var(--gold-text)] tabular-nums">{stats.pending}</div>
+          <div className="text-xs font-medium text-[var(--text-muted)] mt-[var(--space-1)]">بانتظار الموافقة</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-6)]">
       <div className="md:col-span-1">
-        <div className="bg-white rounded-[2rem] p-7 shadow-sm border border-slate-200/90 sticky top-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
-          <div className="flex items-center gap-3 mb-7">
-            <div className="w-10 h-10 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-xl flex items-center justify-center text-white shadow-sm">
-              <UserPlus size={19} className="text-amber-400" />
+        <div className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border border-[var(--border)] sticky top-[var(--space-8)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 left-0 h-1.5 bg-[var(--primary)]"></div>
+          <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-6)]">
+            <div className="w-10 h-10 bg-[var(--navy)] rounded-xl flex items-center justify-center text-white shadow-sm">
+              <UserPlus size={19} className="text-[var(--gold)]" />
             </div>
-            <h3 className="text-lg font-extrabold text-slate-900">إضافة مستخدم جديد</h3>
+            <h3 className="text-lg font-extrabold text-[var(--text)]">إضافة مستخدم جديد</h3>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-5">
+          <form onSubmit={handleSave} className="space-y-[var(--space-5)]">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">اسم المستخدم (Login)</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">اسم المستخدم (Login)</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <User className="absolute left-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                 <input 
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Username..."
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
+                  className="w-full pl-[var(--space-12)] pr-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-semibold text-sm text-[var(--text)]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">كلمة المرور</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">كلمة المرور</label>
               <div className="relative">
-                <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Key className="absolute left-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                 <input 
                   type="text"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password..."
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
+                  className="w-full pl-[var(--space-12)] pr-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-semibold text-sm text-[var(--text)]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">الاسم الكامل (يظهر في السند)</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">الاسم الكامل (يظهر في السند)</label>
               <div className="relative">
-                <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <UserCheck className="absolute left-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                 <input 
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Display Name..."
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
+                  className="w-full pl-[var(--space-12)] pr-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-semibold text-sm text-[var(--text)]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">الصلاحيات</label>
+              <label className="block text-xs font-bold text-[var(--text-secondary)] mb-[var(--space-2)]">الصلاحيات</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-bold text-sm text-slate-800 cursor-pointer"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-bold text-sm text-[var(--text)] cursor-pointer"
               >
                 <option value="data_entry">مدخل بيانات</option>
                 <option value="supervisor">مشرف</option>
@@ -451,60 +451,60 @@ export function UsersManagement() {
             <button 
               type="submit" 
               disabled={isSaving}
-              className="w-full py-4 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md cursor-pointer"
+              className="w-full py-[var(--space-4)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-[var(--space-2)] transition-all shadow-md cursor-pointer"
             >
-              {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="text-amber-400" />}
-              حـفـظ الـمـسـتـخـدم
+              {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="text-[var(--gold)]" />}
+              حفظ المستخدم
             </button>
           </form>
         </div>
       </div>
 
       <div className="md:col-span-2">
-        <div className="bg-white rounded-[2rem] p-7 shadow-sm border border-slate-200/90">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-7">
-            <h3 className="text-xl font-extrabold text-slate-900">قـائـمـة الـمـسـتـخـدمـيـن</h3>
+        <div className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border border-[var(--border)]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-[var(--space-4)] mb-[var(--space-6)]">
+            <h3 className="text-xl font-extrabold text-[var(--text)]">قائمة المستخدمين</h3>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search className="absolute left-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
               <input 
                 type="text"
                 placeholder="بحث عن مستخدم..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-11 pr-5 py-2.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-blue-600 outline-none w-full md:w-64 transition-all text-sm font-semibold"
+                className="pl-[var(--space-12)] pr-[var(--space-5)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:border-[var(--primary)] outline-none w-full md:w-64 transition-all text-sm font-semibold text-[var(--text)]"
               />
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-[var(--space-6)]">
             {pendingUsers.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 px-1 text-amber-700">
+              <div className="space-y-[var(--space-3)]">
+                <div className="flex items-center gap-[var(--space-2)] px-[var(--space-1)] text-[var(--gold-text)]">
                   <UserPlus size={17} />
                   <span className="text-xs font-extrabold">بانتظار الموافقة ({pendingUsers.length})</span>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-[var(--space-3)]">
                   {pendingUsers.map(u => <UserCard key={u.id} u={u} />)}
                 </div>
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-3)]">
               {pendingUsers.length > 0 && activeUsers.length > 0 && (
-                <div className="flex items-center gap-2 px-1 text-slate-600 mt-4">
+                <div className="flex items-center gap-[var(--space-2)] px-[var(--space-1)] text-[var(--text-secondary)] mt-[var(--space-4)]">
                   <User size={17} />
                   <span className="text-xs font-extrabold">المستخدمون النشطون</span>
                 </div>
               )}
-              <div className="space-y-2.5">
+              <div className="space-y-[var(--space-3)]">
                 {activeUsers.map((u) => <UserCard key={u.id} u={u} />)}
               </div>
             </div>
             
             {filteredUsers.length === 0 && (
-              <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-                <User size={42} className="mx-auto text-slate-300 mb-3" />
-                <p className="text-slate-500 font-semibold text-sm">لم يتم العثور على مستخدمين</p>
+              <div className="py-[var(--space-16)] text-center border-2 border-dashed border-[var(--border)] rounded-2xl">
+                <User size={42} className="mx-auto text-[var(--text-muted)] mb-[var(--space-3)]" />
+                <p className="text-[var(--text-secondary)] font-semibold text-sm">لم يتم العثور على مستخدمين</p>
               </div>
             )}
           </div>

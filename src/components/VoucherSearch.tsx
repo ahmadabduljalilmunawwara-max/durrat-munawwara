@@ -458,44 +458,44 @@ export function VoucherSearch() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6" dir="rtl">
+    <div className="max-w-7xl mx-auto space-y-[var(--space-6)]" dir="rtl">
       
       {/* Top Header Card */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/90 p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-2xl flex items-center justify-center text-amber-400 shadow-lg shadow-blue-900/15 ring-4 ring-blue-50">
+      <div className="bg-[var(--surface)] rounded-[2rem] shadow-sm border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-6)] pb-[var(--space-6)] border-b border-[var(--border)]">
+          <div className="flex items-center gap-[var(--space-4)]">
+            <div className="w-14 h-14 bg-[var(--navy)] rounded-2xl flex items-center justify-center text-[var(--gold)] shadow-lg ring-4 ring-blue-50 dark:ring-blue-950/50">
               <Search size={28} />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-slate-900">البحث والأرشيف الشامل</h2>
-                <span className="bg-emerald-50 text-emerald-700 text-xs font-black px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div className="flex items-center gap-[var(--space-3)]">
+                <h2 className="text-2xl font-black text-[var(--text)]">البحث والأرشيف الشامل</h2>
+                <span className="bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] text-xs font-black px-[var(--space-3)] py-[var(--space-1)] rounded-full border border-emerald-200 dark:border-emerald-800/70 flex items-center gap-[var(--space-2)]">
+                  <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse"></span>
                   تحديث لحظي
                 </span>
               </div>
-              <p className="text-xs text-slate-600 font-bold mt-1">
+              <p className="text-xs text-[var(--text-secondary)] font-bold mt-[var(--space-1)]">
                 استعراض وتصفية السجلات، وتوليد كشوفات وتقارير PDF الشهرية والموسمية
               </p>
             </div>
           </div>
 
           {/* Action Buttons for Managers */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-[var(--space-3)]">
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-black text-sm hover:opacity-95 transition-all shadow-lg shadow-blue-900/15 hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-[var(--space-2)] px-[var(--space-6)] py-[var(--space-3)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-2xl font-black text-sm transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
             >
-              <FileText size={18} className="text-blue-200" />
+              <FileText size={18} />
               <span>توليد كشف وتقارير PDF</span>
-              <Sparkles size={16} className="text-amber-400" />
+              <Sparkles size={16} className="text-[var(--gold)]" />
             </button>
 
             {filteredVouchers.length > 0 && (
               <button
                 onClick={printOfficeReport}
-                className="flex items-center gap-2 px-5 py-3.5 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all border border-slate-200"
+                className="flex items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-2xl font-bold text-sm hover:bg-blue-50/40 dark:hover:bg-blue-950/30 transition-all border border-[var(--border)]"
                 title="طباعة كشف مجمع للحافلات المستعرضة"
               >
                 <Printer size={16} />
@@ -506,19 +506,19 @@ export function VoucherSearch() {
         </div>
 
         {/* Season Selector Tabs */}
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <div className="text-xs font-black text-slate-600 ml-2">الموسم:</div>
+        <div className="mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-2)]">
+          <div className="text-xs font-black text-[var(--text-secondary)] ml-[var(--space-2)]">الموسم:</div>
           <button
             onClick={() => setSelectedSeason('1448')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            className={`px-[var(--space-4)] py-[var(--space-2)] rounded-xl text-xs font-black transition-all flex items-center gap-[var(--space-2)] ${
               selectedSeason === '1448'
-                ? 'bg-blue-700 text-white shadow-md shadow-blue-700/20'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[var(--btn-primary)] text-white shadow-md'
+                : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-blue-50/40 dark:hover:bg-blue-950/30 border border-[var(--border)]'
             }`}
           >
             <span>موسم 1448 هـ (الحالي)</span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
-              selectedSeason === '1448' ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-700'
+            <span className={`px-[var(--space-2)] py-[var(--space-1)] rounded-full text-[11px] font-black tabular-nums ${
+              selectedSeason === '1448' ? 'bg-blue-900 text-white' : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
             }`}>
               {countSeason1448}
             </span>
@@ -526,15 +526,15 @@ export function VoucherSearch() {
 
           <button
             onClick={() => setSelectedSeason('1447')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            className={`px-[var(--space-4)] py-[var(--space-2)] rounded-xl text-xs font-black transition-all flex items-center gap-[var(--space-2)] ${
               selectedSeason === '1447'
-                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[var(--gold)] text-[#0F172A] shadow-md'
+                : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-amber-50/40 dark:hover:bg-amber-950/30 border border-[var(--border)]'
             }`}
           >
             <span>موسم 1447 هـ (المؤرشف)</span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
-              selectedSeason === '1447' ? 'bg-amber-800 text-white' : 'bg-slate-200 text-slate-700'
+            <span className={`px-[var(--space-2)] py-[var(--space-1)] rounded-full text-[11px] font-black tabular-nums ${
+              selectedSeason === '1447' ? 'bg-[#0F172A]/15 text-[#0F172A]' : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
             }`}>
               {countSeason1447}
             </span>
@@ -542,15 +542,15 @@ export function VoucherSearch() {
 
           <button
             onClick={() => setSelectedSeason('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+            className={`px-[var(--space-4)] py-[var(--space-2)] rounded-xl text-xs font-black transition-all flex items-center gap-[var(--space-2)] ${
               selectedSeason === 'all'
-                ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[var(--navy)] text-white shadow-md'
+                : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface)] border border-[var(--border)]'
             }`}
           >
             <span>جميع المواسم</span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
-              selectedSeason === 'all' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'
+            <span className={`px-[var(--space-2)] py-[var(--space-1)] rounded-full text-[11px] font-black tabular-nums ${
+              selectedSeason === 'all' ? 'bg-slate-700 text-white' : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
             }`}>
               {allVouchers.length}
             </span>
@@ -558,21 +558,21 @@ export function VoucherSearch() {
         </div>
 
         {/* Search Bar & Instant Filters */}
-        <div className="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div className="mt-[var(--space-5)] grid grid-cols-1 lg:grid-cols-12 gap-[var(--space-5)]">
           {/* Main Search Input */}
           <div className="lg:col-span-6 relative">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="ابحث برقم السند، رقم الاعتماد، المؤسسة، اسم السائق، رقم اللوحة، المندوب..."
-              className="w-full pr-12 pl-10 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-bold text-sm placeholder:text-slate-400 text-slate-900"
+              className="w-full pr-[var(--space-12)] pl-[var(--space-12)] py-[var(--space-3)] rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border)] focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-bold text-sm text-[var(--text)]"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute left-[var(--space-4)] top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text)]"
               >
                 <X size={16} />
               </button>
@@ -584,7 +584,7 @@ export function VoucherSearch() {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value as PeriodFilter)}
-              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 font-bold text-sm text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all cursor-pointer"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border)] font-bold text-sm text-[var(--text)] outline-none focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] transition-all cursor-pointer"
             >
               <option value="all">📅 كافة الفترات الزمنية</option>
               <option value="today">اليوم</option>
@@ -600,7 +600,7 @@ export function VoucherSearch() {
             <select
               value={selectedOrg}
               onChange={(e) => setSelectedOrg(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 font-bold text-sm text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all cursor-pointer"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border)] font-bold text-sm text-[var(--text)] outline-none focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] transition-all cursor-pointer"
             >
               <option value="all">🏢 كافة المؤسسات والجهات</option>
               {organizationsList.map((org) => (
@@ -612,111 +612,111 @@ export function VoucherSearch() {
 
         {/* Secondary Date Inputs if Custom Selected */}
         {selectedPeriod === 'custom_month' && (
-          <div className="mt-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center gap-4 animate-in fade-in">
-            <span className="text-xs font-black text-blue-900">اختر الشهر والسنة:</span>
+          <div className="mt-[var(--space-3)] p-[var(--space-4)] bg-blue-50/50 dark:bg-blue-950/30 rounded-2xl border border-blue-200 dark:border-blue-800/70 flex items-center gap-[var(--space-4)] animate-in fade-in">
+            <span className="text-xs font-black text-[var(--primary)]">اختر الشهر والسنة:</span>
             <input
               type="month"
               value={customMonth}
               onChange={(e) => setCustomMonth(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white border border-blue-200 font-bold text-sm text-slate-800 outline-none tabular-nums"
+              className="px-[var(--space-4)] py-[var(--space-2)] rounded-xl bg-[var(--surface)] border border-[var(--border)] font-bold text-sm text-[var(--text)] outline-none tabular-nums"
             />
           </div>
         )}
 
         {selectedPeriod === 'custom_range' && (
-          <div className="mt-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-wrap items-center gap-4 animate-in fade-in">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-blue-900">من تاريخ:</span>
+          <div className="mt-[var(--space-3)] p-[var(--space-4)] bg-blue-50/50 dark:bg-blue-950/30 rounded-2xl border border-blue-200 dark:border-blue-800/70 flex flex-wrap items-center gap-[var(--space-4)] animate-in fade-in">
+            <div className="flex items-center gap-[var(--space-2)]">
+              <span className="text-xs font-black text-[var(--primary)]">من تاريخ:</span>
               <input
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none tabular-nums"
+                className="px-[var(--space-3)] py-[var(--space-2)] rounded-xl bg-[var(--surface)] border border-[var(--border)] font-bold text-xs text-[var(--text)] outline-none tabular-nums"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-blue-900">إلى تاريخ:</span>
+            <div className="flex items-center gap-[var(--space-2)]">
+              <span className="text-xs font-black text-[var(--primary)]">إلى تاريخ:</span>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none tabular-nums"
+                className="px-[var(--space-3)] py-[var(--space-2)] rounded-xl bg-[var(--surface)] border border-[var(--border)] font-bold text-xs text-[var(--text)] outline-none tabular-nums"
               />
             </div>
           </div>
         )}
 
         {/* Summary Metric Strip */}
-        <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center shrink-0">
+        <div className="mt-[var(--space-6)] pt-[var(--space-5)] border-t border-[var(--border)] grid grid-cols-2 sm:grid-cols-4 gap-[var(--space-4)]">
+          <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] flex items-center gap-[var(--space-3)]">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-950/60 text-[var(--primary)] rounded-xl flex items-center justify-center shrink-0">
               <FileText size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-600">السندات المفلترة</p>
-              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.vouchersCount}</p>
+              <p className="text-xs font-bold text-[var(--text-secondary)]">السندات المفلترة</p>
+              <p className="text-xl font-black text-[var(--text)] leading-tight tabular-nums">{metrics.vouchersCount}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center shrink-0">
+          <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] flex items-center gap-[var(--space-3)]">
+            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-[var(--success)] rounded-xl flex items-center justify-center shrink-0">
               <Bus size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-600">إجمالي الحافلات</p>
-              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.totalBuses}</p>
+              <p className="text-xs font-bold text-[var(--text-secondary)]">إجمالي الحافلات</p>
+              <p className="text-xl font-black text-[var(--text)] leading-tight tabular-nums">{metrics.totalBuses}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0">
+          <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] flex items-center gap-[var(--space-3)]">
+            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-950/60 text-[var(--gold-text)] rounded-xl flex items-center justify-center shrink-0">
               <UserCheck size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-600">إجمالي الحجاج</p>
-              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.totalPilgrims}</p>
+              <p className="text-xs font-bold text-[var(--text-secondary)]">إجمالي الحجاج</p>
+              <p className="text-xl font-black text-[var(--text)] leading-tight tabular-nums">{metrics.totalPilgrims}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-200/80 text-slate-800 rounded-xl flex items-center justify-center shrink-0">
+          <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] flex items-center gap-[var(--space-3)]">
+            <div className="w-10 h-10 bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-xl flex items-center justify-center shrink-0">
               <Building2 size={20} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-600">الجهات المستفيدة</p>
-              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.organizationsCount}</p>
+              <p className="text-xs font-bold text-[var(--text-secondary)]">الجهات المستفيدة</p>
+              <p className="text-xl font-black text-[var(--text)] leading-tight tabular-nums">{metrics.organizationsCount}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Results List Card */}
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200/90 overflow-hidden flex flex-col">
+      <div className="bg-[var(--surface)] rounded-[2.5rem] shadow-sm border border-[var(--border)] overflow-hidden flex flex-col">
         {/* Header Bar */}
-        <div className="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <History size={16} className="text-blue-600" />
-            <span className="text-xs font-black text-slate-700">سجلات السندات والعمليات</span>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/80 mr-2 tabular-nums">
+        <div className="px-[var(--space-6)] py-[var(--space-4)] bg-[var(--surface-subtle)] border-b border-[var(--border)] flex items-center justify-between gap-[var(--space-3)]">
+          <div className="flex items-center gap-[var(--space-2)]">
+            <History size={16} className="text-[var(--primary)]" />
+            <span className="text-xs font-black text-[var(--text)]">سجلات السندات والعمليات</span>
+            <span className="text-xs font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/50 px-[var(--space-3)] py-[var(--space-1)] rounded-full border border-blue-200/80 dark:border-blue-800/70 mr-[var(--space-2)] tabular-nums">
               {filteredVouchers.length} سند
             </span>
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-600 tabular-nums">
+            <div className="flex items-center gap-[var(--space-2)] text-xs font-bold text-[var(--text-secondary)] tabular-nums">
               <span>صفحة {currentPage} من {totalPages}</span>
-              <div className="flex items-center gap-1 mr-2">
+              <div className="flex items-center gap-[var(--space-2)] mr-[var(--space-2)]">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-subtle)]"
                 >
                   <ChevronRight size={14} />
                 </button>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-subtle)]"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -727,73 +727,73 @@ export function VoucherSearch() {
 
         {/* Loading State */}
         {isLoadingAll ? (
-          <div className="p-20 text-center text-slate-400 flex flex-col items-center justify-center">
-            <Loader2 className="animate-spin text-blue-600 mb-4" size={36} />
-            <p className="font-bold text-sm text-slate-600">جاري تحميل وتحديث سجلات الأرشيف...</p>
+          <div className="p-[var(--space-16)] text-center text-[var(--text-muted)] flex flex-col items-center justify-center">
+            <Loader2 className="animate-spin text-[var(--primary)] mb-[var(--space-4)]" size={36} />
+            <p className="font-bold text-sm text-[var(--text-secondary)]">جاري تحميل وتحديث سجلات الأرشيف...</p>
           </div>
         ) : filteredVouchers.length === 0 ? (
-          <div className="p-20 text-center text-slate-400">
-            <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-slate-100">
-              <History size={36} className="text-slate-300" />
+          <div className="p-[var(--space-16)] text-center text-[var(--text-muted)]">
+            <div className="w-20 h-20 bg-[var(--surface-subtle)] rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-4)] border border-[var(--border)]">
+              <History size={36} className="text-[var(--text-muted)]" />
             </div>
-            <p className="font-bold text-base text-slate-700">لا توجد سندات مطابقة لمعايير البحث</p>
-            <p className="text-xs text-slate-500 mt-1">جرب تغيير الموسم أو الفترة الزمنية أو إزالة مصطلح البحث</p>
+            <p className="font-bold text-base text-[var(--text)]">لا توجد سندات مطابقة لمعايير البحث</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-[var(--space-1)]">جرب تغيير الموسم أو الفترة الزمنية أو إزالة مصطلح البحث</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--border)]">
             {paginatedVouchers.map((v) => {
               const busesCount = Array.isArray(v.buses) && v.buses.length > 0
                 ? v.buses.length
                 : (Number(v.busesQuantity) || (v.busNumber ? 1 : 0));
 
               return (
-                <div key={v.id} className="p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-50/70 transition-colors group">
-                  <div className="flex-1 space-y-4">
+                <div key={v.id} className="p-[var(--space-4)] lg:p-[var(--space-8)] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-6)] hover:bg-[var(--surface-subtle)]/70 transition-colors group">
+                  <div className="flex-1 space-y-[var(--space-4)]">
                     {/* Voucher Header row */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-base font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-xl border border-blue-200/80 tabular-nums">
+                    <div className="flex flex-wrap items-center gap-[var(--space-2)]">
+                      <span className="text-base font-black text-[var(--primary)] bg-blue-50 dark:bg-blue-950/50 px-[var(--space-3)] py-[var(--space-1)] rounded-xl border border-blue-200/80 dark:border-blue-800/70 tabular-nums">
                         سند #{v.voucherNumber}
                       </span>
 
                       {v.approvalNumber && (
-                        <span className="flex items-center gap-1 bg-slate-100 text-slate-700 px-3 py-1 rounded-xl text-xs font-bold tabular-nums">
+                        <span className="flex items-center gap-[var(--space-1)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border)] px-[var(--space-3)] py-[var(--space-1)] rounded-xl text-xs font-bold tabular-nums">
                           اعتماد: {v.approvalNumber}
                         </span>
                       )}
 
                       {v.organization && (
-                        <span className="flex items-center gap-1 bg-blue-50/70 text-blue-900 px-3 py-1 rounded-xl text-xs font-bold border border-blue-100">
-                          <Building2 size={13} className="text-blue-600" />
+                        <span className="flex items-center gap-[var(--space-1)] bg-blue-50/70 dark:bg-blue-950/40 text-[var(--primary)] px-[var(--space-3)] py-[var(--space-1)] rounded-xl text-xs font-bold border border-blue-200/70 dark:border-blue-800/60">
+                          <Building2 size={13} />
                           {v.organization}
                         </span>
                       )}
 
                       {v.hajjSeason && (
-                        <span className={`px-2.5 py-1 rounded-xl text-xs font-black tabular-nums ${
+                        <span className={`px-[var(--space-3)] py-[var(--space-1)] rounded-xl text-xs font-black tabular-nums ${
                           v.hajjSeason === '1448'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
+                            ? 'bg-blue-100 dark:bg-blue-950/60 text-[#1D4ED8] dark:text-[#93C5FD]'
+                            : 'bg-amber-100 dark:bg-amber-950/60 text-[var(--gold-text)]'
                         }`}>
                           موسم {v.hajjSeason} هـ
                         </span>
                       )}
 
-                      <span className="flex items-center gap-1.5 bg-slate-100/80 text-slate-600 px-3 py-1 rounded-xl text-xs font-bold mr-auto tabular-nums">
-                        <Calendar size={13} className="text-slate-400" />
+                      <span className="flex items-center gap-[var(--space-2)] bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-xl text-xs font-bold mr-auto tabular-nums">
+                        <Calendar size={13} className="text-[var(--text-muted)]" />
                         {v.customDate || (v.timestamp ? format(new Date(v.timestamp), 'yyyy/MM/dd | HH:mm') : '-')}
                       </span>
                     </div>
 
                     {/* Buses rendering */}
                     {v.buses && Array.isArray(v.buses) && v.buses.length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-[var(--space-2)]">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Bus size={14} className="text-blue-600" />
-                            <span className="text-xs font-black text-slate-700 tabular-nums">الحافلات المسجلة ({v.buses.length})</span>
+                          <div className="flex items-center gap-[var(--space-2)]">
+                            <Bus size={14} className="text-[var(--primary)]" />
+                            <span className="text-xs font-black text-[var(--text-secondary)] tabular-nums">الحافلات المسجلة ({v.buses.length})</span>
                           </div>
                           {v.buses.length > 8 && (
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-[var(--space-2)]">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -801,11 +801,11 @@ export function VoucherSearch() {
                                   if (cur > 1) setBusPages({ ...busPages, [v.id]: cur - 1 });
                                 }}
                                 disabled={(busPages[v.id] || 1) === 1}
-                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-400 disabled:opacity-30"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30"
                               >
                                 <ChevronRight size={12} />
                               </button>
-                              <span className="text-[11px] font-bold text-slate-500 tabular-nums">
+                              <span className="text-[11px] font-bold text-[var(--text-secondary)] tabular-nums">
                                 {(busPages[v.id] || 1)} / {Math.ceil(v.buses.length / 8)}
                               </span>
                               <button
@@ -816,7 +816,7 @@ export function VoucherSearch() {
                                   if (cur < maxP) setBusPages({ ...busPages, [v.id]: cur + 1 });
                                 }}
                                 disabled={(busPages[v.id] || 1) === Math.ceil(v.buses.length / 8)}
-                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-400 disabled:opacity-30"
+                                className="w-6 h-6 flex items-center justify-center rounded bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] disabled:opacity-30"
                               >
                                 <ChevronLeft size={12} />
                               </button>
@@ -824,16 +824,16 @@ export function VoucherSearch() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--space-2)]">
                           {v.buses.slice(((busPages[v.id] || 1) - 1) * 8, (busPages[v.id] || 1) * 8).map((bus: any, idx: number) => (
-                            <div key={idx} className="bg-slate-50 border border-slate-200/80 rounded-xl p-2 flex items-center gap-2.5">
-                              <div className="w-7 h-7 bg-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-black shrink-0 tabular-nums">
+                            <div key={idx} className="bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl p-[var(--space-2)] flex items-center gap-[var(--space-3)]">
+                              <div className="w-7 h-7 bg-[var(--navy)] rounded-lg flex items-center justify-center text-white text-[11px] font-black shrink-0 tabular-nums">
                                 {bus.busNumber}
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs font-bold text-slate-900 truncate">{bus.driverName || 'سائق غير محدد'}</p>
+                                <p className="text-xs font-bold text-[var(--text)] truncate">{bus.driverName || 'سائق غير محدد'}</p>
                                 {bus.driverPhone && (
-                                  <p className="text-[11px] text-slate-500 tabular-nums">{bus.driverPhone}</p>
+                                  <p className="text-[11px] text-[var(--text-secondary)] tabular-nums">{bus.driverPhone}</p>
                                 )}
                               </div>
                             </div>
@@ -841,65 +841,65 @@ export function VoucherSearch() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[9px] text-slate-500 font-bold">حافلة</span>
-                          <span className="text-base font-black text-slate-900 tabular-nums">{v.busNumber || '-'}</span>
+                      <div className="flex items-center gap-[var(--space-4)] bg-[var(--surface-subtle)] p-[var(--space-3)] rounded-2xl border border-[var(--border)]">
+                        <div className="w-12 h-12 bg-[var(--surface)] rounded-xl border border-[var(--border)] flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[9px] text-[var(--text-muted)] font-bold">حافلة</span>
+                          <span className="text-base font-black text-[var(--text)] tabular-nums">{v.busNumber || '-'}</span>
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900">{v.driverName || 'سائق غير محدد'}</p>
-                          <p className="text-xs text-slate-500 tabular-nums">{v.driverPhone || 'بدون هاتف'}</p>
+                          <p className="text-sm font-bold text-[var(--text)]">{v.driverName || 'سائق غير محدد'}</p>
+                          <p className="text-xs text-[var(--text-secondary)] tabular-nums">{v.driverPhone || 'بدون هاتف'}</p>
                         </div>
                       </div>
                     )}
 
                     {/* Meta tags & Route */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+                    <div className="flex flex-wrap items-center gap-[var(--space-2)] text-xs font-bold">
                       {v.receiverName && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                        <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg">
                           المستلم: {v.receiverName}
                         </span>
                       )}
 
                       {v.receiverMobile && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
+                        <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg tabular-nums">
                           موبايل المستلم: {v.receiverMobile}
                         </span>
                       )}
 
                       {v.receiverId && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
+                        <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg tabular-nums">
                           هوية المستلم: {v.receiverId}
                         </span>
                       )}
 
                       {v.delegateNumber && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
+                        <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg tabular-nums">
                           رقم المكتب: {v.delegateNumber}
                         </span>
                       )}
 
                       {(v.directionFrom || v.directionTo) && (
-                        <span className="bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200/70">
+                        <span className="bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg border border-emerald-200/70 dark:border-emerald-800/70">
                           المسار: {v.directionFrom || ''} ➔ {v.directionTo || ''}
                         </span>
                       )}
 
                       {v.pilgrimsCount && Number(v.pilgrimsCount) > 0 && (
-                        <span className="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-200/70 tabular-nums">
+                        <span className="bg-amber-50 dark:bg-amber-950/40 text-[var(--gold-text)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg border border-amber-200/70 dark:border-amber-800/70 tabular-nums">
                           {v.pilgrimsCount} حاج
                         </span>
                       )}
 
                       {v.loadingLocation && (
-                        <span className="bg-blue-50 text-blue-800 px-2.5 py-1 rounded-lg border border-blue-200/70">
+                        <span className="bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg border border-blue-200/70 dark:border-blue-800/70">
                           موقع التحميل: {v.loadingLocation}
                         </span>
                       )}
 
                       {v.notes && (
-                        <div className="w-full bg-amber-50/70 border border-amber-200/70 text-amber-900 p-2 rounded-xl text-xs flex items-center gap-2">
-                          <ClipboardList size={14} className="text-amber-600 shrink-0" />
+                        <div className="w-full bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/70 text-[var(--gold-text)] p-[var(--space-2)] rounded-xl text-xs flex items-center gap-[var(--space-2)]">
+                          <ClipboardList size={14} className="text-[var(--gold)] shrink-0" />
                           <span className="truncate">{v.notes}</span>
                         </div>
                       )}
@@ -907,14 +907,14 @@ export function VoucherSearch() {
                   </div>
 
                   {/* Actions Column */}
-                  <div className="flex items-center lg:flex-col justify-end gap-2 shrink-0 border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-100">
+                  <div className="flex items-center lg:flex-col justify-end gap-[var(--space-2)] shrink-0 border-t lg:border-t-0 pt-[var(--space-4)] lg:pt-0 border-[var(--border)]">
                     <button
                       onClick={() => rePrint(v)}
                       disabled={isPrinting !== null}
-                      className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+                      className={`px-[var(--space-4)] py-[var(--space-3)] rounded-xl font-bold text-xs transition-all flex items-center gap-[var(--space-2)] ${
                         isPrinting === v.id
-                          ? 'bg-blue-700 text-white shadow-md'
-                          : 'bg-white border border-slate-200 text-slate-700 hover:text-blue-700 hover:border-blue-300 shadow-sm'
+                          ? 'bg-[var(--btn-primary)] text-white shadow-md'
+                          : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] shadow-sm'
                       }`}
                     >
                       {isPrinting === v.id ? (
@@ -927,7 +927,7 @@ export function VoucherSearch() {
 
                     <button
                       onClick={() => handleEditVoucher(v)}
-                      className="p-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+                      className="p-[var(--space-3)] rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-all"
                       title="تعديل السند"
                     >
                       <Edit2 size={16} />
@@ -936,7 +936,7 @@ export function VoucherSearch() {
                     {isAllowedToDelete && (
                       <button
                         onClick={() => handleConfirmDelete(v)}
-                        className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                        className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/40 text-[var(--danger)] hover:bg-red-100 dark:hover:bg-red-950/60 transition-all"
                         title="حذف السند"
                       >
                         <Trash2 size={16} />
@@ -951,25 +951,25 @@ export function VoucherSearch() {
 
         {/* Bottom Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">
+          <div className="px-[var(--space-6)] py-[var(--space-4)] bg-[var(--surface-subtle)] border-t border-[var(--border)] flex items-center justify-between gap-[var(--space-3)]">
+            <span className="text-xs font-bold text-[var(--text-secondary)]">
               عرض {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredVouchers.length)} من إجمالي {filteredVouchers.length} سند
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-[var(--space-2)]">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 disabled:opacity-30 hover:bg-slate-100"
+                className="px-[var(--space-3)] py-[var(--space-2)] rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs font-bold text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-subtle)]"
               >
                 السابق
               </button>
-              <span className="text-xs font-black text-slate-700 px-2">
+              <span className="text-xs font-black text-[var(--text)] px-[var(--space-2)]">
                 {currentPage} / {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 disabled:opacity-30 hover:bg-slate-100"
+                className="px-[var(--space-3)] py-[var(--space-2)] rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs font-bold text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--surface-subtle)]"
               >
                 التالي
               </button>
@@ -981,7 +981,7 @@ export function VoucherSearch() {
       {/* PDF Statement Report Generation Modal */}
       <AnimatePresence>
         {isReportModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -993,94 +993,94 @@ export function VoucherSearch() {
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-100 p-8 text-right"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)] text-right"
               dir="rtl"
             >
-              <div className="flex justify-between items-center pb-5 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+              <div className="flex justify-between items-center pb-[var(--space-5)] border-b border-[var(--border)]">
+                <div className="flex items-center gap-[var(--space-3)]">
+                  <div className="w-12 h-12 bg-[var(--btn-primary)] rounded-2xl flex items-center justify-center text-white shadow-lg">
                     <FileText size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">توليد كشوفات وتقارير PDF للإدارة</h3>
-                    <p className="text-xs text-slate-400 font-bold mt-0.5">طباعة وتصدير كشوفات شهرية أو موسمية مفصلة</p>
+                    <h3 className="text-xl font-black text-[var(--text)]">توليد كشوفات وتقارير PDF للإدارة</h3>
+                    <p className="text-xs text-[var(--text-muted)] font-bold mt-[var(--space-1)]">طباعة وتصدير كشوفات شهرية أو موسمية مفصلة</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsReportModalOpen(false)}
                   disabled={isGeneratingReport}
-                  className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-30"
+                  className="w-10 h-10 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-muted)] rounded-xl flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-[var(--danger)] transition-all disabled:opacity-30"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="mt-6 space-y-6 max-h-[65vh] overflow-y-auto px-1">
+              <div className="mt-[var(--space-6)] space-y-[var(--space-5)] max-h-[65vh] overflow-y-auto px-[var(--space-1)]">
                 {/* 1. Select Report Type */}
                 <div>
-                  <label className="block text-xs font-black text-slate-700 mb-2">نوع الكشف والتقرير المطلـوب:</label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">نوع الكشف والتقرير المطلوب:</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)]">
                     <button
                       type="button"
                       onClick={() => setReportType('monthly')}
-                      className={`p-4 rounded-2xl border text-right transition-all flex items-start gap-3 ${
+                      className={`p-[var(--space-4)] rounded-2xl border text-right transition-all flex items-start gap-[var(--space-3)] ${
                         reportType === 'monthly'
-                          ? 'bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20 text-blue-900'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border-[var(--primary)] ring-2 ring-blue-600/20 text-[var(--primary)]'
+                          : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <Calendar className={reportType === 'monthly' ? 'text-blue-600' : 'text-slate-400'} size={20} />
+                      <Calendar className={reportType === 'monthly' ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'} size={20} />
                       <div>
                         <p className="font-black text-sm">كشف شهري شامل</p>
-                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">كشف لكافة السندات لشهر محدد</p>
+                        <p className="text-[10px] text-[var(--text-muted)] font-bold mt-[var(--space-1)]">كشف لكافة السندات لشهر محدد</p>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setReportType('seasonal')}
-                      className={`p-4 rounded-2xl border text-right transition-all flex items-start gap-3 ${
+                      className={`p-[var(--space-4)] rounded-2xl border text-right transition-all flex items-start gap-[var(--space-3)] ${
                         reportType === 'seasonal'
-                          ? 'bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20 text-blue-900'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border-[var(--primary)] ring-2 ring-blue-600/20 text-[var(--primary)]'
+                          : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <Layers className={reportType === 'seasonal' ? 'text-blue-600' : 'text-slate-400'} size={20} />
+                      <Layers className={reportType === 'seasonal' ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'} size={20} />
                       <div>
                         <p className="font-black text-sm">كشف موسمي كامل</p>
-                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">موسم 1448 هـ أو 1447 هـ</p>
+                        <p className="text-[10px] text-[var(--text-muted)] font-bold mt-[var(--space-1)]">موسم 1448 هـ أو 1447 هـ</p>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setReportType('custom')}
-                      className={`p-4 rounded-2xl border text-right transition-all flex items-start gap-3 ${
+                      className={`p-[var(--space-4)] rounded-2xl border text-right transition-all flex items-start gap-[var(--space-3)] ${
                         reportType === 'custom'
-                          ? 'bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20 text-blue-900'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border-[var(--primary)] ring-2 ring-blue-600/20 text-[var(--primary)]'
+                          : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <CalendarDays className={reportType === 'custom' ? 'text-blue-600' : 'text-slate-400'} size={20} />
+                      <CalendarDays className={reportType === 'custom' ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'} size={20} />
                       <div>
                         <p className="font-black text-sm">كشف فترة مخصصة</p>
-                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">تحديد تاريخ البداية والنهاية</p>
+                        <p className="text-[10px] text-[var(--text-muted)] font-bold mt-[var(--space-1)]">تحديد تاريخ البداية والنهاية</p>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setReportType('filtered')}
-                      className={`p-4 rounded-2xl border text-right transition-all flex items-start gap-3 ${
+                      className={`p-[var(--space-4)] rounded-2xl border text-right transition-all flex items-start gap-[var(--space-3)] ${
                         reportType === 'filtered'
-                          ? 'bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20 text-blue-900'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border-[var(--primary)] ring-2 ring-blue-600/20 text-[var(--primary)]'
+                          : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <Filter className={reportType === 'filtered' ? 'text-blue-600' : 'text-slate-400'} size={20} />
+                      <Filter className={reportType === 'filtered' ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'} size={20} />
                       <div>
                         <p className="font-black text-sm">السجلات المفلترة حالياً</p>
-                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">({filteredVouchers.length} سند معروض)</p>
+                        <p className="text-[10px] text-[var(--text-muted)] font-bold mt-[var(--space-1)]">({filteredVouchers.length} سند معروض)</p>
                       </div>
                     </button>
                   </div>
@@ -1088,28 +1088,28 @@ export function VoucherSearch() {
 
                 {/* 2. Specific Period Inputs */}
                 {reportType === 'monthly' && (
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-2">
-                    <label className="block text-xs font-black text-slate-700">تحديد الشهر والسنة للكشف:</label>
+                  <div className="bg-[var(--surface-subtle)] p-[var(--space-5)] rounded-2xl border border-[var(--border)]">
+                    <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">تحديد الشهر والسنة للكشف:</label>
                     <input
                       type="month"
                       value={reportMonth}
                       onChange={(e) => setReportMonth(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:ring-4 focus:ring-blue-50"
+                      className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none focus:ring-4 focus:ring-blue-500/10"
                     />
                   </div>
                 )}
 
                 {reportType === 'seasonal' && (
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-2">
-                    <label className="block text-xs font-black text-slate-700">اختر موسم الحج:</label>
-                    <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[var(--surface-subtle)] p-[var(--space-5)] rounded-2xl border border-[var(--border)]">
+                    <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">اختر موسم الحج:</label>
+                    <div className="grid grid-cols-2 gap-[var(--space-5)]">
                       <button
                         type="button"
                         onClick={() => setReportSeason('1448')}
-                        className={`p-3 rounded-xl border font-black text-xs transition-all ${
+                        className={`p-[var(--space-3)] rounded-xl border font-black text-xs transition-all ${
                           reportSeason === '1448'
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                            ? 'bg-[var(--btn-primary)] text-white border-[var(--btn-primary)] shadow-md'
+                            : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                         }`}
                       >
                         موسم حج 1448 هـ (الحالي)
@@ -1117,10 +1117,10 @@ export function VoucherSearch() {
                       <button
                         type="button"
                         onClick={() => setReportSeason('1447')}
-                        className={`p-3 rounded-xl border font-black text-xs transition-all ${
+                        className={`p-[var(--space-3)] rounded-xl border font-black text-xs transition-all ${
                           reportSeason === '1447'
-                            ? 'bg-amber-600 text-white border-amber-600 shadow-md'
-                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                            ? 'bg-[var(--gold)] text-[#0F172A] border-[var(--gold)] shadow-md'
+                            : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                         }`}
                       >
                         موسم حج 1447 هـ (المؤرشف)
@@ -1130,25 +1130,25 @@ export function VoucherSearch() {
                 )}
 
                 {reportType === 'custom' && (
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
-                    <label className="block text-xs font-black text-slate-700">تحديد النطاق الزمني:</label>
-                    <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[var(--surface-subtle)] p-[var(--space-5)] rounded-2xl border border-[var(--border)] space-y-[var(--space-3)]">
+                    <label className="block text-xs font-black text-[var(--text-secondary)]">تحديد النطاق الزمني:</label>
+                    <div className="grid grid-cols-2 gap-[var(--space-5)]">
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 block mb-1">من تاريخ:</span>
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] block mb-[var(--space-2)]">من تاريخ:</span>
                         <input
                           type="date"
                           value={reportStartDate}
                           onChange={(e) => setReportStartDate(e.target.value)}
-                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-xs text-slate-900 outline-none"
+                          className="w-full px-[var(--space-3)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-xs text-[var(--text)] outline-none"
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 block mb-1">إلى تاريخ:</span>
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] block mb-[var(--space-2)]">إلى تاريخ:</span>
                         <input
                           type="date"
                           value={reportEndDate}
                           onChange={(e) => setReportEndDate(e.target.value)}
-                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-xs text-slate-900 outline-none"
+                          className="w-full px-[var(--space-3)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-xs text-[var(--text)] outline-none"
                         />
                       </div>
                     </div>
@@ -1157,35 +1157,35 @@ export function VoucherSearch() {
 
                 {/* 3. Custom Report Title (Optional) */}
                 <div>
-                  <label className="block text-xs font-black text-slate-700 mb-1.5">عنوان الكشف (اختياري - يترك فارغاً للعنوان التلقائي):</label>
+                  <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">عنوان الكشف (اختياري - يترك فارغاً للعنوان التلقائي):</label>
                   <input
                     type="text"
                     value={reportTitleCustom}
                     onChange={(e) => setReportTitleCustom(e.target.value)}
                     placeholder="مثال: كشف السندات والحافلات التشغيلية - إدارة العمليات"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10"
                   />
                 </div>
 
                 {/* 4. Report Signer / Issued By */}
                 <div>
-                  <label className="block text-xs font-black text-slate-700 mb-1.5">اسم المشرف / المدير المعتمد المُصدِر للتقرير:</label>
+                  <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">اسم المشرف / المدير المعتمد المُصدِر للتقرير:</label>
                   <input
                     type="text"
                     value={reportSigner}
                     onChange={(e) => setReportSigner(e.target.value)}
                     placeholder="اسم المسؤول المعتمد"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-8 pt-5 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+              <div className="mt-[var(--space-8)] pt-[var(--space-5)] border-t border-[var(--border)] flex flex-col sm:flex-row gap-[var(--space-3)]">
                 <button
                   onClick={() => handleGenerateStatement(false)}
                   disabled={isGeneratingReport}
-                  className="flex-1 py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white font-black text-sm rounded-2xl shadow-xl shadow-blue-100 hover:opacity-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-[var(--space-4)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50"
                 >
                   {isGeneratingReport ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -1198,7 +1198,7 @@ export function VoucherSearch() {
                 <button
                   onClick={() => handleGenerateStatement(true)}
                   disabled={isGeneratingReport}
-                  className="py-4 px-6 bg-slate-900 text-white font-black text-sm rounded-2xl hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="py-[var(--space-4)] px-[var(--space-6)] bg-[var(--navy)] text-white font-black text-sm rounded-2xl hover:opacity-90 transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50"
                 >
                   <Download size={18} />
                   <span>تنزيل كملف</span>
@@ -1207,7 +1207,7 @@ export function VoucherSearch() {
                 <button
                   onClick={() => setIsReportModalOpen(false)}
                   disabled={isGeneratingReport}
-                  className="py-4 px-5 border border-slate-200 text-slate-600 font-bold text-sm rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                  className="py-[var(--space-4)] px-[var(--space-5)] border border-[var(--border)] text-[var(--text-secondary)] font-bold text-sm rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50"
                 >
                   إلغاء
                 </button>
@@ -1220,7 +1220,7 @@ export function VoucherSearch() {
       {/* Edit Voucher Modal */}
       <AnimatePresence>
         {isEditModalOpen && voucherToEdit && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1232,132 +1232,132 @@ export function VoucherSearch() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-100 p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)]"
               dir="rtl"
             >
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-100">
+              <div className="flex justify-between items-center mb-[var(--space-6)]">
+                <div className="flex items-center gap-[var(--space-3)]">
+                  <div className="w-12 h-12 bg-[var(--btn-primary)] rounded-2xl flex items-center justify-center text-white shadow-lg">
                     <Edit2 size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">تعديل بيانات السند #{voucherToEdit.voucherNumber}</h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">تحديث السجلات المخزنة في النظام</p>
+                    <h3 className="text-xl font-black text-[var(--text)]">تعديل بيانات السند #{voucherToEdit.voucherNumber}</h3>
+                    <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-[var(--space-1)]">تحديث السجلات المخزنة في النظام</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setIsEditModalOpen(false)}
-                  className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"
+                  className="w-10 h-10 bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-muted)] rounded-xl flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-[var(--danger)] transition-all"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="max-h-[65vh] overflow-y-auto px-2 space-y-6">
-                <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="max-h-[65vh] overflow-y-auto px-[var(--space-2)] space-y-[var(--space-6)]">
+                <div className="p-[var(--space-4)] lg:p-[var(--space-6)] bg-[var(--surface-subtle)] rounded-[2rem] border border-[var(--border)] space-y-[var(--space-5)]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)] md:gap-[var(--space-6)]">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">اسم المندوب (المستلم)</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">اسم المندوب (المستلم)</label>
                       <input
                         type="text"
                         value={voucherToEdit.receiverName || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, receiverName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">رقم جوال المستلم</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">رقم جوال المستلم</label>
                       <input
                         type="text"
                         value={voucherToEdit.receiverMobile || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, receiverMobile: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)] md:gap-[var(--space-6)]">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">رقم هوية المستلم</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">رقم هوية المستلم</label>
                       <input
                         type="text"
                         value={voucherToEdit.receiverId || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, receiverId: e.target.value.replace(/[^0-9]/g, '') })}
                         placeholder="10xxxxxxxx"
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">رقم المكتب</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">رقم المكتب</label>
                       <input
                         type="text"
                         value={voucherToEdit.delegateNumber || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, delegateNumber: e.target.value.replace(/[^0-9]/g, '') })}
                         placeholder="رقم المكتب..."
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)] md:gap-[var(--space-6)]">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">المؤسسة / الجهة</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">المؤسسة / الجهة</label>
                       <input
                         type="text"
                         value={voucherToEdit.organization || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, organization: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">رقم الاعتماد</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">رقم الاعتماد</label>
                       <input
                         type="text"
                         value={voucherToEdit.approvalNumber || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, approvalNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-5)] md:gap-[var(--space-6)]">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">عدد الحجاج</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">عدد الحجاج</label>
                       <input
                         type="number"
                         value={voucherToEdit.pilgrimsCount || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, pilgrimsCount: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-black text-slate-500 mb-1">عدد التذاكر</label>
+                      <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">عدد التذاكر</label>
                       <input
                         type="number"
                         value={voucherToEdit.ticketsCount || ''}
                         onChange={(e) => setVoucherToEdit({ ...voucherToEdit, ticketsCount: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                        className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-black text-slate-500 mb-1">الملاحظات</label>
+                    <label className="block text-xs font-black text-[var(--text-secondary)] mb-[var(--space-2)]">الملاحظات</label>
                     <textarea
                       value={voucherToEdit.notes || ''}
                       onChange={(e) => setVoucherToEdit({ ...voucherToEdit, notes: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none"
+                      className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-3">
+              <div className="mt-[var(--space-6)] flex gap-[var(--space-3)]">
                 <button
                   onClick={() => setIsConfirmSaveOpen(true)}
                   disabled={isUpdating}
-                  className="flex-1 py-4 bg-blue-600 text-white font-black text-sm rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-100 disabled:opacity-50"
+                  className="flex-1 py-[var(--space-4)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black text-sm rounded-2xl transition-all flex items-center justify-center gap-[var(--space-2)] shadow-lg disabled:opacity-50"
                 >
                   <Save size={18} />
                   <span>حفظ التعديلات</span>
@@ -1365,7 +1365,7 @@ export function VoucherSearch() {
                 <button
                   onClick={() => setIsEditModalOpen(false)}
                   disabled={isUpdating}
-                  className="px-6 py-4 border border-slate-200 text-slate-600 font-bold text-sm rounded-2xl hover:bg-slate-50 transition-all"
+                  className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold text-sm rounded-2xl hover:bg-[var(--surface-subtle)] transition-all"
                 >
                   إلغاء
                 </button>
@@ -1378,7 +1378,7 @@ export function VoucherSearch() {
       {/* Confirm Save Modal */}
       <AnimatePresence>
         {isConfirmSaveOpen && (
-          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1390,19 +1390,19 @@ export function VoucherSearch() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
               dir="rtl"
             >
-              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100 text-blue-600">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-4)] border border-blue-200 dark:border-blue-800/70 text-[var(--primary)]">
                 <Save size={28} />
               </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2">تأكيد حفظ التعديلات</h3>
-              <p className="text-slate-500 text-sm mb-6">هل أنت متأكد من حفظ التعديلات الجديدة على السند؟</p>
-              <div className="flex gap-3">
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">تأكيد حفظ التعديلات</h3>
+              <p className="text-[var(--text-secondary)] text-sm mb-[var(--space-6)]">هل أنت متأكد من حفظ التعديلات الجديدة على السند؟</p>
+              <div className="flex gap-[var(--space-3)]">
                 <button
                   onClick={updateVoucher}
                   disabled={isUpdating}
-                  className="flex-1 bg-blue-600 text-white font-black py-3.5 rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-100"
+                  className="flex-1 bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black py-[var(--space-3)] rounded-2xl transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 shadow-lg"
                 >
                   {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                   <span>نعم، تأكيد الحفظ</span>
@@ -1410,7 +1410,7 @@ export function VoucherSearch() {
                 <button
                   onClick={() => setIsConfirmSaveOpen(false)}
                   disabled={isUpdating}
-                  className="px-5 py-3.5 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all"
+                  className="px-[var(--space-5)] py-[var(--space-3)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all"
                 >
                   تراجع
                 </button>
@@ -1423,7 +1423,7 @@ export function VoucherSearch() {
       {/* Delete Voucher Modal */}
       <AnimatePresence>
         {isDeleteModalOpen && voucherToDelete && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1435,21 +1435,21 @@ export function VoucherSearch() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
               dir="rtl"
             >
-              <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100 text-red-600">
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-4)] border border-red-200 dark:border-red-800/70 text-[var(--danger)]">
                 <Trash2 size={28} />
               </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2">تأكيد حذف السند</h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                هل أنت متأكد من حذف السند رقم <strong className="text-red-600">#{voucherToDelete.voucherNumber}</strong>؟ سيتم إزالة السند نهائياً من قاعدة البيانات.
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">تأكيد حذف السند</h3>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-6)]">
+                هل أنت متأكد من حذف السند رقم <strong className="text-[var(--danger)]">#{voucherToDelete.voucherNumber}</strong>؟ سيتم إزالة السند نهائياً من قاعدة البيانات.
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-[var(--space-3)]">
                 <button
                   onClick={deleteVoucher}
                   disabled={isDeleting}
-                  className="flex-1 bg-red-600 text-white font-black py-3.5 rounded-2xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-red-100"
+                  className="flex-1 bg-[#B91C1C] hover:bg-[#991B1B] text-white font-black py-[var(--space-3)] rounded-2xl transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 shadow-lg"
                 >
                   {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                   <span>نعم، حذف السند</span>
@@ -1457,7 +1457,7 @@ export function VoucherSearch() {
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={isDeleting}
-                  className="px-5 py-3.5 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all"
+                  className="px-[var(--space-5)] py-[var(--space-3)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all"
                 >
                   تراجع
                 </button>

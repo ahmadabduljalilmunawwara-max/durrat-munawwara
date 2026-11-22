@@ -103,13 +103,13 @@ function LoginSidePanel({ images, caption, isDark, enabled, className = '' }: Lo
       />
 
       {/* Bottom Caption & Slide Indicators */}
-      <div className="absolute inset-x-0 bottom-0 p-7 z-10 flex flex-col items-start gap-3">
+      <div className="absolute inset-x-0 bottom-0 p-[var(--space-6)] z-10 flex flex-col items-start gap-[var(--space-3)]">
         <p className="font-display text-white text-xl xl:text-2xl font-black leading-snug drop-shadow-md">
           {caption}
         </p>
 
         {/* Small Indicator Dots */}
-        <div className="flex items-center gap-2" role="tablist" aria-label="اختيار الصورة">
+        <div className="flex items-center gap-[var(--space-2)]" role="tablist" aria-label="اختيار الصورة">
           {images.map((_, idx) => (
             <button
               key={idx}
@@ -239,6 +239,12 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
       mqXl.removeEventListener('change', handleXlChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+  }, [isDark]);
 
   // Sync with OS theme changes if user hasn't manually chosen one
   useEffect(() => {
@@ -577,9 +583,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
 
   return (
     <div
-      className={`min-h-screen relative flex items-center justify-center p-4 sm:p-6 overflow-x-hidden transition-colors duration-300 ${
-        isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-      }`}
+      className="min-h-screen relative flex items-center justify-center p-[var(--space-4)] sm:p-[var(--space-6)] overflow-x-hidden transition-colors duration-300 bg-[var(--bg)] text-[var(--text)]"
       dir="rtl"
     >
       {/* Subtle Islamic Geometric Pattern Overlay (4-6% opacity) */}
@@ -658,7 +662,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
       <div
         aria-hidden="true"
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] rounded-full blur-3xl pointer-events-none transition-colors duration-300 ${
-          isDark ? 'bg-indigo-700/15' : 'bg-indigo-200/15'
+          isDark ? 'bg-blue-700/15' : 'bg-blue-200/20'
         }`}
       />
 
@@ -668,21 +672,17 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
         onClick={toggleTheme}
         aria-label={isDark ? 'تفعيل الوضع النهاري' : 'تفعيل الوضع الليلي'}
         title={isDark ? 'الوضع النهاري' : 'الوضع الليلي'}
-        className={`fixed top-4 left-4 z-30 w-11 h-11 rounded-full flex items-center justify-center border shadow-md transition-all cursor-pointer ${
-          isDark
-            ? 'bg-slate-800/90 border-slate-700 text-amber-300 hover:bg-slate-700'
-            : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-slate-100'
-        }`}
+        className="fixed top-4 left-4 z-30 w-11 h-11 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-subtle)] shadow-md transition-all cursor-pointer"
       >
-        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        {isDark ? <Sun size={18} className="text-[var(--gold)]" /> : <Moon size={18} />}
       </button>
 
       {showAbout ? (
-        <div className="w-full max-w-4xl relative z-10 pt-4">
+        <div className="w-full max-w-4xl relative z-10 pt-[var(--space-4)]">
           <AboutApp onBack={() => setShowAbout(false)} />
         </div>
       ) : (
-        <div className="w-full max-w-[480px] lg:max-w-none mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_minmax(440px,480px)] xl:grid-cols-[minmax(0,340px)_minmax(440px,480px)_minmax(0,340px)] lg:gap-8 items-center justify-center">
+        <div className="w-full max-w-[480px] lg:max-w-none mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_minmax(440px,480px)] xl:grid-cols-[minmax(0,340px)_minmax(440px,480px)_minmax(0,340px)] lg:gap-[var(--space-8)] items-center justify-center">
           {/* Right Panel (RTL first column) - Haram / Masjid Nabawi (visible >= 1024px) */}
           <LoginSidePanel
             images={RIGHT_PANEL_IMAGES}
@@ -692,65 +692,59 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
             className="hidden lg:block"
           />
 
-          {/* Center Column: Login Card (480px max width, 40px padding) */}
+          {/* Center Column: Login Card */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-[480px] mx-auto relative z-10 my-4 lg:my-0"
+            className="w-full max-w-[480px] mx-auto relative z-10 my-[var(--space-4)] lg:my-0"
           >
             <motion.div
               key={shakeCount}
               initial={shakeCount > 0 ? { x: 0 } : false}
               animate={shakeCount > 0 ? { x: [0, -10, 10, -7, 7, -3, 3, 0] } : { x: 0 }}
               transition={{ duration: 0.42 }}
-              className={`w-full rounded-[2.25rem] shadow-2xl border overflow-hidden relative transition-colors duration-300 ${
-              isDark
-                ? 'bg-slate-900/95 border-slate-800 shadow-black/50'
-                : 'bg-white border-slate-200/80 shadow-blue-900/10'
+              className={`w-full rounded-[2.25rem] shadow-2xl border overflow-hidden relative transition-colors duration-300 bg-[var(--surface)] border-[var(--border)] ${
+              isDark ? 'shadow-black/50' : 'shadow-blue-900/10'
             }`}
           >
-            {/* Top Brand Gradient Accent */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-blue-600 to-indigo-900" />
+            {/* Top Brand Accent (Flat Primary Blue) */}
+            <div className="h-1.5 w-full bg-[var(--primary)]" />
 
             {/* Seasonal Top Status Bar (14px) */}
             <div
-              className={`px-6 sm:px-[40px] py-3 border-b flex items-center justify-between gap-2 text-[14px] font-bold transition-colors ${
-                isDark
-                  ? 'bg-slate-800/70 border-slate-800 text-slate-200'
-                  : 'bg-gradient-to-l from-blue-50/80 via-slate-50 to-amber-50/70 border-slate-100 text-slate-700'
-              }`}
+              className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-3)] border-b border-[var(--border)] bg-[var(--surface-subtle)] text-[var(--text)] flex items-center justify-between gap-[var(--space-2)] text-[14px] font-bold transition-colors"
             >
-              <span className="font-black text-blue-700 dark:text-blue-300" style={{ color: isDark ? '#93c5fd' : '#1d4ed8' }}>
+              <span className="font-black text-[var(--primary)]">
                 موسم حج 1448هـ
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className={isDark ? 'text-emerald-300' : 'text-emerald-700'}>
+              <span className="inline-flex items-center gap-[var(--space-2)]">
+                <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse shrink-0" />
+                <span className="text-[var(--success)]">
                   النظام يعمل بشكل طبيعي
                 </span>
               </span>
             </div>
 
-            <div className="p-7 sm:p-[40px]">
+            <div className="p-[var(--space-4)] lg:p-[var(--space-8)]">
               <AnimatePresence mode="wait">
                 {successMessage && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className={`p-5 rounded-2xl text-center mb-6 border ${
+                    className={`p-[var(--space-5)] rounded-2xl text-center mb-[var(--space-6)] border ${
                       isDark
                         ? 'bg-emerald-950/50 border-emerald-800 text-emerald-200'
                         : 'bg-green-50 border-green-100 text-green-800'
                     }`}
                   >
-                    <CheckCircle2 className="mx-auto text-emerald-500 mb-2.5" size={30} />
+                    <CheckCircle2 className="mx-auto text-emerald-500 mb-[var(--space-3)]" size={30} />
                     <p className="font-bold text-sm leading-relaxed">{successMessage}</p>
                     <button
                       type="button"
                       onClick={() => setSuccessMessage('')}
-                      className="mt-3 text-emerald-500 font-black text-xs hover:underline cursor-pointer"
+                      className="mt-[var(--space-3)] text-emerald-500 font-black text-xs hover:underline cursor-pointer"
                     >
                       إغلاق
                     </button>
@@ -765,9 +759,9 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                     exit={{ opacity: 0, x: -18 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <div className="text-center mb-7">
-                      <div className="mb-4 flex justify-center">
-                        <div className="w-[132px] h-[132px] rounded-full bg-white shadow-[0_10px_30px_-8px_rgba(30,58,138,0.18)] flex items-center justify-center p-2.5 overflow-hidden">
+                    <div className="text-center mb-[var(--space-6)]">
+                      <div className="mb-[var(--space-4)] flex justify-center">
+                        <div className="w-[132px] h-[132px] rounded-full bg-white shadow-[0_10px_30px_-8px_rgba(30,58,138,0.18)] flex items-center justify-center p-[var(--space-2)] overflow-hidden">
                           {appLogo ? (
                             <img
                               src={appLogo}
@@ -779,24 +773,18 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           )}
                         </div>
                       </div>
-                      <h1
-                        className={`text-[28px] leading-tight font-black mb-1.5 tracking-tight ${
-                          isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                      >
+                      <h1 className="text-[28px] leading-tight font-black mb-[var(--space-2)] tracking-tight text-[var(--text)]">
                         طلب حساب جديد
                       </h1>
-                      <p className={`text-[15px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <p className="text-[15px] font-bold text-[var(--text-secondary)]">
                         سيتم مراجعة طلبك من قبل المسؤول قبل التفعيل
                       </p>
                     </div>
 
-                    <form onSubmit={handleRegister} noValidate className="space-y-4">
+                    <form onSubmit={handleRegister} noValidate className="space-y-[var(--space-5)]">
                       <div className="relative">
                         <LucideUser
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${
-                            isDark ? 'text-slate-400' : 'text-slate-400'
-                          }`}
+                          className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                           size={22}
                         />
                         <input
@@ -812,17 +800,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                             setRegUsername(e.target.value);
                             if (formError) setFormError('');
                           }}
-                          className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-4 py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
-                            isDark
-                              ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/15'
-                              : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-400 focus:ring-4 focus:ring-amber-50'
-                          }`}
+                          className="w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                         />
                       </div>
 
                       <div className="relative">
                         <Info
-                          className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                          className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                           size={22}
                         />
                         <input
@@ -835,17 +819,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                             setRegDisplayName(e.target.value);
                             if (formError) setFormError('');
                           }}
-                          className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-4 py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
-                            isDark
-                              ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                              : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                          }`}
+                          className="w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                         />
                       </div>
 
                       <div className="relative">
                         <Key
-                          className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                          className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                           size={22}
                         />
                         <input
@@ -858,19 +838,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                             setRegPassword(e.target.value);
                             if (formError) setFormError('');
                           }}
-                          className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-[52px] py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
-                            isDark
-                              ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                              : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                          }`}
+                          className="w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-12)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                         />
                         <button
                           type="button"
                           onClick={() => setShowRegPassword((v) => !v)}
                           aria-label={showRegPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                          className={`absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-                            isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
-                          }`}
+                          className="absolute left-[var(--space-2)] top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer text-[var(--text-muted)] hover:text-[var(--text)]"
                         >
                           {showRegPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                         </button>
@@ -878,10 +852,10 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
 
                       {formError && (
                         <div
-                          className={`p-3.5 rounded-xl flex items-center gap-2.5 text-sm font-black border ${
+                          className={`p-[var(--space-3)] rounded-xl flex items-center gap-[var(--space-3)] text-sm font-black border ${
                             isDark
-                              ? 'bg-red-950/60 border-red-800 text-red-300'
-                              : 'bg-red-50 border-red-200 text-red-600'
+                              ? 'bg-red-950/60 border-red-800 text-[var(--danger)]'
+                              : 'bg-red-50 border-red-200 text-[var(--danger)]'
                           }`}
                         >
                           <AlertCircle size={18} className="shrink-0" />
@@ -892,7 +866,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full min-h-[60px] h-[60px] py-3.5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-3 hover:from-blue-800 hover:to-indigo-900 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full min-h-[60px] h-[60px] py-[var(--space-3)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-[var(--space-3)] transition-all shadow-lg shadow-blue-900/15 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {isLoading ? (
                           <>
@@ -901,7 +875,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           </>
                         ) : (
                           <>
-                            <Save size={22} className="text-amber-300" />
+                            <Save size={22} className="text-[var(--gold)]" />
                             <span>إرسال طلب التسجيل</span>
                           </>
                         )}
@@ -913,9 +887,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           setIsRegistering(false);
                           setFormError('');
                         }}
-                        className={`w-full py-3 font-bold transition-all text-[15px] cursor-pointer ${
-                          isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'
-                        }`}
+                        className="w-full py-[var(--space-3)] font-bold transition-all text-[15px] cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text)]"
                       >
                         العودة لتسجيل الدخول
                       </button>
@@ -930,9 +902,9 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                     transition={{ duration: 0.25 }}
                   >
                     {/* Header: White circular logo (112px) with soft shadow + Title (28px) with bus icon */}
-                    <div className="text-center mb-7">
-                      <div className="mb-5 flex justify-center">
-                        <div className="w-[132px] h-[132px] rounded-full bg-white shadow-[0_10px_30px_-8px_rgba(30,58,138,0.18)] flex items-center justify-center p-2.5 overflow-hidden">
+                    <div className="text-center mb-[var(--space-6)]">
+                      <div className="mb-[var(--space-5)] flex justify-center">
+                        <div className="w-[132px] h-[132px] rounded-full bg-white shadow-[0_10px_30px_-8px_rgba(15,23,42,0.18)] flex items-center justify-center p-[var(--space-2)] overflow-hidden">
                           {appLogo ? (
                             <img
                               src={appLogo}
@@ -945,39 +917,31 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-center gap-2.5 mb-1.5">
-                        <h1
-                          className={`text-[28px] leading-tight font-black tracking-tight ${
-                            isDark ? 'text-white' : 'text-slate-900'
-                          }`}
-                        >
+                      <div className="flex items-center justify-center gap-[var(--space-3)] mb-[var(--space-2)]">
+                        <h1 className="text-[28px] leading-tight font-black tracking-tight text-[var(--text)]">
                           درة المنورة للنقل
                         </h1>
                         <Bus
                           size={24}
-                          className={isDark ? 'text-amber-400 shrink-0' : 'text-amber-500 shrink-0'}
+                          className="text-[var(--gold)] shrink-0"
                           aria-hidden="true"
                         />
                       </div>
-                      <p
-                        className={`text-center text-[15px] font-bold tracking-wide ${
-                          isDark ? 'text-blue-400' : 'text-blue-700'
-                        }`}
-                      >
+                      <p className="text-center text-[15px] font-bold tracking-wide text-[var(--primary)]">
                         نظام إدارة حركة الحافلات والعمليات
                       </p>
                     </div>
 
-                    {/* Login Form */}
-                    <form onSubmit={handleCustomLogin} noValidate className="space-y-4">
+                    {/* Login Form (--space-5 between fields) */}
+                    <form onSubmit={handleCustomLogin} noValidate className="space-y-[var(--space-5)]">
                       {/* Username Field (60px height, 17px text, 22px icon) */}
                       <div>
                         <div className="relative">
                           <LucideUser
-                            className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${
+                            className={`absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${
                               usernameError || hasCredentialsError
-                                ? 'text-red-500'
-                                : 'text-slate-400'
+                                ? 'text-[var(--danger)]'
+                                : 'text-[var(--text-muted)]'
                             }`}
                             size={22}
                           />
@@ -996,19 +960,17 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                               if (formError) setFormError('');
                             }}
                             aria-invalid={Boolean(usernameError || hasCredentialsError)}
-                            className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-4 py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
+                            className={`w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold placeholder:text-[var(--text-muted)] ${
                               usernameError || hasCredentialsError
                                 ? isDark
-                                  ? 'bg-red-950/25 border-red-500 text-white placeholder:text-slate-400 focus:ring-4 focus:ring-red-500/20'
-                                  : 'bg-red-50/40 border-red-500 text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-red-500/15'
-                                : isDark
-                                ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                                : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
+                                  ? 'bg-red-950/25 border-red-500 text-white focus:ring-4 focus:ring-red-500/20'
+                                  : 'bg-red-50/40 border-red-600 text-[var(--text)] focus:ring-4 focus:ring-red-500/15'
+                                : 'bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15'
                             }`}
                           />
                         </div>
                         {usernameError && (
-                          <p className="mt-1.5 mr-1 flex items-center gap-1.5 text-sm font-bold text-red-500">
+                          <p className="mt-[var(--space-2)] flex items-center gap-[var(--space-2)] text-sm font-bold text-[var(--danger)]">
                             <AlertCircle size={16} className="shrink-0" />
                             <span>{usernameError}</span>
                           </p>
@@ -1019,10 +981,10 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                       <div>
                         <div className="relative">
                           <Key
-                            className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${
+                            className={`absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${
                               passwordError || hasCredentialsError
-                                ? 'text-red-500'
-                                : 'text-slate-400'
+                                ? 'text-[var(--danger)]'
+                                : 'text-[var(--text-muted)]'
                             }`}
                             size={22}
                           />
@@ -1038,35 +1000,31 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                               if (formError) setFormError('');
                             }}
                             aria-invalid={Boolean(passwordError || hasCredentialsError)}
-                            className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-[52px] py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
+                            className={`w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-12)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold placeholder:text-[var(--text-muted)] ${
                               passwordError || hasCredentialsError
                                 ? isDark
-                                  ? 'bg-red-950/25 border-red-500 text-white placeholder:text-slate-400 focus:ring-4 focus:ring-red-500/20'
-                                  : 'bg-red-50/40 border-red-500 text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-red-500/15'
-                                : isDark
-                                ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                                : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
+                                  ? 'bg-red-950/25 border-red-500 text-white focus:ring-4 focus:ring-red-500/20'
+                                  : 'bg-red-50/40 border-red-600 text-[var(--text)] focus:ring-4 focus:ring-red-500/15'
+                                : 'bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15'
                             }`}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
                             aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                            className={`absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-                              isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
-                            }`}
+                            className="absolute left-[var(--space-2)] top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer text-[var(--text-muted)] hover:text-[var(--text)]"
                           >
                             {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                           </button>
                         </div>
                         {passwordError && (
-                          <p className="mt-1.5 mr-1 flex items-center gap-1.5 text-sm font-bold text-red-500">
+                          <p className="mt-[var(--space-2)] flex items-center gap-[var(--space-2)] text-sm font-bold text-[var(--danger)]">
                             <AlertCircle size={16} className="shrink-0" />
                             <span>{passwordError}</span>
                           </p>
                         )}
                         {formError && (
-                          <p className="mt-2 mr-1 flex items-center gap-1.5 text-sm font-black text-red-500">
+                          <p className="mt-[var(--space-2)] flex items-center gap-[var(--space-2)] text-sm font-black text-[var(--danger)]">
                             <AlertCircle size={17} className="shrink-0" />
                             <span>{formError}</span>
                           </p>
@@ -1074,17 +1032,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                       </div>
 
                       {/* Remember Me & Forgot Password Row (15px) */}
-                      <div className="flex items-center justify-between gap-2 pt-0.5 px-1">
-                        <label
-                          className={`inline-flex items-center gap-2.5 text-[15px] font-bold cursor-pointer select-none py-1 ${
-                            isDark ? 'text-slate-300' : 'text-slate-600'
-                          }`}
-                        >
+                      <div className="flex items-center justify-between gap-[var(--space-3)] px-[var(--space-1)]">
+                        <label className="inline-flex items-center gap-[var(--space-3)] text-[15px] font-bold cursor-pointer select-none py-[var(--space-1)] text-[var(--text-secondary)]">
                           <input
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => handleRememberMeToggle(e.target.checked)}
-                            className="w-[18px] h-[18px] rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                            className="w-[18px] h-[18px] rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer accent-[var(--primary)]"
                           />
                           <span>تذكرني</span>
                         </label>
@@ -1092,20 +1046,18 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                         <button
                           type="button"
                           onClick={openForgotModal}
-                          className={`text-[15px] font-bold hover:underline cursor-pointer py-1 ${
-                            isDark ? 'text-amber-400 hover:text-amber-300' : 'text-blue-700 hover:text-blue-800'
-                          }`}
+                          className="text-[15px] font-bold hover:underline cursor-pointer py-[var(--space-1)] text-[var(--primary)]"
                         >
                           نسيت كلمة المرور؟
                         </button>
                       </div>
 
-                      {/* Submit Button (60px height, 17px text, 22px icon) */}
+                      {/* Submit Button (60px height, 17px text, 22px icon) - ONLY gradient button in app */}
                       <button
                         type="submit"
                         disabled={isLoading}
                         aria-busy={isLoading}
-                        className="w-full min-h-[60px] h-[60px] py-3.5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-3 hover:from-blue-800 hover:to-indigo-950 transition-all shadow-xl shadow-blue-900/20 active:scale-[0.99] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer mt-2"
+                        className="w-full min-h-[60px] h-[60px] py-[var(--space-3)] bg-gradient-to-r from-[var(--primary)] to-[#1E3A8A] hover:from-[#1E40AF] hover:to-[#172554] text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-[var(--space-3)] transition-all shadow-xl shadow-blue-900/20 active:scale-[0.99] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {isLoading ? (
                           <>
@@ -1114,19 +1066,15 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           </>
                         ) : (
                           <>
-                            <LogIn size={22} className="text-amber-300" />
+                            <LogIn size={22} className="text-[var(--gold)]" />
                             <span>تسجيل الدخول</span>
                           </>
                         )}
                       </button>
                     </form>
 
-                    {/* Combined Single Row of Links with Thin Vertical Divider (15px) */}
-                    <div
-                      className={`mt-6 pt-5 border-t flex flex-wrap sm:flex-nowrap items-center justify-center gap-2.5 sm:gap-3 text-[15px] font-bold ${
-                        isDark ? 'border-slate-800' : 'border-slate-100'
-                      }`}
-                    >
+                    {/* Links Row (--space-6 from login button, --space-3 between links) */}
+                    <div className="mt-[var(--space-6)] pt-[var(--space-4)] border-t border-[var(--border)] flex flex-wrap sm:flex-nowrap items-center justify-center gap-[var(--space-3)] text-[15px] font-bold">
                       <button
                         type="button"
                         onClick={() => {
@@ -1135,47 +1083,33 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           setPasswordError('');
                           setIsRegistering(true);
                         }}
-                        className={`whitespace-nowrap transition-colors cursor-pointer py-1 ${
-                          isDark
-                            ? 'text-slate-300 hover:text-amber-300'
-                            : 'text-slate-600 hover:text-blue-700'
-                        }`}
+                        className="whitespace-nowrap transition-colors cursor-pointer py-[var(--space-1)] text-[var(--text-secondary)] hover:text-[var(--primary)]"
                       >
                         ليس لديك حساب؟ اطلب الانضمام
                       </button>
 
                       <span
                         aria-hidden="true"
-                        className={`w-px h-4 shrink-0 ${
-                          isDark ? 'bg-slate-700' : 'bg-slate-300'
-                        }`}
+                        className="w-px h-4 shrink-0 bg-[var(--border)]"
                       />
 
                       <button
                         type="button"
                         onClick={() => setShowAbout(true)}
-                        className={`whitespace-nowrap transition-colors cursor-pointer py-1 ${
-                          isDark
-                            ? 'text-slate-300 hover:text-blue-300'
-                            : 'text-slate-600 hover:text-blue-700'
-                        }`}
+                        className="whitespace-nowrap transition-colors cursor-pointer py-[var(--space-1)] text-[var(--text-secondary)] hover:text-[var(--primary)]"
                       >
                         حول تطبيق درة المنورة
                       </button>
                     </div>
 
-                    {/* Subtle Admin Login Link at Bottom (15px) */}
-                    <div className="mt-3 text-center">
+                    {/* Subtle Admin Login Link at Bottom (--space-3) */}
+                    <div className="mt-[var(--space-3)] text-center">
                       <button
                         type="button"
                         onClick={onGoogleLogin}
-                        className={`inline-flex items-center gap-2 text-[15px] font-bold px-3.5 py-2 rounded-xl transition-colors cursor-pointer ${
-                          isDark
-                            ? 'text-slate-400 hover:text-blue-300 hover:bg-slate-800/70'
-                            : 'text-slate-500 hover:text-blue-700 hover:bg-blue-50/60'
-                        }`}
+                        className="inline-flex items-center gap-[var(--space-2)] text-[15px] font-bold px-[var(--space-3)] py-[var(--space-2)] rounded-xl transition-colors cursor-pointer text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--surface-subtle)]"
                       >
-                        <ShieldCheck size={17} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                        <ShieldCheck size={17} className="text-[var(--primary)]" />
                         <span>دخول المسؤولين</span>
                       </button>
                     </div>
@@ -1188,32 +1122,28 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                     exit={{ opacity: 0, x: -18 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <div className="text-center mt-1 mb-7">
+                    <div className="text-center mt-[var(--space-1)] mb-[var(--space-6)]">
                       <div
-                        className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border shadow-sm ${
+                        className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-4)] border shadow-sm ${
                           isDark
-                            ? 'bg-amber-950/50 border-amber-800 text-amber-400'
-                            : 'bg-gradient-to-tr from-amber-100 to-amber-50 border-amber-200 text-amber-600'
+                            ? 'bg-amber-950/50 border-amber-800 text-[var(--gold)]'
+                            : 'bg-amber-50 border-amber-200 text-[var(--gold)]'
                         }`}
                       >
                         <Key size={28} />
                       </div>
-                      <h1
-                        className={`text-[28px] leading-tight font-black mb-1.5 tracking-tight ${
-                          isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                      >
+                      <h1 className="text-[28px] leading-tight font-black mb-[var(--space-2)] tracking-tight text-[var(--text)]">
                         تغيير كلمة المرور
                       </h1>
-                      <p className={`text-[15px] font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <p className="text-[15px] font-bold text-[var(--text-secondary)]">
                         يجب عليك تغيير كلمة المرور المؤقتة قبل المتابعة
                       </p>
                     </div>
 
-                    <form onSubmit={handlePasswordChange} noValidate className="space-y-4">
+                    <form onSubmit={handlePasswordChange} noValidate className="space-y-[var(--space-5)]">
                       <div className="relative">
                         <Key
-                          className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                          className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                           size={22}
                         />
                         <input
@@ -1225,19 +1155,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                             setNewPassword(e.target.value);
                             if (formError) setFormError('');
                           }}
-                          className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-[52px] py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
-                            isDark
-                              ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                              : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                          }`}
+                          className="w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-12)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword((v) => !v)}
                           aria-label={showNewPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                          className={`absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-                            isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
-                          }`}
+                          className="absolute left-[var(--space-2)] top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer text-[var(--text-muted)] hover:text-[var(--text)]"
                         >
                           {showNewPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                         </button>
@@ -1245,7 +1169,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
 
                       <div className="relative">
                         <CheckCircle2
-                          className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                          className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                           size={22}
                         />
                         <input
@@ -1257,19 +1181,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                             setConfirmPassword(e.target.value);
                             if (formError) setFormError('');
                           }}
-                          className={`w-full min-h-[60px] h-[60px] pr-[52px] pl-[52px] py-3.5 text-[17px] rounded-2xl border outline-none transition-all font-bold ${
-                            isDark
-                              ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                              : 'bg-slate-50/80 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                          }`}
+                          className="w-full min-h-[60px] h-[60px] pr-[var(--space-12)] pl-[var(--space-12)] py-[var(--space-3)] text-[17px] rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword((v) => !v)}
                           aria-label={showConfirmPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                          className={`absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
-                            isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
-                          }`}
+                          className="absolute left-[var(--space-2)] top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-xl transition-colors cursor-pointer text-[var(--text-muted)] hover:text-[var(--text)]"
                         >
                           {showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                         </button>
@@ -1277,10 +1195,10 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
 
                       {formError && (
                         <div
-                          className={`p-3.5 rounded-xl flex items-center gap-2.5 text-sm font-black border ${
+                          className={`p-[var(--space-3)] rounded-xl flex items-center gap-[var(--space-3)] text-sm font-black border ${
                             isDark
-                              ? 'bg-red-950/60 border-red-800 text-red-300'
-                              : 'bg-red-50 border-red-200 text-red-600'
+                              ? 'bg-red-950/60 border-red-800 text-[var(--danger)]'
+                              : 'bg-red-50 border-red-200 text-[var(--danger)]'
                           }`}
                         >
                           <AlertCircle size={18} className="shrink-0" />
@@ -1291,7 +1209,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full min-h-[60px] h-[60px] py-3.5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-3 hover:from-blue-800 hover:to-indigo-950 transition-all shadow-xl shadow-blue-900/20 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full min-h-[60px] h-[60px] py-[var(--space-3)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-2xl font-black text-[17px] flex items-center justify-center gap-[var(--space-3)] transition-all shadow-lg shadow-blue-900/15 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {isLoading ? (
                           <>
@@ -1300,7 +1218,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           </>
                         ) : (
                           <>
-                            <Save size={22} className="text-amber-300" />
+                            <Save size={22} className="text-[var(--gold)]" />
                             <span>تأكيد التغيير</span>
                           </>
                         )}
@@ -1312,9 +1230,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                           setIsChangingPassword(false);
                           setFormError('');
                         }}
-                        className={`w-full py-3 font-bold transition-all text-[15px] cursor-pointer ${
-                          isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'
-                        }`}
+                        className="w-full py-[var(--space-3)] font-bold transition-all text-[15px] cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text)]"
                       >
                         إلغاء والعودة للخلف
                       </button>
@@ -1324,23 +1240,11 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
               </AnimatePresence>
 
               {/* High-Contrast Footer Credits (13px) */}
-              <div
-                className={`mt-6 pt-4 border-t flex justify-between items-center select-none ${
-                  isDark ? 'border-slate-800' : 'border-slate-100'
-                }`}
-              >
-                <span
-                  className={`text-[13px] font-black uppercase tracking-widest ${
-                    isDark ? 'text-blue-300' : 'text-blue-800'
-                  }`}
-                >
+              <div className="mt-[var(--space-6)] pt-[var(--space-4)] border-t border-[var(--border)] flex justify-between items-center select-none">
+                <span className="text-[13px] font-black uppercase tracking-widest text-[var(--primary)]">
                   DMTC TRANSPORT
                 </span>
-                <span
-                  className={`text-[13px] font-bold ${
-                    isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
-                >
+                <span className="text-[13px] font-bold text-[var(--text-secondary)]">
                   أحمد عبد الجليل
                 </span>
               </div>
@@ -1362,7 +1266,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
       {/* Forgot Password Request Modal */}
       <AnimatePresence>
         {showForgotModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" dir="rtl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-4)]" dir="rtl">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1375,24 +1279,20 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 12 }}
               transition={{ duration: 0.2 }}
-              className={`relative z-10 w-full max-w-md rounded-3xl p-6 sm:p-7 border shadow-2xl ${
-                isDark
-                  ? 'bg-slate-900 border-slate-800 text-slate-100'
-                  : 'bg-white border-slate-200 text-slate-900'
-              }`}
+              className="relative z-10 w-full max-w-md rounded-3xl p-[var(--space-4)] lg:p-[var(--space-8)] border shadow-2xl bg-[var(--surface)] border-[var(--border)] text-[var(--text)]"
             >
-              <div className="flex items-start justify-between gap-3 mb-5">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between gap-[var(--space-3)] mb-[var(--space-5)]">
+                <div className="flex items-center gap-[var(--space-3)]">
                   <div
                     className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
-                      isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'
+                      isDark ? 'bg-amber-500/15 text-[var(--gold)]' : 'bg-amber-50 text-[var(--gold)]'
                     }`}
                   >
                     <HelpCircle size={22} />
                   </div>
                   <div>
                     <h2 className="text-lg font-black">إعادة تعيين كلمة المرور</h2>
-                    <p className={`text-xs font-bold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <p className="text-xs font-bold text-[var(--text-secondary)]">
                       إرسال طلب للمسؤول لإصدار كلمة مرور مؤقتة
                     </p>
                   </div>
@@ -1401,28 +1301,20 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                   type="button"
                   onClick={() => !isSendingForgot && setShowForgotModal(false)}
                   aria-label="إغلاق"
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
-                    isDark
-                      ? 'bg-slate-800 text-slate-400 hover:text-white'
-                      : 'bg-slate-100 text-slate-500 hover:text-slate-800'
-                  }`}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text)]"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <form onSubmit={handleForgotSubmit} noValidate className="space-y-4">
+              <form onSubmit={handleForgotSubmit} noValidate className="space-y-[var(--space-5)]">
                 <div>
-                  <label
-                    className={`block text-xs font-black mb-1.5 mr-1 ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                  >
+                  <label className="block text-xs font-black mb-[var(--space-2)] text-[var(--text-secondary)]">
                     اسم المستخدم
                   </label>
                   <div className="relative">
                     <LucideUser
-                      className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                      className="absolute right-[var(--space-4)] top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
                       size={18}
                     />
                     <input
@@ -1437,21 +1329,13 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                         if (forgotStatus.type === 'error') setForgotStatus({ type: null, msg: '' });
                       }}
                       placeholder="أدخل اسم المستخدم الخاص بك"
-                      className={`w-full min-h-[56px] pr-12 pl-4 py-3.5 text-base rounded-2xl border outline-none transition-all font-bold ${
-                        isDark
-                          ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                          : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                      }`}
+                      className="w-full min-h-[56px] pr-[var(--space-12)] pl-[var(--space-4)] py-[var(--space-3)] text-base rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label
-                    className={`block text-xs font-black mb-1.5 mr-1 ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                  >
+                  <label className="block text-xs font-black mb-[var(--space-2)] text-[var(--text-secondary)]">
                     ملاحظة أو رقم تواصل (اختياري)
                   </label>
                   <input
@@ -1459,52 +1343,44 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                     value={forgotNote}
                     onChange={(e) => setForgotNote(e.target.value)}
                     placeholder="مثال: رقم الجوال للتواصل..."
-                    className={`w-full min-h-[56px] px-4 py-3.5 text-base rounded-2xl border outline-none transition-all font-bold ${
-                      isDark
-                        ? 'bg-slate-800/80 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/15'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50'
-                    }`}
+                    className="w-full min-h-[56px] px-[var(--space-4)] py-[var(--space-3)] text-base rounded-2xl border outline-none transition-all font-bold bg-[var(--surface-subtle)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:ring-4 focus:ring-blue-500/15"
                   />
                 </div>
 
                 {forgotStatus.type && (
                   <div
-                    className={`p-3.5 rounded-xl flex items-start gap-2.5 text-xs font-bold leading-relaxed border ${
+                    className={`p-[var(--space-3)] rounded-xl flex items-start gap-[var(--space-3)] text-xs font-bold leading-relaxed border ${
                       forgotStatus.type === 'success'
                         ? isDark
-                          ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
-                          : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                          ? 'bg-emerald-950/60 border-emerald-800 text-[var(--success)]'
+                          : 'bg-emerald-50 border-emerald-200 text-[var(--success)]'
                         : isDark
-                        ? 'bg-red-950/60 border-red-800 text-red-300'
-                        : 'bg-red-50 border-red-200 text-red-600'
+                        ? 'bg-red-950/60 border-red-800 text-[var(--danger)]'
+                        : 'bg-red-50 border-red-200 text-[var(--danger)]'
                     }`}
                   >
                     {forgotStatus.type === 'success' ? (
-                      <CheckCircle2 size={17} className="shrink-0 mt-0.5 text-emerald-500" />
+                      <CheckCircle2 size={17} className="shrink-0 mt-[var(--space-1)] text-[var(--success)]" />
                     ) : (
-                      <AlertCircle size={17} className="shrink-0 mt-0.5 text-red-500" />
+                      <AlertCircle size={17} className="shrink-0 mt-[var(--space-1)] text-[var(--danger)]" />
                     )}
                     <span>{forgotStatus.msg}</span>
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-1">
+                <div className="flex gap-[var(--space-3)] pt-[var(--space-1)]">
                   <button
                     type="button"
                     onClick={() => setShowForgotModal(false)}
                     disabled={isSendingForgot}
-                    className={`min-h-[56px] px-5 rounded-2xl font-bold text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
+                    className="min-h-[56px] px-[var(--space-5)] rounded-2xl font-bold text-sm transition-colors cursor-pointer bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text)]"
                   >
                     إغلاق
                   </button>
                   <button
                     type="submit"
                     disabled={isSendingForgot}
-                    className="flex-1 min-h-[56px] bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:from-blue-800 hover:to-indigo-950 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-70 cursor-pointer"
+                    className="flex-1 min-h-[56px] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-2xl font-black text-sm flex items-center justify-center gap-[var(--space-2)] transition-all shadow-lg shadow-blue-900/15 disabled:opacity-70 cursor-pointer"
                   >
                     {isSendingForgot ? (
                       <>

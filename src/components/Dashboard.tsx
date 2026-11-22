@@ -804,18 +804,18 @@ export function Dashboard() {
     visible: { y: 0, opacity: 1 },
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-slate-700/50 backdrop-blur-md">
-          <p className="text-[10px] font-bold text-slate-400 mb-1">
+      <div className="bg-[var(--navy)] text-white p-[var(--space-3)] rounded-2xl shadow-2xl border border-slate-700/60 backdrop-blur-md">
+          <p className="text-[10px] font-bold text-slate-300 mb-[var(--space-1)]">
             {payload[0].payload.fullDate}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-[var(--space-2)]">
             <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
             <p className="text-sm font-black">
               {payload[0].value}{" "}
-              <span className="text-[10px] text-slate-400 font-normal">
+              <span className="text-[10px] text-slate-300 font-normal">
                 سند
               </span>
             </p>
@@ -828,9 +828,9 @@ export function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Loader2 size={40} className="text-blue-600 animate-spin" />
-        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest animate-pulse">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-[var(--space-4)]">
+        <Loader2 size={40} className="text-[var(--primary)] animate-spin" />
+        <p className="text-[var(--text-muted)] font-bold uppercase text-[10px] tracking-widest animate-pulse">
           جاري تحميل البيانات...
         </p>
       </div>
@@ -842,44 +842,43 @@ export function Dashboard() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-6"
+      className="space-y-[var(--space-6)]"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-2xl flex items-center justify-center border border-amber-400/20 shadow-md">
-            <LayoutDashboard size={24} className="text-amber-400" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-[var(--space-4)] mb-[var(--space-2)]">
+        <div className="flex items-center gap-[var(--space-3)]">
+          <div className="w-12 h-12 bg-[var(--navy)] rounded-2xl flex items-center justify-center border border-amber-400/25 shadow-md">
+            <LayoutDashboard size={24} className="text-[var(--gold)]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-slate-900">لوحة التحكم</h1>
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            <div className="flex items-center gap-[var(--space-2)]">
+              <h1 className="text-2xl font-black text-[var(--text)]">لوحة التحكم</h1>
             </div>
-            <p className="text-xs text-slate-600 font-bold mt-0.5">
+            <p className="text-xs text-[var(--text-secondary)] font-bold mt-[var(--space-1)]">
               نظرة عامة على نشاط النقل والعمليات الجارية - درة المنورة
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/90 shadow-xs group hover:border-amber-300 transition-colors">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-          <span className="text-xs font-black text-slate-700">
+        <div className="flex items-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xs transition-colors">
+          <div className="w-2 h-2 bg-[var(--success)] rounded-full animate-pulse"></div>
+          <span className="text-xs font-black text-[var(--text)]">
             تحديث سحابي فوري
           </span>
-          <span className="text-slate-300 mx-2">|</span>
-          <span className="text-xs font-bold text-amber-700 tabular-nums">
+          <span className="text-[var(--text-muted)] mx-[var(--space-2)]">|</span>
+          <span className="text-xs font-bold text-[var(--gold-text)] tabular-nums">
             {format(new Date(), "dd MMMM yyyy")}
           </span>
         </div>
       </div>
 
       {/* Hajj Seasons Selector Tabs */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-gradient-to-l from-slate-900 via-blue-950 to-slate-900 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow-md">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--space-3)] bg-[var(--navy)] p-[var(--space-2)] rounded-2xl border border-slate-800 shadow-md">
+        <div className="flex items-center gap-[var(--space-2)] w-full sm:w-auto">
           <button
             onClick={() => setSelectedSeason("1448")}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-3 px-6 py-2.5 rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-[var(--space-3)] px-[var(--space-6)] py-[var(--space-3)] rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
               selectedSeason === "1448"
-                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 border border-blue-400/40 ring-1 ring-white/20 scale-[1.02]"
-                : "text-slate-300 hover:text-white hover:bg-white/10"
+                ? "bg-[var(--btn-primary)] text-white shadow-md border border-blue-400/40"
+                : "text-slate-200 hover:text-white hover:bg-white/10"
             }`}
           >
             <span className="relative flex h-2.5 w-2.5">
@@ -890,10 +889,10 @@ export function Dashboard() {
             </span>
             <span>موسم حج 1448 هـ</span>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
+              className={`px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
                 selectedSeason === "1448"
-                  ? "bg-white/25 text-white border border-white/30"
-                  : "bg-white/10 text-slate-300"
+                  ? "bg-white/20 text-white border border-white/30"
+                  : "bg-white/10 text-slate-200"
               }`}
             >
               {season1448Count}
@@ -902,24 +901,24 @@ export function Dashboard() {
 
           <button
             onClick={() => setSelectedSeason("1447")}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-3 px-6 py-2.5 rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-[var(--space-3)] px-[var(--space-6)] py-[var(--space-3)] rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
               selectedSeason === "1447"
-                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/30 border border-amber-300/60 ring-1 ring-white/30 scale-[1.02]"
-                : "text-slate-300 hover:text-white hover:bg-white/10"
+                ? "bg-[var(--gold)] text-[#0F172A] shadow-md border border-amber-300"
+                : "text-slate-200 hover:text-white hover:bg-white/10"
             }`}
           >
             <FolderArchive
               size={16}
               className={
-                selectedSeason === "1447" ? "text-slate-950" : "text-amber-400"
+                selectedSeason === "1447" ? "text-[#0F172A]" : "text-[var(--gold)]"
               }
             />
             <span>موسم حج 1447 هـ</span>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
+              className={`px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
                 selectedSeason === "1447"
-                  ? "bg-slate-950/20 text-slate-950 border border-slate-950/20"
-                  : "bg-white/10 text-slate-300"
+                  ? "bg-[#0F172A]/15 text-[#0F172A] border border-[#0F172A]/20"
+                  : "bg-white/10 text-slate-200"
               }`}
             >
               {season1447Count}
@@ -929,73 +928,72 @@ export function Dashboard() {
       </div>
 
       {/* Sub-tabs Selection */}
-      <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl w-fit border border-slate-200/80 shadow-xs">
+      <div className="flex items-center gap-[var(--space-2)] bg-[var(--surface)] p-[var(--space-2)] rounded-2xl w-fit border border-[var(--border)] shadow-xs">
         <button
           onClick={() => setDashboardTab("analytics")}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black text-xs transition-all cursor-pointer ${
+          className={`flex items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)] rounded-xl font-black text-xs transition-all cursor-pointer ${
             dashboardTab === "analytics"
-              ? "bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-[var(--navy)] text-white shadow-md"
+              : "text-[var(--text-secondary)] hover:text-[var(--text)]"
           }`}
         >
-          <Activity size={16} className={dashboardTab === "analytics" ? "text-amber-400" : ""} />
+          <Activity size={16} className={dashboardTab === "analytics" ? "text-[var(--gold)]" : ""} />
           <span>الإحصائيات والنشاط ({selectedSeason === "1448" ? "حج 1448 هـ" : "حج 1447 هـ"})</span>
         </button>
         {canManage && (
           <button
             onClick={() => setDashboardTab("archiving")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black text-xs transition-all cursor-pointer ${
+            className={`flex items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)] rounded-xl font-black text-xs transition-all cursor-pointer ${
               dashboardTab === "archiving"
-                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/20"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-[var(--gold)] text-[#0F172A] shadow-md"
+                : "text-[var(--text-secondary)] hover:text-[var(--text)]"
             }`}
           >
-            <Calendar size={16} className={dashboardTab === "archiving" ? "text-white" : ""} />
+            <Calendar size={16} className={dashboardTab === "archiving" ? "text-[#0F172A]" : ""} />
             <span>سجل وأدوات الأرشفة</span>
           </button>
         )}
       </div>
 
       {dashboardTab === "analytics" ? (
-        <div className="grid grid-cols-12 gap-6 auto-rows-max">
+        <div className="grid grid-cols-12 gap-[var(--space-6)] auto-rows-max">
           {/* Summary Cards */}
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -5 }}
-            className="col-span-12 md:col-span-4 lg:col-span-4 bg-white p-6 rounded-[2.5rem] border border-slate-200/90 shadow-sm relative overflow-hidden group"
+            className="col-span-12 md:col-span-4 lg:col-span-4 bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-8)] rounded-[2.5rem] border border-[var(--border)] shadow-sm relative overflow-hidden group"
           >
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-blue-700 to-amber-400"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-60 group-hover:bg-amber-50 transition-colors duration-500"></div>
-            <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-200/80">
-                <Activity size={20} className="text-blue-700" />
+            <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)]"></div>
+            <div className="flex justify-between items-start mb-[var(--space-4)] relative z-10">
+              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/15 rounded-xl flex items-center justify-center border border-blue-200/80 dark:border-blue-500/30">
+                <Activity size={20} className="text-[var(--primary)]" />
               </div>
               <div className="flex flex-col items-end">
-                <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg font-black border border-emerald-200/80 flex items-center gap-1 tabular-nums">
+                <div className="text-[11px] text-[var(--success)] bg-emerald-50 dark:bg-emerald-500/15 px-[var(--space-3)] py-[var(--space-1)] rounded-lg font-black border border-emerald-200/80 dark:border-emerald-500/30 flex items-center gap-[var(--space-1)] tabular-nums">
                   <ArrowUpRight size={10} />
                   {Math.round((todayCount / (averageWeekly || 1)) * 100)}%
                 </div>
               </div>
             </div>
-            <h3 className="text-slate-600 text-xs font-black mb-1 relative z-10">
+            <h3 className="text-[var(--text-secondary)] text-xs font-black mb-[var(--space-1)] relative z-10">
               سندات اليوم
             </h3>
             <div className="flex items-end justify-between relative z-10">
-              <div className="text-4xl font-black text-slate-900 leading-none tabular-nums">
+              <div className="text-4xl font-black text-[var(--text)] leading-none tabular-nums">
                 {todayCount}
               </div>
-              <span className="text-xs text-blue-700 font-bold mb-1">
+              <span className="text-xs text-[var(--primary)] font-bold mb-[var(--space-1)]">
                 سند صادر اليوم
               </span>
             </div>
-            <div className="mt-6 h-1.5 bg-slate-100 rounded-full overflow-hidden relative z-10">
+            <div className="mt-[var(--space-6)] h-1.5 bg-[var(--surface-subtle)] rounded-full overflow-hidden relative z-10">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
                   width: `${totalBuses > 0 ? (todayCount / totalBuses) * 100 : 0}%`,
                 }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-blue-600 to-amber-500 rounded-full shadow-xs"
+                className="h-full bg-[var(--primary)] rounded-full shadow-xs"
               ></motion.div>
             </div>
           </motion.div>
@@ -1003,34 +1001,26 @@ export function Dashboard() {
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -5 }}
-            className="col-span-12 md:col-span-4 lg:col-span-4 bg-white p-6 rounded-[2.5rem] border border-slate-200/90 shadow-sm flex flex-col justify-between group relative overflow-hidden"
+            className="col-span-12 md:col-span-4 lg:col-span-4 bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-8)] rounded-[2.5rem] border border-[var(--border)] shadow-sm flex flex-col justify-between group relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-slate-900 to-blue-700"></div>
+            <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--navy)] dark:bg-slate-600"></div>
             <div>
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-200/80 group-hover:bg-blue-100 transition-colors">
-                  <Bus className="text-blue-700" size={20} />
+              <div className="flex justify-between items-start mb-[var(--space-6)]">
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/15 rounded-xl flex items-center justify-center border border-blue-200/80 dark:border-blue-500/30 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/25 transition-colors">
+                  <Bus className="text-[var(--primary)]" size={20} />
                 </div>
-                <h3 className="text-slate-600 text-xs font-black">
+                <h3 className="text-[var(--text-secondary)] text-xs font-black">
                   الأسطول
                 </h3>
               </div>
               <div>
-                <div className="text-4xl font-black mb-1 text-slate-900 tabular-nums">
+                <div className="text-4xl font-black mb-[var(--space-1)] text-[var(--text)] tabular-nums">
                   {totalBuses}
                 </div>
-                <p className="text-slate-500 text-xs font-bold">
+                <p className="text-[var(--text-muted)] text-xs font-bold">
                   إجمالي الحافلات المسجلة
                 </p>
               </div>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-1.5">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${i <= 3 ? "bg-amber-500" : "bg-blue-600"}`}
-                ></div>
-              ))}
             </div>
           </motion.div>
 
@@ -1038,30 +1028,29 @@ export function Dashboard() {
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -5 }}
-            className="col-span-12 md:col-span-4 lg:col-span-4 bg-white p-6 rounded-[2.5rem] border border-slate-200/90 shadow-sm relative overflow-hidden group flex flex-col justify-between"
+            className="col-span-12 md:col-span-4 lg:col-span-4 bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-8)] rounded-[2.5rem] border border-[var(--border)] shadow-sm relative overflow-hidden group flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-amber-400 to-amber-600"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50 group-hover:bg-amber-100/50 transition-colors duration-500"></div>
+            <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--gold)]"></div>
 
-            <div className="relative z-10 flex justify-between items-start mb-3">
-              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-200/80">
-                <Bus size={20} className="text-amber-600 animate-pulse" />
+            <div className="relative z-10 flex justify-between items-start mb-[var(--space-3)]">
+              <div className="w-10 h-10 bg-amber-50 dark:bg-amber-500/15 rounded-xl flex items-center justify-center border border-amber-200/80 dark:border-amber-500/30">
+                <Bus size={20} className="text-[var(--gold)] animate-pulse" />
               </div>
-              <span className="text-[11px] text-amber-800 font-black bg-amber-100/70 px-2.5 py-0.5 rounded-lg border border-amber-200 flex items-center gap-1">
+              <span className="text-[11px] text-[var(--gold-text)] font-black bg-amber-100/80 dark:bg-amber-500/15 px-[var(--space-3)] py-[var(--space-1)] rounded-lg border border-amber-200 dark:border-amber-500/30 flex items-center gap-[var(--space-1)]">
                 مؤشر تفاعلي مباشر
               </span>
             </div>
 
-            <div className="relative z-10 mb-2">
-              <h3 className="text-slate-600 text-xs font-bold">
+            <div className="relative z-10 mb-[var(--space-2)]">
+              <h3 className="text-[var(--text-secondary)] text-xs font-bold">
                 الحافلات الموزعة في العقود
               </h3>
-              <p className="text-xs text-slate-800 font-black mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
+              <p className="text-xs text-[var(--text)] font-black mt-[var(--space-1)] text-ellipsis overflow-hidden whitespace-nowrap">
                 مؤشرات النشاط وتفاصيل التوزيع
               </p>
             </div>
 
-            <div className="relative z-10 grid grid-cols-2 gap-2 mt-2">
+            <div className="relative z-10 grid grid-cols-2 gap-[var(--space-2)] mt-[var(--space-2)]">
               {/* Today */}
               <button
                 type="button"
@@ -1070,21 +1059,21 @@ export function Dashboard() {
                   setIsBusDetailModalOpen(true);
                   setBusModalSearchTerm("");
                 }}
-                className="flex flex-col items-center justify-center p-2 rounded-2xl bg-amber-50/80 border border-amber-200/80 hover:bg-amber-100 hover:border-amber-300 hover:shadow-sm active:scale-95 transition-all text-center group/btn cursor-pointer"
+                className="flex flex-col items-center justify-center p-[var(--space-2)] rounded-2xl bg-amber-50/80 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 hover:shadow-sm active:scale-95 transition-all text-center group/btn cursor-pointer"
               >
-                <span className="text-lg font-black text-amber-700 tabular-nums">
+                <span className="text-lg font-black text-[var(--gold-text)] tabular-nums">
                   {distributedBusesToday.length}
                 </span>
-                <span className="text-[11px] font-black text-amber-950 mt-1">
+                <span className="text-[11px] font-black text-[var(--text)] mt-[var(--space-1)]">
                   الموزعة اليوم
                 </span>
-                <span className="text-[10px] text-amber-700 mt-0.5 group-hover/btn:text-amber-900 transition-colors font-bold">
+                <span className="text-[10px] text-[var(--gold-text)] mt-[var(--space-1)] transition-colors font-bold">
                   تفاصيل ←
                 </span>
               </button>
 
               {/* Custom Target Date */}
-              <div className="flex flex-col gap-1.5 justify-between">
+              <div className="flex flex-col gap-[var(--space-2)] justify-between">
                 <button
                   type="button"
                   onClick={() => {
@@ -1092,39 +1081,39 @@ export function Dashboard() {
                     setIsBusDetailModalOpen(true);
                     setBusModalSearchTerm("");
                   }}
-                  className="w-full flex flex-col items-center justify-center p-2 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-sm active:scale-95 transition-all text-center group/btn cursor-pointer"
+                  className="w-full flex flex-col items-center justify-center p-[var(--space-2)] rounded-2xl bg-emerald-50/80 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-sm active:scale-95 transition-all text-center group/btn cursor-pointer"
                 >
-                  <span className="text-lg font-black text-emerald-700">
+                  <span className="text-lg font-black text-[var(--success)] tabular-nums">
                     {distributedBusesOverall.length}
                   </span>
-                  <span className="text-[9px] font-black text-emerald-950 mt-1">
+                  <span className="text-[10px] font-black text-[var(--text)] mt-[var(--space-1)]">
                     عقود بالفترة
                   </span>
-                  <span className="text-[8px] text-emerald-600 mt-0.5 group-hover/btn:text-emerald-800 transition-colors font-bold">
+                  <span className="text-[10px] text-[var(--success)] mt-[var(--space-1)] transition-colors font-bold">
                     تفاصيل ←
                   </span>
                 </button>
                 <div 
-                  className="grid grid-cols-2 gap-1 w-full" 
+                  className="grid grid-cols-2 gap-[var(--space-2)] w-full" 
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-bold text-slate-400 text-right pr-1">من</span>
+                    <span className="text-[10px] font-bold text-[var(--text-muted)] text-right pr-[var(--space-1)]">من</span>
                     <input
                       type="date"
                       value={distributedBusesStartDate}
                       onChange={(e) => setDistributedBusesStartDate(e.target.value)}
-                      className="w-full text-center text-[9px] font-bold text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/40 border border-emerald-200 rounded-xl py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+                      className="w-full text-center text-[10px] font-bold text-[var(--success)] bg-emerald-50/60 dark:bg-emerald-500/10 hover:bg-emerald-100/40 dark:hover:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-xl py-[var(--space-1)] px-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
                       dir="rtl"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-bold text-slate-400 text-right pr-1">إلى</span>
+                    <span className="text-[10px] font-bold text-[var(--text-muted)] text-right pr-[var(--space-1)]">إلى</span>
                     <input
                       type="date"
                       value={distributedBusesEndDate}
                       onChange={(e) => setDistributedBusesEndDate(e.target.value)}
-                      className="w-full text-center text-[9px] font-bold text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/40 border border-emerald-200 rounded-xl py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+                      className="w-full text-center text-[10px] font-bold text-[var(--success)] bg-emerald-50/60 dark:bg-emerald-500/10 hover:bg-emerald-100/40 dark:hover:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-xl py-[var(--space-1)] px-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
                       dir="rtl"
                     />
                   </div>
@@ -1138,23 +1127,21 @@ export function Dashboard() {
             variants={itemVariants}
             className="col-span-12"
           >
-            <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-[2.5rem] p-6 lg:p-8 text-white relative overflow-hidden group border border-indigo-900/50 shadow-xl">
-              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-amber-400 via-amber-300 to-blue-500"></div>
-              <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
-              <div className="relative z-10 flex flex-col gap-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-4">
+            <div className="bg-[var(--navy)] rounded-[2.5rem] p-[var(--space-4)] lg:p-[var(--space-8)] text-white relative overflow-hidden group border border-slate-800 shadow-xl">
+              <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--gold)]"></div>
+              <div className="relative z-10 flex flex-col gap-[var(--space-6)]">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[var(--space-2)] border-b border-white/10 pb-[var(--space-4)]">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-1)]">
                       <h3 className="text-xl font-black">تقارير الميدان وتصدير البيانات</h3>
-                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed font-medium">
+                    <p className="text-slate-200 text-xs leading-relaxed font-medium">
                       تصدير كافة البيانات المتعلقة بحركة الحافلات والاعتمادات بصيغة Excel للمراجعة والتدقيق المالي
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[var(--space-3)]">
                   <motion.button
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
@@ -1166,9 +1153,9 @@ export function Dashboard() {
                       isExportingAllStats ||
                       isExportingApprovalBuses
                     }
-                    className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/15 border border-white/15 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="flex items-center justify-between p-[var(--space-4)] bg-white/10 hover:bg-white/15 border border-white/15 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-[var(--space-3)]">
                       <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-400/30 shrink-0">
                         <Download size={18} className="text-emerald-400" />
                       </div>
@@ -1203,15 +1190,15 @@ export function Dashboard() {
                       isExportingAllStats ||
                       isExportingApprovalBuses
                     }
-                    className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="flex items-center justify-between p-[var(--space-4)] bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-[var(--space-3)]">
                       <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-400/30 shrink-0">
-                        <Download size={18} className="text-blue-400" />
+                        <Download size={18} className="text-blue-300" />
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">الأرشيف الكامل</p>
-                        <p className="text-[9px] text-slate-400 tracking-wider">
+                        <p className="text-[10px] text-slate-300 tracking-wider">
                           ALL VOUCHERS
                         </p>
                       </div>
@@ -1219,12 +1206,12 @@ export function Dashboard() {
                     {isExportingAll ? (
                       <Loader2
                         size={16}
-                        className="animate-spin text-slate-400"
+                        className="animate-spin text-slate-300"
                       />
                     ) : (
                       <ArrowUpRight
                         size={16}
-                        className="text-slate-500 group-hover/btn:text-white transition-colors"
+                        className="text-slate-300 group-hover/btn:text-white transition-colors"
                       />
                     )}
                   </motion.button>
@@ -1240,15 +1227,15 @@ export function Dashboard() {
                       isExportingAllStats ||
                       isExportingApprovalBuses
                     }
-                    className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="flex items-center justify-between p-[var(--space-4)] bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center border border-orange-400/30 shrink-0">
-                        <TrendingUp size={18} className="text-orange-400" />
+                    <div className="flex items-center gap-[var(--space-3)]">
+                      <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-400/30 shrink-0">
+                        <TrendingUp size={18} className="text-amber-300" />
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">إحصائيات اليوم</p>
-                        <p className="text-[9px] text-slate-400 tracking-wider">
+                        <p className="text-[10px] text-slate-300 tracking-wider">
                           OFFICE STATS - TODAY
                         </p>
                       </div>
@@ -1256,12 +1243,12 @@ export function Dashboard() {
                     {isExportingStats ? (
                       <Loader2
                         size={16}
-                        className="animate-spin text-slate-400"
+                        className="animate-spin text-slate-300"
                       />
                     ) : (
                       <ArrowUpRight
                         size={16}
-                        className="text-slate-500 group-hover/btn:text-white transition-colors"
+                        className="text-slate-300 group-hover/btn:text-white transition-colors"
                       />
                     )}
                   </motion.button>
@@ -1277,15 +1264,15 @@ export function Dashboard() {
                       isExportingAllStats ||
                       isExportingApprovalBuses
                     }
-                    className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="flex items-center justify-between p-[var(--space-4)] bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-400/30 shrink-0">
-                        <Users size={18} className="text-purple-400" />
+                    <div className="flex items-center gap-[var(--space-3)]">
+                      <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-400/30 shrink-0">
+                        <Users size={18} className="text-blue-300" />
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">كافة الإحصائيات</p>
-                        <p className="text-[9px] text-slate-400 tracking-wider">
+                        <p className="text-[10px] text-slate-300 tracking-wider">
                           ALL OFFICE STATS
                         </p>
                       </div>
@@ -1293,12 +1280,12 @@ export function Dashboard() {
                     {isExportingAllStats ? (
                       <Loader2
                         size={16}
-                        className="animate-spin text-slate-400"
+                        className="animate-spin text-slate-300"
                       />
                     ) : (
                       <ArrowUpRight
                         size={16}
-                        className="text-slate-500 group-hover/btn:text-white transition-colors"
+                        className="text-slate-300 group-hover/btn:text-white transition-colors"
                       />
                     )}
                   </motion.button>
@@ -1314,15 +1301,15 @@ export function Dashboard() {
                       isExportingAllStats ||
                       isExportingApprovalBuses
                     }
-                    className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="flex items-center justify-between p-[var(--space-4)] bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group/btn disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-teal-500/20 rounded-xl flex items-center justify-center border border-teal-400/30 shrink-0">
-                        <Bus size={18} className="text-teal-400" />
+                    <div className="flex items-center gap-[var(--space-3)]">
+                      <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-400/30 shrink-0">
+                        <Bus size={18} className="text-emerald-300" />
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">حافلات الاعتمادات</p>
-                        <p className="text-[9px] text-slate-400 tracking-wider">
+                        <p className="text-[10px] text-slate-300 tracking-wider">
                           EXPORT APPROVAL BUSES
                         </p>
                       </div>
@@ -1330,12 +1317,12 @@ export function Dashboard() {
                     {isExportingApprovalBuses ? (
                       <Loader2
                         size={16}
-                        className="animate-spin text-slate-400"
+                        className="animate-spin text-slate-300"
                       />
                     ) : (
                       <ArrowUpRight
                         size={16}
-                        className="text-slate-500 group-hover/btn:text-white transition-colors"
+                        className="text-slate-300 group-hover/btn:text-white transition-colors"
                       />
                     )}
                   </motion.button>
@@ -1347,33 +1334,33 @@ export function Dashboard() {
           {/* Main Stats Table Area */}
           <motion.div
             variants={itemVariants}
-            className="col-span-12 bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]"
+            className="col-span-12 bg-[var(--surface)] rounded-[3rem] border border-[var(--border)] shadow-sm overflow-hidden flex flex-col min-h-[500px]"
           >
-            <div className="px-8 py-8 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-slate-50/30">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200">
-                  <FileText size={24} className="text-slate-600" />
+            <div className="p-[var(--space-4)] lg:p-[var(--space-8)] border-b border-[var(--border)] flex flex-col lg:flex-row justify-between items-start lg:items-center gap-[var(--space-6)] bg-[var(--surface-subtle)]">
+              <div className="flex items-center gap-[var(--space-4)]">
+                <div className="w-12 h-12 bg-[var(--surface)] rounded-2xl flex items-center justify-center border border-[var(--border)]">
+                  <FileText size={24} className="text-[var(--text-secondary)]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-black text-slate-900">
+                  <div className="flex items-center gap-[var(--space-2)]">
+                    <h2 className="text-lg font-black text-[var(--text)]">
                       سجل العمليات
                     </h2>
                     {selectedSeason === "1448" ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 border border-blue-200">
+                      <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[10px] font-black bg-blue-100 dark:bg-blue-500/15 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
                         موسم حج 1448 هـ
                       </span>
                     ) : selectedSeason === "1447" ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                      <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
                         موسم حج 1447 هـ (أرشيف)
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                      <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[10px] font-black bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)]">
                         جميع المواسم
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  <p className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-[var(--space-1)]">
                     {filterMode === "today"
                       ? "عرض السندات المسجلة اليوم فقط للموسم المحدد"
                       : `عرض سندات ${selectedSeason === "1448" ? "موسم حج 1448 هـ" : selectedSeason === "1447" ? "موسم حج 1447 هـ المؤرشفة" : "جميع المواسم"}`}
@@ -1381,31 +1368,31 @@ export function Dashboard() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-[var(--space-4)] w-full lg:w-auto">
                 <div className="relative flex-1 sm:w-64">
                   <input
                     type="text"
                     placeholder="بحث في السجل الحالي..."
                     value={tableSearchTerm}
                     onChange={(e) => setTableSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+                    className="w-full pl-[var(--space-12)] pr-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs font-bold text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all shadow-sm"
                   />
                   <Activity
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-2xl border border-slate-100 shadow-inner">
+                <div className="flex items-center gap-[var(--space-2)] p-[var(--space-2)] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-inner">
                   <button
                     onClick={() => setFilterMode("all")}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${filterMode === "all" ? "bg-white shadow-sm border border-slate-200 text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                    className={`px-[var(--space-4)] py-[var(--space-2)] rounded-xl text-[10px] font-black transition-all ${filterMode === "all" ? "bg-[var(--btn-primary)] text-white shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text)]"}`}
                   >
                     الكل
                   </button>
                   <button
                     onClick={() => setFilterMode("today")}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${filterMode === "today" ? "bg-white shadow-sm border border-slate-200 text-slate-800" : "text-slate-400 hover:text-slate-600"}`}
+                    className={`px-[var(--space-4)] py-[var(--space-2)] rounded-xl text-[10px] font-black transition-all ${filterMode === "today" ? "bg-[var(--btn-primary)] text-white shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text)]"}`}
                   >
                     اليوم
                   </button>
@@ -1415,20 +1402,20 @@ export function Dashboard() {
 
             <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[600px] relative">
               <table className="w-full text-right text-xs">
-                <thead className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
+                <thead className="sticky top-0 z-20 bg-[var(--surface)]/95 backdrop-blur-xl text-[var(--text-muted)] text-[10px] font-black uppercase tracking-widest border-b border-[var(--border)]">
                   <tr>
-                    <th className="px-8 py-5">رقم السند</th>
-                    <th className="px-8 py-5">بيانات الحافلة</th>
-                    <th className="px-8 py-5">السائق</th>
-                    <th className="px-8 py-5 text-center">كود الاعتماد</th>
-                    <th className="px-8 py-5">المسؤول</th>
-                    <th className="px-8 py-5">توقيت</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">رقم السند</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">بيانات الحافلة</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">السائق</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)] text-center">كود الاعتماد</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">المسؤول</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">توقيت</th>
                     {canManage && (
-                      <th className="px-8 py-5 text-left">الإجراءات</th>
+                      <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)] text-left">الإجراءات</th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-[var(--border)]">
                   <AnimatePresence mode="popLayout">
                     {filteredTableData.map((v, idx) => (
                       <motion.tr
@@ -1438,103 +1425,102 @@ export function Dashboard() {
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.3, delay: idx * 0.05 }}
                         key={v.id}
-                        className="hover:bg-slate-50/80 transition-all group"
+                        className="hover:bg-[var(--surface-subtle)] transition-all group"
                       >
-                        <td className="px-8 py-6">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)]">
                           <div className="flex flex-col">
-                            <span className="font-mono text-blue-600 font-black text-sm group-hover:translate-x-1 transition-transform">
+                            <span className="font-mono text-[var(--primary)] font-black text-sm group-hover:translate-x-1 transition-transform">
                               #{v.voucherNumber}
                             </span>
-                            <span className="text-[8px] text-slate-300 font-bold uppercase mt-0.5 tracking-tighter">
+                            <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase mt-[var(--space-1)] tracking-tighter">
                               ID: {v.id.substring(0, 8)}
                             </span>
-                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                            <div className="flex items-center gap-[var(--space-1)] mt-[var(--space-1)] flex-wrap">
                               {v.hajjSeason === "1448" ? (
-                                <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[8px] font-black border border-blue-200">
+                                <span className="inline-block px-[var(--space-2)] py-[var(--space-1)] bg-blue-100 dark:bg-blue-500/15 text-blue-800 dark:text-blue-300 rounded text-[10px] font-black border border-blue-200 dark:border-blue-500/30">
                                   1448 هـ
                                 </span>
                               ) : (
-                                <span className="inline-block px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[8px] font-black border border-amber-200">
+                                <span className="inline-block px-[var(--space-2)] py-[var(--space-1)] bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300 rounded text-[10px] font-black border border-amber-200 dark:border-amber-500/30">
                                   1447 هـ
                                 </span>
                               )}
                               {v.archived && (
-                                <span className="inline-block px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[8px] font-black leading-none">
+                                <span className="inline-block px-[var(--space-2)] py-[var(--space-1)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border)] rounded text-[10px] font-black leading-none">
                                   مؤرشف
                                 </span>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center font-black text-slate-900 shadow-sm group-hover:border-blue-200 group-hover:shadow-blue-50 transition-all text-xs">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)]">
+                          <div className="flex items-center gap-[var(--space-3)]">
+                            <div className="w-10 h-10 rounded-2xl bg-[var(--surface-subtle)] border-2 border-[var(--border)] flex items-center justify-center font-black text-[var(--text)] shadow-sm group-hover:border-[var(--primary)]/40 transition-all text-xs">
                               {v.busNumber}
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-[10px] font-black text-slate-800">
+                              <span className="text-[11px] font-black text-[var(--text)]">
                                 {v.busType || "حافلة نقل"}
                               </span>
-                              <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight">
+                              <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-tight">
                                 VEHICLE UNIT
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 font-black text-[10px] border border-slate-100 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)]">
+                          <div className="flex items-center gap-[var(--space-2)]">
+                            <div className="w-8 h-8 rounded-full bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-secondary)] font-black text-[11px] border border-[var(--border)] group-hover:bg-blue-50 dark:group-hover:bg-blue-500/15 group-hover:text-[var(--primary)] transition-colors">
                               {v.driverName?.charAt(0) || "D"}
                             </div>
-                            <span className="font-bold text-slate-800 truncate max-w-[150px]">
+                            <span className="font-bold text-[var(--text)] truncate max-w-[150px]">
                               {v.driverName}
                             </span>
                           </div>
                         </td>
-                        <td className="px-8 py-6 text-center">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-lg border border-slate-200/60 group-hover:border-blue-200 transition-colors">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                            <span className="text-[10px] font-black text-slate-700 tracking-tighter">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)] text-center">
+                          <div className="inline-flex items-center gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-1)] bg-[var(--surface-subtle)] rounded-lg border border-[var(--border)] group-hover:border-[var(--primary)]/40 transition-colors">
+                            <span className="text-[11px] font-black text-[var(--text)] tracking-tighter">
                               {v.approvalNumber}
                             </span>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)]">
                           <div className="flex flex-col">
-                            <span className="text-slate-800 font-bold text-[10px]">
+                            <span className="text-[var(--text)] font-bold text-[11px]">
                               {v.userName || v.delegateName || "غير معروف"}
                             </span>
-                            <span className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">
+                            <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase mt-[var(--space-1)]">
                               AUTH OFFICER
                             </span>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)]">
                           <div className="flex flex-col items-center">
-                            <span className="font-black text-slate-900 text-[10px]">
+                            <span className="font-black text-[var(--text)] text-[11px] tabular-nums">
                               {format(new Date(v.timestamp), "HH:mm")}
                             </span>
-                            <span className="text-[8px] text-slate-400 font-bold uppercase mt-0.5 tracking-widest">
+                            <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase mt-[var(--space-1)] tracking-widest">
                               {format(new Date(v.timestamp), "dd MMM")}
                             </span>
                           </div>
                         </td>
                         {canManage && (
-                          <td className="px-8 py-6 text-left">
-                            <div className="flex items-center justify-end gap-2">
+                          <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)] text-left">
+                            <div className="flex items-center justify-end gap-[var(--space-2)]">
                               <button
                                 onClick={() => {
                                   setEditingVoucher(v);
                                   setIsEditModalOpen(true);
                                 }}
-                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100"
+                                className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/15 text-[var(--primary)] flex items-center justify-center hover:bg-[var(--btn-primary)] hover:text-white transition-all shadow-sm border border-blue-200 dark:border-blue-500/30"
                                 title="تعديل السند"
                               >
                                 <Edit2 size={14} />
                               </button>
                               <button
                                 onClick={() => handleRemoveBusFromVoucher(v)}
-                                className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100"
+                                className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/15 text-[var(--danger)] flex items-center justify-center hover:bg-[#B91C1C] hover:text-white transition-all shadow-sm border border-red-200 dark:border-red-500/30"
                                 title="حذف حافلة/السند"
                               >
                                 <Trash2 size={14} />
@@ -1549,20 +1535,20 @@ export function Dashboard() {
                     <tr>
                       <td
                         colSpan={canManage ? 7 : 6}
-                        className="px-8 py-32 text-center"
+                        className="px-[var(--space-8)] py-[var(--space-16)] text-center"
                       >
-                        <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-dashed border-slate-200 shadow-inner group-hover:rotate-12 transition-transform duration-700">
+                        <div className="w-20 h-20 bg-[var(--surface-subtle)] rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-dashed border-[var(--border)] shadow-inner">
                           <Bus
-                            className="text-slate-200 group-hover:text-slate-300 transition-colors"
+                            className="text-[var(--text-muted)]"
                             size={40}
                           />
                         </div>
-                        <p className="text-slate-400 font-black uppercase text-[12px] tracking-widest">
+                        <p className="text-[var(--text-secondary)] font-black uppercase text-[12px] tracking-widest">
                           {tableSearchTerm
                             ? "لا توجد نتائج مطابقة لبحثك"
                             : "لا يوجد عمليات مسجلة حالياً"}
                         </p>
-                        <p className="text-slate-300 text-[10px] mt-2 italic">
+                        <p className="text-[var(--text-muted)] text-[11px] mt-[var(--space-2)]">
                           {tableSearchTerm
                             ? "جرب البحث بكلمات مختلفة أو رقم سند آخر"
                             : "سيتم عرض الحركات الجديدة هنا بمجرد صدورها"}
@@ -1574,13 +1560,13 @@ export function Dashboard() {
               </table>
             </div>
 
-            <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <div className="p-[var(--space-4)] lg:p-[var(--space-6)] bg-[var(--surface-subtle)] border-t border-[var(--border)] flex justify-between items-center">
+              <div className="flex items-center gap-[var(--space-2)] text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
                 <LayoutDashboard size={14} />
                 <span>نظام متابعة حركة حافلات درة المنورة</span>
               </div>
-              <p className="text-[10px] text-slate-300 font-black uppercase">
-                V2.5.2 PRO
+              <p className="text-[11px] text-[var(--text-muted)] font-black uppercase">
+                V2.6.0 PRO
               </p>
             </div>
           </motion.div>
@@ -1589,19 +1575,18 @@ export function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[3rem] border border-slate-200 shadow-sm p-8 space-y-8"
+          className="bg-[var(--surface)] rounded-[3rem] border border-[var(--border)] shadow-sm p-[var(--space-4)] lg:p-[var(--space-8)] space-y-[var(--space-8)]"
         >
           {/* Main Season 1447 Archive & 1448 Season Transition Card */}
-          <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 rounded-[2.5rem] p-8 border border-amber-400/40 text-white shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none -mr-24 -mt-24"></div>
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
-              <div className="space-y-3 max-w-2xl">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-400/30 flex items-center gap-1.5">
+          <div className="bg-[var(--navy)] rounded-[2.5rem] p-[var(--space-4)] lg:p-[var(--space-8)] border border-amber-400/40 text-white shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-[var(--space-6)] relative z-10">
+              <div className="space-y-[var(--space-3)] max-w-2xl">
+                <div className="flex items-center gap-[var(--space-2)] flex-wrap">
+                  <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-400/30 flex items-center gap-[var(--space-2)]">
                     <Archive size={14} />
                     أرشفة المواسم الرسمية
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black border border-emerald-400/30 flex items-center gap-1.5">
+                  <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black border border-emerald-400/30 flex items-center gap-[var(--space-2)]">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                     الموسم النشط الحالي: حج 1448 هـ
                   </span>
@@ -1609,10 +1594,10 @@ export function Dashboard() {
                 <h3 className="text-2xl font-black text-white leading-snug">
                   أرشفة جميع السندات الحالية في تبويب موسم حج 1447 هـ وفتح موسم حج 1448 هـ
                 </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-200 leading-relaxed">
                   سيقوم هذا الإجراء بنقل وأرشفة كافة السندات والعمليات المسجلة حالياً وتوثيقها تحت <strong>"موسم حج 1447 هـ"</strong> كأرشيف محفوظ، وتحرير كافة الحافلات لتكون شاغرة وجاهزة فوراً، وضبط النظام بشكل كامل لاستقبال عمليات <strong>"موسم حج 1448 هـ"</strong> الجديدة.
                 </p>
-                <div className="flex items-center gap-4 text-xs pt-1 text-amber-300 font-bold">
+                <div className="flex items-center gap-[var(--space-4)] text-xs pt-[var(--space-1)] text-amber-300 font-bold">
                   <span>سندات موسم 1447 هـ: <strong>{season1447Count}</strong></span>
                   <span>|</span>
                   <span>سندات موسم 1448 هـ: <strong>{season1448Count}</strong></span>
@@ -1621,44 +1606,44 @@ export function Dashboard() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-[var(--space-3)] w-full lg:w-auto shrink-0">
                 <button
                   onClick={() => setIsSeasonArchiveModalOpen(true)}
-                  className="px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-amber-500/25 border border-amber-300/50 flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  className="px-[var(--space-6)] py-[var(--space-4)] bg-[var(--gold)] hover:bg-amber-400 text-[#0F172A] font-black text-sm rounded-2xl shadow-xl border border-amber-300 flex items-center justify-center gap-[var(--space-2)] transition-all cursor-pointer active:scale-[0.98]"
                 >
-                  <Sparkles size={18} className="text-slate-950" />
+                  <Sparkles size={18} className="text-[#0F172A]" />
                   <span>تنفيذ أرشفة موسم 1447 هـ وبدء موسم 1448 هـ</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-100 pb-6 pt-2">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center border border-amber-100 animate-pulse">
-                <Calendar size={24} className="text-amber-600" />
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-[var(--space-6)] border-b border-[var(--border)] pb-[var(--space-6)] pt-[var(--space-2)]">
+            <div className="flex items-center gap-[var(--space-4)]">
+              <div className="w-12 h-12 bg-amber-50 dark:bg-amber-500/15 rounded-2xl flex items-center justify-center border border-amber-200 dark:border-amber-500/30 animate-pulse">
+                <Calendar size={24} className="text-[var(--gold)]" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-slate-900">
+                <h2 className="text-lg font-black text-[var(--text)]">
                   أرشفة السندات حسب تاريخ محدد
                 </h2>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                <p className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-[var(--space-1)]">
                   تفريغ الحافلات وتصفية السجلات النشطة حسب تاريخ يومي أو نطاق زمني
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-amber-50/50 border border-amber-100/80 p-6 rounded-2xl text-slate-700 space-y-2">
-            <h4 className="text-xs font-black text-amber-800 flex items-center gap-2">
-              <AlertTriangle size={14} className="text-amber-600" />
+          <div className="bg-amber-50/60 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl text-[var(--text-secondary)] space-y-[var(--space-2)]">
+            <h4 className="text-xs font-black text-[var(--gold-text)] flex items-center gap-[var(--space-2)]">
+              <AlertTriangle size={14} className="text-[var(--gold)]" />
               <span>مفهوم وآلية الأرشفة وإعادة إتاحة الحافلات:</span>
             </h4>
-            <p className="text-[11px] leading-relaxed text-slate-600">
+            <p className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
               أرشفة السندات تقوم بتغيير حالة السند في النظام إلى{" "}
-              <strong className="text-slate-800 font-bold">"مؤرشف"</strong>. هذا
+              <strong className="text-[var(--text)] font-bold">"مؤرشف"</strong>. هذا
               الإجراء يقوم بـ{" "}
-              <strong className="text-blue-600 font-bold">
+              <strong className="text-[var(--primary)] font-bold">
                 تحرير الحافلات المرتبطة بها تلقائياً
               </strong>{" "}
               وإعادتها لحالة التوافر (جاهزة) لتتمكن من إدخالها في سندات جديدة
@@ -1667,31 +1652,31 @@ export function Dashboard() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
-            <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-6)] bg-[var(--surface-subtle)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-[2rem] border border-[var(--border)]">
+            <div>
+              <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                 تحديد تاريخ الأرشفة المستهدف
               </label>
               <input
                 type="date"
                 value={archiveTargetDate}
                 onChange={(e) => setArchiveTargetDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm outline-none shadow-sm"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-2xl font-black text-[var(--text)] focus:ring-2 focus:ring-[var(--gold)] focus:border-[var(--gold)] transition-all text-sm outline-none shadow-sm"
               />
             </div>
 
-            <div className="space-y-3">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+            <div>
+              <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                 نطاق الأرشفة والمطابقة
               </label>
-              <div className="flex gap-4">
+              <div className="flex gap-[var(--space-4)]">
                 <button
                   type="button"
                   onClick={() => setArchiveMode("older")}
-                  className={`flex-1 py-3 px-4 rounded-xl border font-bold text-xs transition-all ${
+                  className={`flex-1 py-[var(--space-3)] px-[var(--space-4)] rounded-xl border font-bold text-xs transition-all cursor-pointer ${
                     archiveMode === "older"
-                      ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-100"
-                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      ? "bg-[var(--gold)] text-[#0F172A] border-[var(--gold)] shadow-md"
+                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--surface-subtle)]"
                   }`}
                 >
                   هذا التاريخ وتاريخ ما قبله (الكل)
@@ -1699,10 +1684,10 @@ export function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setArchiveMode("exact")}
-                  className={`flex-1 py-3 px-4 rounded-xl border font-bold text-xs transition-all ${
+                  className={`flex-1 py-[var(--space-3)] px-[var(--space-4)] rounded-xl border font-bold text-xs transition-all cursor-pointer ${
                     archiveMode === "exact"
-                      ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-100"
-                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      ? "bg-[var(--gold)] text-[#0F172A] border-[var(--gold)] shadow-md"
+                      : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--surface-subtle)]"
                   }`}
                 >
                   هذا التاريخ المحدد فقط
@@ -1711,16 +1696,16 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-xs font-black text-slate-800 px-1">
+          <div className="space-y-[var(--space-4)]">
+            <h3 className="text-xs font-black text-[var(--text)] px-[var(--space-1)]">
               السندات التي تطابق الاختيار والتاريخ (غير مؤرشفة حالياً):
             </h3>
 
             {matchingVouchers.length > 0 ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-100 rounded-2xl text-orange-800">
+              <div className="space-y-[var(--space-4)]">
+                <div className="flex items-center gap-[var(--space-3)] p-[var(--space-4)] bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-2xl text-[var(--gold-text)]">
                   <AlertTriangle
-                    className="text-orange-600 shrink-0"
+                    className="text-[var(--gold)] shrink-0"
                     size={18}
                   />
                   <span className="text-xs font-black">
@@ -1730,34 +1715,34 @@ export function Dashboard() {
                   </span>
                 </div>
 
-                <div className="border border-slate-100 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto bg-white shadow-inner">
+                <div className="border border-[var(--border)] rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto bg-[var(--surface)] shadow-inner">
                   <table className="w-full text-right text-xs">
-                    <thead className="bg-slate-50 text-slate-400 text-[10px] font-bold sticky top-0 text-right">
+                    <thead className="bg-[var(--surface-subtle)] text-[var(--text-muted)] text-[10px] font-bold sticky top-0 text-right border-b border-[var(--border)]">
                       <tr>
-                        <th className="px-6 py-4 text-right">رقم السند</th>
-                        <th className="px-6 py-4 text-right">أرقام الحافلات</th>
-                        <th className="px-6 py-4 text-right">مسؤول الإدخال</th>
-                        <th className="px-6 py-4 text-right">التاريخ الفعلي</th>
+                        <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">رقم السند</th>
+                        <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">أرقام الحافلات</th>
+                        <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">مسؤول الإدخال</th>
+                        <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">التاريخ الفعلي</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-[var(--border)]">
                       {matchingVouchers.map((v) => {
                         const busNums =
                           v.buses && Array.isArray(v.buses)
                             ? v.buses.map((b: any) => b.busNumber).join(", ")
                             : v.busNumber;
                         return (
-                          <tr key={v.id} className="hover:bg-slate-50/50">
-                            <td className="px-6 py-4 font-mono font-black text-blue-600">
+                          <tr key={v.id} className="hover:bg-[var(--surface-subtle)]">
+                            <td className="px-[var(--space-6)] py-[var(--space-4)] font-mono font-black text-[var(--primary)]">
                               #{v.voucherNumber}
                             </td>
-                            <td className="px-6 py-4 font-bold text-slate-800">
+                            <td className="px-[var(--space-6)] py-[var(--space-4)] font-bold text-[var(--text)]">
                               {busNums || "---"}
                             </td>
-                            <td className="px-6 py-4 text-slate-500">
+                            <td className="px-[var(--space-6)] py-[var(--space-4)] text-[var(--text-secondary)]">
                               {v.userName || v.delegateName || "---"}
                             </td>
-                            <td className="px-6 py-4 text-slate-500">
+                            <td className="px-[var(--space-6)] py-[var(--space-4)] text-[var(--text-secondary)] tabular-nums">
                               {v.customDate || v.dateKey}
                             </td>
                           </tr>
@@ -1767,12 +1752,12 @@ export function Dashboard() {
                   </table>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-[var(--space-4)]">
                   <button
                     type="button"
                     onClick={() => setIsArchiveModalOpen(true)}
                     disabled={isArchivingInProgress}
-                    className="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white font-black px-8 py-4 rounded-2xl shadow-xl shadow-amber-100 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    className="w-full md:w-auto bg-[var(--gold)] hover:bg-amber-400 text-[#0F172A] font-black px-[var(--space-8)] py-[var(--space-4)] rounded-2xl shadow-lg flex items-center justify-center gap-[var(--space-2)] transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isArchivingInProgress ? (
                       <Loader2 size={18} className="animate-spin" />
@@ -1787,14 +1772,14 @@ export function Dashboard() {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 bg-slate-50/50 border border-slate-100 rounded-[2rem]">
-                <div className="w-16 h-16 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center border border-emerald-100 mb-4 animate-bounce">
-                  <CheckCircle2 size={28} className="text-emerald-500" />
+              <div className="flex flex-col items-center justify-center py-[var(--space-16)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-[2rem]">
+                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-[1.5rem] flex items-center justify-center border border-emerald-200 dark:border-emerald-500/30 mb-[var(--space-4)] animate-bounce">
+                  <CheckCircle2 size={28} className="text-[var(--success)]" />
                 </div>
-                <p className="text-slate-500 font-black text-xs">
+                <p className="text-[var(--text-secondary)] font-black text-xs">
                   لا توجد سندات نشطة مطابقة للاختيار والتاريخ!
                 </p>
-                <p className="text-slate-400 text-[10px] mt-1">
+                <p className="text-[var(--text-muted)] text-[11px] mt-[var(--space-1)]">
                   كافة السندات في هذا النطاق مؤرشفة بالفعل أو لا توجد سندات
                   مسجلة.
                 </p>
@@ -1807,7 +1792,7 @@ export function Dashboard() {
       {/* Edit Modal */}
       <AnimatePresence>
         {isEditModalOpen && editingVoucher && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1819,32 +1804,32 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl relative z-10 border border-slate-100"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl relative z-10 border border-[var(--border)]"
             >
-              <div className="bg-slate-900 px-8 py-6 text-white flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <div className="bg-[var(--navy)] px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-6)] text-white flex justify-between items-center">
+                <div className="flex items-center gap-[var(--space-3)]">
+                  <div className="w-10 h-10 bg-[var(--btn-primary)] rounded-xl flex items-center justify-center">
                     <Edit2 size={18} />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold">تعديل بيانات السند</h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">
                       Voucher #{editingVoucher.voucherNumber}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-slate-300 hover:text-white transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleUpdateVoucher} className="p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+              <form onSubmit={handleUpdateVoucher} className="p-[var(--space-4)] lg:p-[var(--space-8)] space-y-[var(--space-5)]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-5)]">
+                  <div>
+                    <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                       رقم الحافلة
                     </label>
                     <input
@@ -1857,11 +1842,11 @@ export function Dashboard() {
                           busNumber: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-black text-slate-900 focus:ring-2 focus:ring-blue-500 transition-all"
+                      className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl font-black text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                  <div>
+                    <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                       كود الاعتماد
                     </label>
                     <input
@@ -1874,13 +1859,13 @@ export function Dashboard() {
                           approvalNumber: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-black text-slate-900 focus:ring-2 focus:ring-blue-500 transition-all"
+                      className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl font-black text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                <div>
+                  <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                     اسم السائق
                   </label>
                   <input
@@ -1893,12 +1878,12 @@ export function Dashboard() {
                         driverName: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 transition-all"
+                    className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl font-bold text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                <div>
+                  <label className="block text-[11px] font-black text-[var(--text-muted)] uppercase tracking-widest px-[var(--space-1)] mb-[var(--space-2)]">
                     نوع الحافلة
                   </label>
                   <select
@@ -1909,7 +1894,7 @@ export function Dashboard() {
                         busType: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 transition-all"
+                    className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl font-bold text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                   >
                     <option value="حافلة كبيرة">حافلة كبيرة</option>
                     <option value="حافلة صغيرة">حافلة صغيرة</option>
@@ -1917,11 +1902,11 @@ export function Dashboard() {
                   </select>
                 </div>
 
-                <div className="pt-4 flex gap-3">
+                <div className="pt-[var(--space-4)] flex gap-[var(--space-3)]">
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 bg-[var(--btn-primary)] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-[var(--btn-primary-hover)] transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50"
                   >
                     {isSaving ? (
                       <Loader2 size={20} className="animate-spin" />
@@ -1933,7 +1918,7 @@ export function Dashboard() {
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-6 py-4 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all"
+                    className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all"
                   >
                     إلغاء
                   </button>
@@ -1947,7 +1932,7 @@ export function Dashboard() {
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {isDeleteModalOpen && voucherToDelete && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1959,29 +1944,29 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-red-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-red-100">
-                <Trash2 size={32} className="text-red-600" />
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-500/15 rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-red-200 dark:border-red-500/30">
+                <Trash2 size={32} className="text-[var(--danger)]" />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-2">
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 تأكيد حذف السند
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 px-4">
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
                 هل أنت متأكد من رغبتك في حذف السند رقم{" "}
-                <span className="font-bold text-red-600">
+                <span className="font-bold text-[var(--danger)]">
                   #{voucherToDelete.voucherNumber}
                 </span>
                 ؟ سيؤدي هذا الإجراء إلى حذف كافة بيانات السند نهائياً وتحرير
                 الحافلة.
               </p>
 
-              <div className="flex gap-3">
+              <div className="flex gap-[var(--space-3)]">
                 <button
                   onClick={handleDeleteVoucher}
                   disabled={isDeleting}
-                  className="flex-1 bg-red-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-red-100 hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-[#B91C1C] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-[#991B1B] transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50"
                 >
                   {isDeleting ? (
                     <Loader2 size={20} className="animate-spin" />
@@ -1993,7 +1978,7 @@ export function Dashboard() {
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={isDeleting}
-                  className="px-6 py-4 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                  className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50"
                 >
                   تراجع
                 </button>
@@ -2006,7 +1991,7 @@ export function Dashboard() {
       {/* Archive Confirmation Modal */}
       <AnimatePresence>
         {isArchiveModalOpen && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2018,29 +2003,29 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-amber-100">
-                <Calendar size={32} className="text-amber-600" />
+              <div className="w-20 h-20 bg-amber-50 dark:bg-amber-500/15 rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-amber-200 dark:border-amber-500/30">
+                <Calendar size={32} className="text-[var(--gold)]" />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-2">
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 تأكيد أرشفة السندات
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 px-4">
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
                 هل أنت متأكد من أرشفة عدد{" "}
-                <span className="font-bold text-amber-600">
+                <span className="font-bold text-[var(--gold-text)]">
                   {matchingVouchers.length}
                 </span>{" "}
                 من السندات؟ بعد الأرشفة، ستصبح الحافلات المرتبطة بها متاحة فوراً
                 للاستخدام وسجلات السندات ستشير إليها كمؤرشفة.
               </p>
 
-              <div className="flex gap-3">
+              <div className="flex gap-[var(--space-3)]">
                 <button
                   onClick={handleExecuteArchive}
                   disabled={isArchivingInProgress}
-                  className="flex-1 bg-amber-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-amber-100 hover:bg-amber-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-[var(--gold)] text-[#0F172A] font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-amber-400 transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 cursor-pointer"
                 >
                   {isArchivingInProgress ? (
                     <Loader2 size={20} className="animate-spin" />
@@ -2052,7 +2037,7 @@ export function Dashboard() {
                 <button
                   onClick={() => setIsArchiveModalOpen(false)}
                   disabled={isArchivingInProgress}
-                  className="px-6 py-4 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                  className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50"
                 >
                   تراجع
                 </button>
@@ -2065,7 +2050,7 @@ export function Dashboard() {
       {/* Archive Success Modal */}
       <AnimatePresence>
         {isArchiveSuccessModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2077,26 +2062,26 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-emerald-100">
+              <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-500/15 rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-emerald-200 dark:border-emerald-500/30">
                 <CheckCircle2
                   size={32}
-                  className="text-emerald-500 animate-bounce"
+                  className="text-[var(--success)] animate-bounce"
                 />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-2">
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 تمت الأرشفة بنجاح
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 px-4">
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
                 تمت أرشفة عدد{" "}
-                <span className="font-bold text-emerald-600">
+                <span className="font-bold text-[var(--success)]">
                   {archivedCount}
                 </span>{" "}
                 من السندات المحددة بنجاح. لقد تم إخلاء الحافلات المرتبطة بها وهي
                 الآن{" "}
-                <span className="text-emerald-600 font-bold">
+                <span className="text-[var(--success)] font-bold">
                   جاهزة في النظام
                 </span>{" "}
                 للاستخدام مجدداً فوراً.
@@ -2104,7 +2089,7 @@ export function Dashboard() {
 
               <button
                 onClick={() => setIsArchiveSuccessModalOpen(false)}
-                className="w-full bg-slate-950 text-white font-black py-4 rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[var(--navy)] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-[var(--space-2)]"
               >
                 <span>حسناً</span>
               </button>
@@ -2116,7 +2101,7 @@ export function Dashboard() {
       {/* Season 1447 Archive Confirmation Modal */}
       <AnimatePresence>
         {isSeasonArchiveModalOpen && (
-          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2128,48 +2113,48 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl relative z-10 border border-amber-200 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl relative z-10 border border-amber-300 dark:border-amber-500/30 text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-amber-300 shadow-xl shadow-amber-500/20 text-white">
-                <Archive size={36} className="text-white" />
+              <div className="w-20 h-20 bg-[var(--gold)] rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-amber-300 shadow-xl text-[#0F172A]">
+                <Archive size={36} className="text-[#0F172A]" />
               </div>
 
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="px-3 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+              <div className="flex items-center justify-center gap-[var(--space-2)] mb-[var(--space-2)]">
+                <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-500/15 text-[var(--gold-text)] border border-amber-300 dark:border-amber-500/30">
                   إجراء رسمي للمواسم
                 </span>
               </div>
 
-              <h3 className="text-2xl font-black text-slate-900 mb-2">
+              <h3 className="text-2xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 أرشفة موسم حج 1447 هـ وفتح موسم 1448 هـ
               </h3>
 
-              <p className="text-slate-600 text-xs leading-relaxed mb-6 px-2">
+              <p className="text-[var(--text-secondary)] text-xs leading-relaxed mb-[var(--space-6)] px-[var(--space-2)]">
                 سيقوم هذا الإجراء بنقل وأرشفة كافة السندات والعمليات السابقة وتوثيقها تحت{" "}
-                <strong className="text-amber-800 font-black">"موسم حج 1447 هـ"</strong> في الأرشيف الدائم، وتحرير جميع الحافلات وإعادتها فوراً لحالة التوفر لتكون جاهزة لـ{" "}
-                <strong className="text-blue-800 font-black">"موسم حج 1448 هـ"</strong> الجديد.
+                <strong className="text-[var(--gold-text)] font-black">"موسم حج 1447 هـ"</strong> في الأرشيف الدائم، وتحرير جميع الحافلات وإعادتها فوراً لحالة التوفر لتكون جاهزة لـ{" "}
+                <strong className="text-[var(--primary)] font-black">"موسم حج 1448 هـ"</strong> الجديد.
               </p>
 
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-right space-y-2 mb-6 text-xs font-semibold text-slate-700">
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-                  <span className="text-slate-500">إجمالي السندات الحالية:</span>
-                  <span className="font-mono font-black text-slate-900">{totalAllSeasonsCount} سند</span>
+              <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] text-right space-y-[var(--space-2)] mb-[var(--space-6)] text-xs font-semibold text-[var(--text-secondary)]">
+                <div className="flex justify-between items-center py-[var(--space-1)] border-b border-[var(--border)]">
+                  <span className="text-[var(--text-muted)]">إجمالي السندات الحالية:</span>
+                  <span className="font-mono font-black text-[var(--text)]">{totalAllSeasonsCount} سند</span>
                 </div>
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-                  <span className="text-slate-500">الوجهة الأرشيفية:</span>
-                  <span className="font-black text-amber-700">موسم حج 1447 هـ</span>
+                <div className="flex justify-between items-center py-[var(--space-1)] border-b border-[var(--border)]">
+                  <span className="text-[var(--text-muted)]">الوجهة الأرشيفية:</span>
+                  <span className="font-black text-[var(--gold-text)]">موسم حج 1447 هـ</span>
                 </div>
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-500">الموسم النشط بعد التنفيذ:</span>
-                  <span className="font-black text-blue-700">موسم حج 1448 هـ</span>
+                <div className="flex justify-between items-center py-[var(--space-1)]">
+                  <span className="text-[var(--text-muted)]">الموسم النشط بعد التنفيذ:</span>
+                  <span className="font-black text-[var(--primary)]">موسم حج 1448 هـ</span>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-[var(--space-3)]">
                 <button
                   onClick={handleExecuteSeasonArchive}
                   disabled={isSeasonArchiving}
-                  className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 rounded-2xl shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 bg-[var(--gold)] hover:bg-amber-400 text-[#0F172A] font-black py-[var(--space-4)] rounded-2xl shadow-lg transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 cursor-pointer"
                 >
                   {isSeasonArchiving ? (
                     <>
@@ -2186,7 +2171,7 @@ export function Dashboard() {
                 <button
                   onClick={() => setIsSeasonArchiveModalOpen(false)}
                   disabled={isSeasonArchiving}
-                  className="px-6 py-4 border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50 cursor-pointer"
+                  className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -2199,7 +2184,7 @@ export function Dashboard() {
       {/* Season 1447 Archive Success Modal */}
       <AnimatePresence>
         {isSeasonArchiveSuccessModalOpen && (
-          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2211,28 +2196,28 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-emerald-200 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-emerald-200 dark:border-emerald-500/30 text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-emerald-200">
+              <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-500/15 rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-emerald-200 dark:border-emerald-500/30">
                 <CheckCircle2
                   size={36}
-                  className="text-emerald-600 animate-bounce"
+                  className="text-[var(--success)] animate-bounce"
                 />
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 mb-2">
-                <span className="px-3 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <div className="flex items-center justify-center gap-[var(--space-2)] mb-[var(--space-2)]">
+                <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-500/15 text-[var(--success)] border border-emerald-300 dark:border-emerald-500/30">
                   تم بنجاح تام
                 </span>
               </div>
 
-              <h3 className="text-2xl font-black text-slate-900 mb-2">
+              <h3 className="text-2xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 مرحباً بموسم حج 1448 هـ!
               </h3>
 
-              <p className="text-slate-600 text-xs leading-relaxed mb-6 px-2">
+              <p className="text-[var(--text-secondary)] text-xs leading-relaxed mb-[var(--space-6)] px-[var(--space-2)]">
                 تمت أرشفة وتوثيق عدد{" "}
-                <span className="font-bold text-amber-700 font-mono text-sm">
+                <span className="font-bold text-[var(--gold-text)] font-mono text-sm">
                   {seasonArchiveResult.totalArchived}
                 </span>{" "}
                 سنداً بنجاح في تبويب <strong>"موسم حج 1447 هـ"</strong>. وتم تفريغ وتحرير كافة الحافلات لتصبح جاهزة بنسبة 100% لإصدار سندات <strong>موسم حج 1448 هـ</strong> الجديد.
@@ -2240,7 +2225,7 @@ export function Dashboard() {
 
               <button
                 onClick={() => setIsSeasonArchiveSuccessModalOpen(false)}
-                className="w-full bg-gradient-to-r from-blue-700 to-indigo-900 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-700/20 hover:from-blue-800 hover:to-indigo-950 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[var(--btn-primary)] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-[var(--btn-primary-hover)] transition-all flex items-center justify-center gap-[var(--space-2)] cursor-pointer"
               >
                 <span>الانتقال لمتابعة موسم حج 1448 هـ</span>
               </button>
@@ -2252,7 +2237,7 @@ export function Dashboard() {
       {/* Archive Error Modal */}
       <AnimatePresence>
         {isArchiveErrorModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2264,26 +2249,26 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 text-center p-8"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
             >
-              <div className="w-20 h-20 bg-red-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-red-100">
-                <AlertTriangle size={32} className="text-red-500" />
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-500/15 rounded-[2rem] flex items-center justify-center mx-auto mb-[var(--space-6)] border border-red-200 dark:border-red-500/30">
+                <AlertTriangle size={32} className="text-[var(--danger)]" />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-2">
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 فشلت عملية الأرشفة
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 px-4">
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
                 واجه النظام خطأً أثناء الأرشفة:
                 <br />
-                <span className="text-red-600 font-mono text-xs block mt-2 p-2 bg-slate-50 rounded border border-slate-100">
+                <span className="text-[var(--danger)] font-mono text-xs block mt-[var(--space-2)] p-[var(--space-2)] bg-[var(--surface-subtle)] rounded border border-[var(--border)]">
                   {archiveErrorMsg}
                 </span>
               </p>
 
               <button
                 onClick={() => setIsArchiveErrorModalOpen(false)}
-                className="w-full bg-red-600 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#B91C1C] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-[#991B1B] transition-all flex items-center justify-center gap-[var(--space-2)]"
               >
                 <span>موافق</span>
               </button>
@@ -2295,7 +2280,7 @@ export function Dashboard() {
       {/* Interactive Distributed Buses Detail Modal */}
       <AnimatePresence>
         {isBusDetailModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-[var(--space-4)]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2307,27 +2292,27 @@ export function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-100 p-8 flex flex-col max-h-[85vh]"
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)] flex flex-col max-h-[85vh]"
             >
               {/* Header */}
-              <div className="flex justify-between items-center pb-6 border-b border-slate-100">
-                <div className="flex items-center gap-3">
+              <div className="flex justify-between items-center pb-[var(--space-6)] border-b border-[var(--border)]">
+                <div className="flex items-center gap-[var(--space-3)]">
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                       busDetailModalMode === "today"
-                        ? "bg-amber-50 border border-amber-100 text-amber-600"
-                        : "bg-emerald-50 border border-emerald-100 text-emerald-600"
+                        ? "bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-[var(--gold)]"
+                        : "bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-[var(--success)]"
                     }`}
                   >
                     <Bus size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 leading-tight">
+                    <h3 className="text-xl font-black text-[var(--text)] leading-tight">
                       {busDetailModalMode === "today"
                         ? "الحافلات الموزعة اليوم"
                         : `الحافلات الموزعة بالفترة من ${distributedBusesStartDate} إلى ${distributedBusesEndDate}`}
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                    <p className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-[var(--space-1)]">
                       {busDetailModalMode === "today"
                         ? "تفاصيل الحافلات الموزعة ضمن العقود الحالية لهذا اليوم"
                         : `سجل نشاط الحافلات الموزعة في العقود للفترة من ${distributedBusesStartDate} إلى ${distributedBusesEndDate}`}
@@ -2337,26 +2322,26 @@ export function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setIsBusDetailModalOpen(false)}
-                  className="w-10 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
+                  className="w-10 h-10 bg-[var(--surface-subtle)] hover:bg-[var(--border)] border border-[var(--border)] rounded-xl flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Search Bar */}
-              <div className="relative my-4">
+              <div className="relative my-[var(--space-4)]">
                 <input
                   type="text"
                   placeholder="ابحث برقم الحافلة، اسم السائق، أو رقم السند..."
                   value={busModalSearchTerm}
                   onChange={(e) => setBusModalSearchTerm(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl py-3 px-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right"
+                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl py-[var(--space-3)] px-[var(--space-4)] text-xs font-semibold text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] text-right"
                   dir="rtl"
                 />
               </div>
 
               {/* List */}
-              <div className="flex-1 overflow-y-auto pr-1 space-y-3 pb-4">
+              <div className="flex-1 overflow-y-auto pr-[var(--space-1)] space-y-[var(--space-3)] pb-[var(--space-4)]">
                 {(() => {
                   const sourceList =
                     busDetailModalMode === "today"
@@ -2383,8 +2368,8 @@ export function Dashboard() {
 
                   if (filtered.length === 0) {
                     return (
-                      <div className="text-center py-12">
-                        <p className="text-slate-400 font-bold text-xs">
+                      <div className="text-center py-[var(--space-12)]">
+                        <p className="text-[var(--text-muted)] font-bold text-xs">
                           لا توجد حافلات موزعة مطابقة للبحث
                         </p>
                       </div>
@@ -2394,52 +2379,52 @@ export function Dashboard() {
                   return filtered.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-3xl border border-slate-100 hover:ring-2 hover:ring-slate-150 bg-slate-50/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 text-right"
+                      className="p-[var(--space-4)] rounded-3xl border border-[var(--border)] hover:border-[var(--primary)]/40 bg-[var(--surface-subtle)] transition-all flex flex-col md:flex-row md:items-center justify-between gap-[var(--space-4)] text-right"
                       dir="rtl"
                     >
-                      <div className="space-y-1.5 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs bg-slate-900 text-white font-black px-2 py-0.5 rounded-lg">
+                      <div className="space-y-[var(--space-2)] flex-1">
+                        <div className="flex items-center gap-[var(--space-2)]">
+                          <span className="text-xs bg-[var(--navy)] text-white font-black px-[var(--space-2)] py-[var(--space-1)] rounded-lg">
                             حافلة رقم #{item.busNumber}
                           </span>
-                          <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-lg border border-slate-200/50">
+                          <span className="text-[10px] bg-[var(--surface)] text-[var(--text-secondary)] font-bold px-[var(--space-2)] py-[var(--space-1)] rounded-lg border border-[var(--border)]">
                             {item.busType}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-500 font-semibold pt-1">
+                        <div className="grid grid-cols-2 gap-x-[var(--space-4)] gap-y-[var(--space-1)] text-[11px] text-[var(--text-secondary)] font-semibold pt-[var(--space-1)]">
                           <p>
                             السائق:{" "}
-                            <span className="font-bold text-slate-800">
+                            <span className="font-bold text-[var(--text)]">
                               {item.driverName}
                             </span>
                           </p>
                           {item.driverPhone && (
                             <p>
                               الهاتف:{" "}
-                              <span className="font-bold text-slate-800 dir-ltr">
+                              <span className="font-bold text-[var(--text)] dir-ltr">
                                 {item.driverPhone}
                               </span>
                             </p>
                           )}
                           <p>
                             المندوب:{" "}
-                            <span className="font-bold text-slate-800">
+                            <span className="font-bold text-[var(--text)]">
                               {item.delegateName}
                             </span>
                           </p>
                           <p>
                             عدد الحجاج:{" "}
-                            <span className="font-bold text-amber-700">
+                            <span className="font-bold text-[var(--gold-text)]">
                               {item.pilgrimsCount}
                             </span>
                           </p>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      <div className="flex flex-col items-end gap-[var(--space-1)] border-t md:border-t-0 pt-[var(--space-2)] md:pt-0 border-[var(--border)]">
+                        <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
                           رقم السند المرتبط
                         </span>
-                        <span className="text-xs bg-blue-50 text-blue-700 font-black px-2.5 py-1 rounded-xl border border-blue-100/50">
+                        <span className="text-xs bg-blue-50 dark:bg-blue-500/15 text-[var(--primary)] font-black px-[var(--space-3)] py-[var(--space-1)] rounded-xl border border-blue-200 dark:border-blue-500/30">
                           #{item.voucherNumber}
                         </span>
                       </div>
@@ -2449,11 +2434,11 @@ export function Dashboard() {
               </div>
 
               {/* Footer */}
-              <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <div className="pt-[var(--space-4)] border-t border-[var(--border)] flex justify-end">
                 <button
                   type="button"
                   onClick={() => setIsBusDetailModalOpen(false)}
-                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-2xl transition-all cursor-pointer shadow-lg shadow-slate-950/10"
+                  className="px-[var(--space-6)] py-[var(--space-3)] bg-[var(--navy)] hover:bg-slate-800 text-white font-black text-xs rounded-2xl transition-all cursor-pointer shadow-lg"
                 >
                   إغلاق النافذة
                 </button>
