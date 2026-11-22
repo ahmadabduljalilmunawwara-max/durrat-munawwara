@@ -192,141 +192,141 @@ export function AppSettings() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6" dir="rtl">
       {/* شريط العنوان والترويسة */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 rounded-[2rem] border border-slate-200/90 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-700 to-amber-400"></div>
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-gradient-to-tr from-blue-700 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-md border border-amber-400/20">
-            <Settings size={20} className="text-amber-300" />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 rounded-[1.75rem] border border-slate-200/90 shadow-2xs relative overflow-hidden">
+        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl flex items-center justify-center shadow-sm">
+            <Settings size={20} className="text-amber-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-slate-900">إعدادات النظام والتهيئة</h2>
+              <h2 className="text-lg font-extrabold text-slate-900">إعدادات النظام والتهيئة</h2>
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             </div>
-            <p className="text-[10px] text-blue-800 font-bold uppercase tracking-widest">تخصيص الخيارات والطباعة والشعارات - درة المنورة</p>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">تخصيص الخيارات والطباعة والشعارات - درة المنورة</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* قسم إعدادات التطبيق العامة */}
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200/90 relative overflow-hidden">
-          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-blue-700 to-indigo-800"></div>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-tr from-blue-50 to-blue-100 rounded-xl flex items-center justify-center text-blue-700 border border-blue-200 shadow-xs">
+        <div className="bg-white rounded-[2rem] p-7 md:p-8 shadow-sm border border-slate-200/90 relative overflow-hidden">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-blue-900 to-blue-600"></div>
+          <div className="flex items-center gap-3.5 mb-7">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 border border-blue-200/80">
                <Settings size={20} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 leading-none">إعدادات التطبيق العامة</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">تخصيص هوامش الطباعة والشعارات</p>
+              <h3 className="text-lg font-extrabold text-slate-900 leading-snug">إعدادات التطبيق العامة</h3>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">تخصيص هوامش الطباعة والشعارات</p>
             </div>
           </div>
 
-        <form onSubmit={handleSave} className="space-y-8">
+        <form onSubmit={handleSave} className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2 mr-1 tracking-widest">رقم السند القادم</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">رقم السند القادم</label>
               <div className="relative">
-                <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="number"
                   required
                   value={nextVoucherNumber}
                   onChange={(e) => setNextVoucherNumber(parseInt(e.target.value) || 0)}
-                  className="w-full pr-12 pl-4 py-4 bg-slate-50 rounded-2xl focus:bg-white border border-slate-200/80 focus:border-blue-400 focus:ring-3 focus:ring-blue-100 outline-none transition-all font-black text-slate-800"
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-900 tabular-nums"
                 />
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 mr-1 font-medium italic">سيتم تحديث هذا الرقم تلقائياً مع كل عملية تسجيل، يمكنك تعديله يدوياً هنا.</p>
+              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">سيتم تحديث هذا الرقم تلقائياً مع كل عملية تسجيل، يمكنك تعديله يدوياً هنا.</p>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2 mr-1 tracking-widest">رسالة الترحيب</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">رسالة الترحيب</label>
               <textarea
                 value={welcomeMessage}
                 onChange={(e) => setWelcomeMessage(e.target.value)}
                 placeholder="أدخل رسالة الترحيب التي تظهر للمستخدمين عند تسجيل الدخول..."
-                className="w-full px-4 py-4 bg-slate-50 rounded-2xl focus:bg-white border border-slate-200/80 focus:border-blue-400 focus:ring-3 focus:ring-blue-100 outline-none transition-all font-bold min-h-[100px] text-sm text-slate-800"
+                className="w-full px-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold min-h-[100px] text-sm text-slate-900"
               />
-              <p className="text-[10px] text-slate-400 mt-2 mr-1 font-medium italic">هذه الرسالة تظهر لجميع المستخدمين عند الدخول للتطبيق لأول مرة في الجلسة.</p>
+              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">هذه الرسالة تظهر لجميع المستخدمين عند الدخول للتطبيق لأول مرة في الجلسة.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2 mr-1 tracking-widest">عدد النسخ المطبوعة تلقائياً</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">عدد النسخ المطبوعة تلقائياً</label>
                 <div className="relative">
-                  <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <Printer className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="number"
                     value={printCopies}
                     min={1}
                     max={5}
                     onChange={(e) => setPrintCopies(parseInt(e.target.value) || 1)}
-                    className="w-full pr-12 pl-4 py-4 bg-slate-50 rounded-2xl focus:bg-white border border-slate-200/80 focus:border-blue-400 focus:ring-3 focus:ring-blue-100 outline-none transition-all font-black text-slate-800"
+                    className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-900 tabular-nums"
                   />
                 </div>
               </div>
               <div className="flex flex-col justify-end">
-                <p className="text-[10px] text-slate-400 font-medium italic">حدد عدد نسخ السند التي سيتم طباعتها تلقائياً عند الحفظ.</p>
+                <p className="text-xs text-slate-500 font-medium">حدد عدد نسخ السند التي سيتم طباعتها تلقائياً عند الحفظ.</p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase mr-1 tracking-widest">هوامش ملف الـ PDF (بكسل)</label>
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-slate-700 mr-1">هوامش ملف الـ PDF (بكسل)</label>
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <span className="block text-[8px] text-slate-400 mb-1 text-center font-black uppercase">أعلى</span>
+                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">أعلى</span>
                   <input
                     type="number"
                     value={pdfMargins.top}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, top: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50 rounded-xl focus:bg-white border border-slate-200/80 focus:border-blue-400 outline-none transition-all font-bold text-xs"
+                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-[8px] text-slate-400 mb-1 text-center font-black uppercase">أسفل</span>
+                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">أسفل</span>
                   <input
                     type="number"
                     value={pdfMargins.bottom}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, bottom: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50 rounded-xl focus:bg-white border border-slate-200/80 focus:border-blue-400 outline-none transition-all font-bold text-xs"
+                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-[8px] text-slate-400 mb-1 text-center font-black uppercase">يمين (قليلاً)</span>
+                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">يمين (قليلاً)</span>
                   <input
                     type="number"
                     value={pdfMargins.right}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, right: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50 rounded-xl focus:bg-white border border-slate-200/80 focus:border-blue-400 outline-none transition-all font-bold text-xs"
+                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
                   />
                 </div>
                 <div>
-                  <span className="block text-[8px] text-slate-400 mb-1 text-center font-black uppercase">يسار (قليلاً)</span>
+                  <span className="block text-xs text-slate-600 mb-1.5 text-center font-bold">يسار (قليلاً)</span>
                   <input
                     type="number"
                     value={pdfMargins.left}
                     onChange={(e) => setPdfMargins({ ...pdfMargins, left: parseInt(e.target.value) || 0 })}
-                    className="w-full text-center py-3 bg-slate-50 rounded-xl focus:bg-white border border-slate-200/80 focus:border-blue-400 outline-none transition-all font-bold text-xs"
+                    className="w-full text-center py-3 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 outline-none transition-all font-bold text-xs tabular-nums"
                   />
                 </div>
               </div>
-              <p className="text-[10px] text-slate-400 font-medium italic">تحكم في المساحات الفارغة حول محتوى السند لضمان التوافق مع ورق الطابعة.</p>
+              <p className="text-xs text-slate-500 font-medium">تحكم في المساحات الفارغة حول محتوى السند لضمان التوافق مع ورق الطابعة.</p>
             </div>
 
             {/* قسم شعار الشركة المعتمد */}
-            <div className="p-6 bg-slate-50/80 rounded-3xl border border-slate-200/80 space-y-5">
+            <div className="p-6 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
                     <ImageIcon size={18} />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-850 uppercase tracking-wide">شعار شركة درة المنورة الرسمي</label>
-                    <p className="text-[10px] text-slate-400 font-bold">يظهر في القائمة الجانبية، شاشات الدخول، وجميع كشوفات وسندات الـ PDF</p>
+                    <label className="block text-xs font-extrabold text-slate-900">شعار شركة درة المنورة الرسمي</label>
+                    <p className="text-xs text-slate-500 font-medium">يظهر في القائمة الجانبية، شاشات الدخول، وجميع كشوفات وسندات الـ PDF</p>
                   </div>
                 </div>
                 {logoUrl && (
-                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-black flex items-center gap-1">
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold flex items-center gap-1">
                     <Check size={12} />
                     شعار مخصص معتمد
                   </span>
@@ -334,14 +334,14 @@ export function AppSettings() {
               </div>
 
               {/* معاينة الشعار الحالي */}
-              <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-slate-50 rounded-2xl border border-slate-200/80 p-2 flex items-center justify-center shadow-inner overflow-hidden">
+                  <div className="w-20 h-20 bg-slate-50 rounded-2xl border border-slate-200/80 p-2 flex items-center justify-center overflow-hidden">
                     {logoUrl ? (
                       <img 
                         src={logoUrl} 
                         alt="معاينة شعار الشركة" 
-                        className="max-h-full max-w-full object-contain drop-shadow-xs" 
+                        className="max-h-full max-w-full object-contain" 
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           if (!logoUrl.startsWith('data:')) {
@@ -356,8 +356,8 @@ export function AppSettings() {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs font-black text-slate-800">{logoUrl ? 'شعار الشركة المرفوع' : 'الشعار الافتراضي للنظام'}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    <p className="text-xs font-extrabold text-slate-900">{logoUrl ? 'شعار الشركة المرفوع' : 'الشعار الافتراضي للنظام'}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 font-medium">
                       {logoUrl ? 'تم ضبط الشعار بنجاح وسيتم اعتماده عبر كامل التطبيق فور الحفظ' : 'يمكنك رفع شعار مخصص بدقة عالية (PNG, JPG, SVG)'}
                     </p>
                   </div>
@@ -367,7 +367,7 @@ export function AppSettings() {
                   <button 
                     type="button"
                     onClick={() => setLogoUrl('')}
-                    className="px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shrink-0"
+                    className="px-3.5 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-bold transition-all border border-red-200 flex items-center gap-1.5 cursor-pointer shrink-0"
                     title="استعادة الشعار الافتراضي"
                   >
                     <span>استعادة الشعار الافتراضي</span>
@@ -387,10 +387,10 @@ export function AppSettings() {
                   />
                   <label 
                     htmlFor="logo-upload"
-                    className="w-full h-full py-4 px-4 bg-white rounded-2xl border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-center gap-2 group shadow-2xs"
+                    className="w-full h-full py-3.5 px-4 bg-white rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-center gap-2 group"
                   >
-                    <Upload className="text-slate-400 group-hover:text-blue-600 transition-colors" size={18} />
-                    <span className="text-xs font-bold text-slate-650 group-hover:text-blue-700 transition-colors">رفع ملف صورة من جهازك</span>
+                    <Upload className="text-slate-400 group-hover:text-blue-700 transition-colors" size={18} />
+                    <span className="text-xs font-bold text-slate-700 group-hover:text-blue-800 transition-colors">رفع ملف صورة من جهازك</span>
                   </label>
                 </div>
 
@@ -401,23 +401,23 @@ export function AppSettings() {
                     value={logoUrl.startsWith('data:') ? '' : logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
                     placeholder="أو ضع رابط صورة مباشر (HTTPS)..."
-                    className="w-full pr-10 pl-4 py-3.5 bg-white rounded-2xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-bold text-xs shadow-2xs"
+                    className="w-full pr-10 pl-4 py-3.5 bg-white rounded-xl border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-xs"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2 mr-1 tracking-widest">صورة شعار (خدمة الحاج شرف لنا) (رابط أو ملف)</label>
-              <div className="space-y-4">
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">صورة شعار (خدمة الحاج شرف لنا) (رابط أو ملف)</label>
+              <div className="space-y-3">
                 <div className="relative">
-                  <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="url"
                     value={sloganUrl.startsWith('data:') ? '' : sloganUrl}
                     onChange={(e) => setSloganUrl(e.target.value)}
                     placeholder="ضع رابط الصورة هنا (HTTPS)..."
-                    className="w-full pr-12 pl-4 py-4 bg-slate-50 rounded-2xl focus:bg-white border border-slate-200/80 focus:border-blue-400 focus:ring-3 focus:ring-blue-100 outline-none transition-all font-bold text-sm"
+                    className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-2xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-sm"
                   />
                 </div>
 
@@ -431,33 +431,33 @@ export function AppSettings() {
                   />
                   <label 
                     htmlFor="slogan-upload"
-                    className="w-full py-6 bg-slate-50 rounded-2xl focus:bg-white border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 outline-none transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
+                    className="w-full py-5 bg-slate-50/90 rounded-2xl focus:bg-white border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/20 outline-none transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
                   >
                     <div className="flex items-center gap-2">
-                       <ImageIcon className="text-slate-400 group-hover:text-blue-600 transition-colors" size={24} />
-                       <span className="text-sm font-bold text-slate-500 group-hover:text-blue-700 transition-colors">أو ارفع ملف من جهازك</span>
+                       <ImageIcon className="text-slate-400 group-hover:text-blue-700 transition-colors" size={22} />
+                       <span className="text-xs font-bold text-slate-600 group-hover:text-blue-800 transition-colors">أو ارفع ملف من جهازك</span>
                     </div>
                   </label>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 mr-1 font-medium italic">يمكنك رفع صورة تصميم عبارة (خدمة الحاج شرف لنا) الخاصة بك لتظهر في الزاوية العلوية للسند.</p>
+              <p className="text-xs text-slate-500 mt-1.5 mr-1 font-medium">يمكنك رفع صورة تصميم عبارة (خدمة الحاج شرف لنا) الخاصة بك لتظهر في الزاوية العلوية للسند.</p>
             </div>
 
             {sloganUrl && (
-              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col items-center gap-4 relative">
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col items-center gap-4 relative">
                 <button 
                   type="button"
                   onClick={() => setSloganUrl('')}
-                  className="absolute left-4 top-4 w-8 h-8 bg-white text-slate-400 rounded-full flex items-center justify-center hover:text-red-500 hover:shadow-md transition-all border border-slate-100"
+                  className="absolute left-4 top-4 w-8 h-8 bg-white text-slate-500 rounded-full flex items-center justify-center hover:text-red-600 hover:shadow-sm transition-all border border-slate-200"
                   title="إزالة شعار العبارة"
                 >
                   <Settings size={14} className="rotate-45" />
                 </button>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">معاينة شعار العبارة الحالي</span>
+                <span className="text-xs font-bold text-slate-500">معاينة شعار العبارة الحالي</span>
                 <img 
                   src={sloganUrl} 
                   alt="Slogan Preview" 
-                  className="h-24 object-contain drop-shadow-sm" 
+                  className="h-24 object-contain" 
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     if (!sloganUrl.startsWith('data:')) {
@@ -469,10 +469,10 @@ export function AppSettings() {
             )}
           </div>
 
-          <div className="pt-4">
+          <div className="pt-2">
             {status.type && (
-              <div className={`p-4 rounded-xl mb-6 text-sm font-bold flex items-center gap-2 ${
-                status.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+              <div className={`p-4 rounded-xl mb-5 text-sm font-bold flex items-center gap-2 ${
+                status.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
               }`}>
                 {status.msg}
               </div>
@@ -481,9 +481,9 @@ export function AppSettings() {
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full py-5 bg-gradient-to-r from-blue-700 to-indigo-900 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:from-blue-800 hover:to-indigo-950 transition-all shadow-lg shadow-blue-700/20 hover:scale-[1.005] active:scale-[0.99] disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+              className="w-full py-4 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md disabled:bg-slate-200 disabled:text-slate-400 cursor-pointer"
             >
-              {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} className="text-amber-300" />}
+              {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} className="text-amber-400" />}
               حفظ الإعدادات
             </button>
           </div>
@@ -491,18 +491,18 @@ export function AppSettings() {
         </div>
 
         {/* قسم النسخ الاحتياطي واستعادة البيانات */}
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200/90 relative overflow-hidden" dir="rtl">
-          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-amber-400 to-blue-600"></div>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-700 border border-amber-200 shadow-xs">
+        <div className="bg-white rounded-[2rem] p-7 md:p-8 shadow-sm border border-slate-200/90 relative overflow-hidden" dir="rtl">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-amber-500 to-blue-700"></div>
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-700 border border-amber-200/80">
                <Database size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-slate-900 leading-none">النسخ الاحتياطي للبيانات</h3>
+                <h3 className="text-lg font-extrabold text-slate-900 leading-snug">النسخ الاحتياطي للبيانات</h3>
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">تصدير واستيراد نسخة احتياطية من قواعد البيانات</p>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">تصدير واستيراد نسخة احتياطية من قواعد البيانات</p>
             </div>
           </div>
 
@@ -510,13 +510,13 @@ export function AppSettings() {
             <button
               type="button"
               onClick={exportAllDataAsJSON}
-              className="py-4 bg-slate-50 hover:bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
+              className="py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Download size={16} className="text-blue-600" />
+              <Download size={16} className="text-blue-700" />
               تصدير نسخة احتياطية (JSON)
             </button>
 
-            <label className="py-4 bg-slate-50 hover:bg-white border border-slate-200 text-slate-700 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer text-center">
+            <label className="py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer text-center">
               <Upload size={16} className="text-amber-600" />
               استيراد نسخة احتياطية
               <input
@@ -530,11 +530,11 @@ export function AppSettings() {
 
           {fileImportStatus.state !== 'idle' && (
             <div className={`mt-4 p-4 rounded-xl text-xs font-bold leading-relaxed ${
-              fileImportStatus.state === 'success' ? 'bg-green-50 text-green-700' :
-              fileImportStatus.state === 'running' ? 'bg-blue-50 text-blue-700' :
-              'bg-red-50 text-red-700'
+              fileImportStatus.state === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+              fileImportStatus.state === 'running' ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+              'bg-red-50 text-red-700 border border-red-200'
             }`}>
-              <div className="flex items-center gap-2 font-black">
+              <div className="flex items-center gap-2 font-bold">
                 {fileImportStatus.state === 'running' && <Loader2 className="animate-spin" size={14} />}
                 {fileImportStatus.state === 'success' && <Check size={14} />}
                 {fileImportStatus.state === 'error' && <AlertCircle size={14} />}

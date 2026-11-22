@@ -315,7 +315,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
-      <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row p-4 md:p-6 gap-4 md:gap-6 font-sans" dir="rtl">
+      <div className="min-h-screen bg-slate-100/80 flex flex-col md:flex-row p-4 md:p-6 gap-4 md:gap-6 font-sans text-slate-900" dir="rtl">
         {/* Welcome Message Modal */}
         <AnimatePresence>
           {showWelcome && welcomeMsg && (
@@ -329,19 +329,19 @@ export default function App() {
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl border border-slate-100 text-center relative overflow-hidden"
+                className="bg-white rounded-[2rem] p-8 max-w-lg w-full shadow-2xl border border-slate-200 text-center relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
-                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-6">
-                  <Bell size={32} className="animate-bounce" />
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-l from-blue-900 via-blue-700 to-amber-500"></div>
+                <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center text-blue-700 mx-auto mb-6">
+                  <Bell size={30} />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 mb-4">مرحباً بك مجدداً!</h2>
-                <div className="text-slate-600 font-bold leading-relaxed mb-8 whitespace-pre-wrap">
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-3">مرحباً بك مجدداً!</h2>
+                <div className="text-slate-600 font-semibold leading-relaxed mb-8 whitespace-pre-wrap text-sm">
                   {welcomeMsg}
                 </div>
                 <button
                   onClick={() => setShowWelcome(false)}
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-100"
+                  className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-blue-950 transition-all shadow-md cursor-pointer"
                 >
                   فهمت ذلك، دعنا نبدأ
                 </button>
@@ -363,26 +363,26 @@ export default function App() {
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-red-100 text-center relative overflow-hidden"
+                className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-red-200 text-center relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
-                <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mx-auto mb-6">
-                  <AlertCircle size={32} className="animate-pulse" />
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-red-600"></div>
+                <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mx-auto mb-6">
+                  <AlertCircle size={32} />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 mb-4">تأكيد البريد الإلكتروني</h2>
-                <p className="text-slate-600 font-bold leading-relaxed mb-8">
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-3">تأكيد البريد الإلكتروني</h2>
+                <p className="text-slate-600 font-semibold leading-relaxed mb-8 text-sm">
                   يرجى تأكيد بريدك الإلكتروني لتتمكن من استخدام كافة مميزات النظام. لقد ارسلنا رابطاً لبريدك المسجل.
                 </p>
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => window.location.reload()}
-                    className="w-full py-4 bg-red-500 text-white rounded-2xl font-black hover:bg-red-600 transition-all"
+                    className="w-full py-3.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all cursor-pointer"
                   >
                     تم التأكيد؟ حدث الصفحة
                   </button>
                   <button
                     onClick={logout}
-                    className="w-full py-3 text-slate-500 font-bold hover:text-slate-700 transition-all"
+                    className="w-full py-3 text-slate-500 font-bold hover:text-slate-800 transition-all cursor-pointer"
                   >
                     تسجيل الخروج
                   </button>
@@ -393,20 +393,20 @@ export default function App() {
         </AnimatePresence>
 
         {/* Sidebar */}
-        <aside className="w-full md:w-72 bg-gradient-to-b from-slate-50/95 via-blue-50/25 to-slate-50/95 rounded-[2rem] border border-slate-200/90 shadow-md shadow-slate-200/60 flex flex-col overflow-hidden relative">
-          {/* Subtle Top Accent Line with Brand Colors */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-blue-600 to-indigo-900"></div>
+        <aside className="w-full md:w-72 bg-white rounded-[1.75rem] border border-slate-200/90 shadow-sm flex flex-col overflow-hidden relative shrink-0">
+          {/* Top Brand Line */}
+          <div className="h-1.5 w-full bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
           
-          <div className="p-5 border-b border-slate-200/80 flex items-center gap-3 bg-gradient-to-b from-amber-50/40 via-blue-50/30 to-transparent">
-            <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center p-1.5 border border-amber-200/70 shadow-xs overflow-hidden ring-2 ring-amber-400/20">
-              <CompanyLogo size="34px" />
+          <div className="p-5 border-b border-slate-100 flex items-center gap-3.5 bg-slate-50/50">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-1.5 border border-slate-200/90 shadow-2xs overflow-hidden shrink-0">
+              <CompanyLogo size="36px" />
             </div>
             <div className="overflow-hidden">
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-xl font-black text-slate-900 leading-tight truncate">درة المنورة</h2>
-                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-extrabold text-slate-900 leading-snug truncate">درة المنورة</h2>
+                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
               </div>
-              <p className="text-[10px] text-blue-700 font-black tracking-wider uppercase mt-0.5">لنقل الحجاج والمعتمرين</p>
+              <p className="text-xs text-blue-800 font-bold mt-0.5 truncate">لنقل الحجاج والمعتمرين</p>
             </div>
           </div>
           
@@ -414,32 +414,32 @@ export default function App() {
             <NavItem 
               active={activeTab === 'entry'} 
               onClick={() => setActiveTab('entry')} 
-              icon={<PlusCircle size={20} />} 
+              icon={<PlusCircle size={19} />} 
               label="إصدار سند" 
             />
             {user.role !== 'pending' && (
               <NavItem 
                 active={activeTab === 'dashboard'} 
                 onClick={() => setActiveTab('dashboard')} 
-                icon={<LayoutDashboard size={20} />} 
+                icon={<LayoutDashboard size={19} />} 
                 label="لوحة التحكم" 
                 badge={activeTab !== 'dashboard' && unreadCount > 0 ? unreadCount : undefined}
               />
             )}
-             {user.role !== 'pending' && (
-               <NavItem 
-                 active={activeTab === 'search'} 
-                 onClick={() => setActiveTab('search')} 
-                 icon={<Search size={20} />} 
-                 label="البحث والأرشيف" 
-                 badge={activeTab !== 'search' && unreadCount > 0 ? unreadCount : undefined}
-               />
-             )}
+            {user.role !== 'pending' && (
+              <NavItem 
+                active={activeTab === 'search'} 
+                onClick={() => setActiveTab('search')} 
+                icon={<Search size={19} />} 
+                label="البحث والأرشيف" 
+                badge={activeTab !== 'search' && unreadCount > 0 ? unreadCount : undefined}
+              />
+            )}
             {(user.role === 'general_manager' || user.role === 'supervisor') && (
               <NavItem 
                 active={activeTab === 'buses'} 
                 onClick={() => setActiveTab('buses')} 
-                icon={<BusFront size={20} />} 
+                icon={<BusFront size={19} />} 
                 label="إدارة الحافلات" 
               />
             )}
@@ -448,14 +448,14 @@ export default function App() {
                 <NavItem 
                   active={activeTab === 'users'} 
                   onClick={() => setActiveTab('users')} 
-                  icon={<UserPlus size={20} />} 
+                  icon={<UserPlus size={19} />} 
                   label="إدارة المستخدمين" 
                   badge={activeTab !== 'users' && pendingUsersCount > 0 ? pendingUsersCount : undefined}
                 />
                 <NavItem 
                   active={activeTab === 'settings'} 
                   onClick={() => setActiveTab('settings')} 
-                  icon={<Settings size={20} />} 
+                  icon={<Settings size={19} />} 
                   label="إعدادات التطبيق" 
                 />
               </>
@@ -463,130 +463,129 @@ export default function App() {
             <NavItem 
               active={activeTab === 'about'} 
               onClick={() => setActiveTab('about')} 
-              icon={<Info size={20} />} 
+              icon={<Info size={19} />} 
               label="حول التطبيق" 
             />
 
             {/* General Operations Manager Badge */}
-            <div className="pt-2 px-1">
-              <div className="p-3 bg-gradient-to-r from-amber-500/15 via-blue-500/10 to-indigo-500/15 rounded-2xl border border-amber-300/40 shadow-xs flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center font-black text-xs shadow-xs shrink-0">
+            <div className="pt-3 px-0.5">
+              <div className="p-3.5 bg-gradient-to-l from-slate-900 to-blue-950 rounded-2xl border border-slate-800 shadow-xs flex items-center gap-3 text-white">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-extrabold text-sm shadow-xs shrink-0">
                   ع
                 </div>
                 <div className="overflow-hidden">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-black text-amber-700">مدير التشغيل العام</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-amber-400">مدير التشغيل العام</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                   </div>
-                  <p className="text-xs font-black text-slate-800 truncate">الأستاذ عبد الحميد سالمة</p>
+                  <p className="text-xs font-extrabold text-white truncate mt-0.5">الأستاذ عبد الحميد سالمة</p>
                 </div>
               </div>
             </div>
           </nav>
 
-          <div className="p-4 border-t border-slate-200/80 bg-slate-100/70">
-            <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-2xs mb-3">
+          <div className="p-4 border-t border-slate-100 bg-slate-50/70">
+            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs mb-2.5">
               {user.isCustom ? (
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-blue-900 flex items-center justify-center text-white font-bold text-sm shrink-0">
                   {user.displayName?.[0] || 'U'}
                 </div>
               ) : (
-                <img src={user.photoURL || ''} alt="" className="w-9 h-9 rounded-xl border border-amber-200/60 shadow-xs object-cover" />
+                <img src={user.photoURL || ''} alt="" className="w-9 h-9 rounded-xl border border-slate-200 object-cover shrink-0" />
               )}
               <div className="flex-1 overflow-hidden">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-black text-slate-900 truncate">{user.displayName}</p>
+                  <p className="text-xs font-bold text-slate-900 truncate">{user.displayName}</p>
                   {user.role === 'general_manager' && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="مدير عام"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="مدير عام"></span>
                   )}
                 </div>
-                <p className="text-[10px] text-slate-400 font-bold truncate">{user.isCustom ? `@${user.username}` : user.email}</p>
+                <p className="text-[11px] text-slate-500 font-medium truncate" dir="ltr">{user.isCustom ? `@${user.username}` : user.email}</p>
               </div>
             </div>
             <button 
               onClick={logout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors mb-2 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors mb-2 cursor-pointer"
             >
               <LogOut size={15} />
               <span>تسجيل الخروج</span>
             </button>
-            <div className="px-3 py-1.5 border-t border-slate-200/70 flex justify-between items-center opacity-40 hover:opacity-80 transition-opacity">
-              <span className="text-[9px] font-black text-blue-700">v2.6.0 DMTC</span>
-              <span className="text-[9px] font-bold text-slate-400">أحمد عبد الجليل</span>
+            <div className="px-2 pt-2 border-t border-slate-200/60 flex justify-between items-center text-slate-400">
+              <span className="text-[10px] font-bold text-blue-900/70 font-mono">v2.6.0 DMTC</span>
+              <span className="text-[10px] font-semibold text-slate-500">أحمد عبد الجليل</span>
             </div>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col gap-6">
-          {/* Top Bar for Mobile/Desktop Content Label */}
-            <header className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex items-center justify-between relative overflow-hidden">
-              {/* Subtle top brand glow */}
-              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-amber-400 via-blue-500 to-indigo-700 opacity-80"></div>
-              <AnimatePresence>
-                {lastNotification && (
-                  <motion.div
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -100, opacity: 0 }}
-                    className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-900 flex items-center justify-between px-6 z-20"
-                  >
-                    <div className="flex items-center gap-3 text-white">
-                      <div className="w-7 h-7 rounded-lg bg-amber-400 text-slate-900 flex items-center justify-center">
-                        <Bell size={16} className="animate-bounce" />
-                      </div>
-                      <span className="font-bold text-sm tracking-tight">{lastNotification.msg}</span>
+        <div className="flex-1 flex flex-col gap-5 min-w-0">
+          {/* Top Bar */}
+          <header className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 relative overflow-hidden">
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-l from-blue-900 via-blue-600 to-amber-500"></div>
+            <AnimatePresence>
+              {lastNotification && (
+                <motion.div
+                  initial={{ x: 100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -100, opacity: 0 }}
+                  className="absolute inset-0 bg-slate-900 flex items-center justify-between px-6 z-20"
+                >
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-7 h-7 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center">
+                      <Bell size={16} />
                     </div>
-                    <button 
-                      onClick={() => setLastNotification(null)}
-                      className="text-white/80 hover:text-white font-bold text-xs bg-white/10 px-3 py-1.5 rounded-lg"
-                    >
-                      إغلاق
-                    </button>
-                  </motion.div>
+                    <span className="font-bold text-sm">{lastNotification.msg}</span>
+                  </div>
+                  <button 
+                    onClick={() => setLastNotification(null)}
+                    className="text-white/90 hover:text-white font-bold text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    إغلاق
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div className="flex items-center gap-2.5 px-3.5 py-1.5 bg-amber-50/90 rounded-xl border border-amber-200/80">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <div className="flex items-center gap-1.5">
+                <Calendar size={14} className="text-amber-700" />
+                <span className="text-xs font-bold text-amber-950 tabular-nums">
+                  {getHijriDate()}
+                </span>
+              </div>
+            </div>
+            <div className="text-left font-bold text-slate-900 flex items-center gap-2">
+              <div className="md:hidden">
+                {unreadCount > 0 && (
+                  <span className="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-xs font-bold ml-2 tabular-nums">
+                    {unreadCount}
+                  </span>
                 )}
-              </AnimatePresence>
-              <div className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-50/80 rounded-xl border border-amber-300/60 shadow-2xs">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                <div className="flex items-center gap-1.5">
-                  <Calendar size={13} className="text-amber-600" />
-                  <span className="text-xs font-black text-amber-950 tracking-tight">
-                    {getHijriDate()}
-                  </span>
-                </div>
               </div>
-              <div className="text-left font-bold text-slate-900 flex items-center gap-2">
-                <div className="md:hidden">
-                  {unreadCount > 0 && (
-                    <span className="bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full text-[10px] font-black animate-pulse ml-2 shadow-xs">
-                      {unreadCount}
-                    </span>
-                  )}
-                </div>
-                <div className="bg-slate-50/90 border border-slate-200/90 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  <span className="text-xs font-black text-slate-800 tracking-tight">
-                    {getGregorianDate()}
-                  </span>
-                </div>
+              <div className="bg-slate-50 border border-slate-200/90 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-700"></span>
+                <span className="text-xs font-bold text-slate-700 tabular-nums">
+                  {getGregorianDate()}
+                </span>
               </div>
-            </header>
+            </div>
+          </header>
 
           <main className="flex-1">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.99 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
               >
                 {activeTab === 'entry' && (
                   user.role === 'pending' ? (
-                    <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
+                    <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-xs">
                       <AlertCircle size={48} className="mx-auto text-amber-500 mb-4" />
-                      <h2 className="text-xl font-bold text-slate-900 mb-2">في انتظار الموافقة</h2>
-                      <p className="text-slate-500 max-w-sm mx-auto">لقد قمت بتسجيل الدخول بنجاح. يرجى مراجعة مدير النظام (عبد الحميد سالمة) لتفعيل حسابك وتحديد صلاحيات العمل.</p>
+                      <h2 className="text-xl font-extrabold text-slate-900 mb-2">في انتظار الموافقة</h2>
+                      <p className="text-slate-600 font-medium max-w-sm mx-auto text-sm leading-relaxed">لقد قمت بتسجيل الدخول بنجاح. يرجى مراجعة مدير النظام (عبد الحميد سالمة) لتفعيل حسابك وتحديد صلاحيات العمل.</p>
                     </div>
                   ) : <VoucherEntry />
                 )}
@@ -609,29 +608,29 @@ function NavItem({ active, onClick, icon, label, badge }: { active: boolean; onC
   return (
     <button
       onClick={onClick}
-      className={`relative w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 group outline-none cursor-pointer border ${
+      className={`relative w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group outline-none cursor-pointer border ${
         active 
-          ? 'text-white shadow-md shadow-blue-900/20 -translate-x-1 font-black border-transparent' 
-          : 'text-slate-700 hover:bg-white hover:text-blue-950 hover:shadow-xs hover:border-slate-200/80 border-transparent font-bold'
+          ? 'text-white shadow-sm font-bold border-blue-900' 
+          : 'text-slate-700 hover:bg-slate-50 hover:text-blue-950 border-transparent font-semibold'
       }`}
     >
       {active && (
         <motion.div
           layoutId="nav-bg"
-          className="absolute inset-0 bg-gradient-to-l from-blue-700 via-blue-600 to-indigo-900 rounded-2xl -z-10 shadow-inner"
+          className="absolute inset-0 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 rounded-xl -z-10"
           initial={false}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          transition={{ type: "spring", stiffness: 400, damping: 32 }}
         />
       )}
-      <div className={`transition-transform duration-300 ${active ? 'scale-110 text-amber-300' : 'group-hover:scale-110 text-slate-400 group-hover:text-blue-600'}`}>
+      <div className={`transition-colors duration-200 ${active ? 'text-amber-400' : 'text-slate-400 group-hover:text-blue-700'}`}>
         {icon}
       </div>
-      <span className="text-sm tracking-tight flex-1 text-right">{label}</span>
+      <span className="text-sm flex-1 text-right">{label}</span>
       {active && (
         <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
       )}
       {badge && (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${active ? 'bg-amber-400 text-slate-950 shadow-xs' : 'bg-amber-500 text-white animate-pulse shadow-xs'}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-bold tabular-nums ${active ? 'bg-amber-400 text-slate-950' : 'bg-amber-500 text-white'}`}>
           {badge}
         </span>
       )}

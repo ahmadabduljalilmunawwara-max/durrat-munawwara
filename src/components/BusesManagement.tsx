@@ -268,60 +268,61 @@ export function BusesManagement() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Top Section: Add/Edit Form */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 border transition-all flex flex-col ${editingBus ? 'border-blue-500 ring-8 ring-blue-50/50' : 'border-slate-100'}`}
+        className={`bg-white rounded-[2rem] p-7 md:p-8 shadow-sm border transition-all flex flex-col relative overflow-hidden ${editingBus ? 'border-blue-600 ring-4 ring-blue-500/10' : 'border-slate-200/90'}`}
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-7">
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 ${editingBus ? 'bg-indigo-600' : 'bg-blue-600'} rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-100`}>
-              {editingBus ? <Edit2 size={24} /> : <Plus size={24} />}
+            <div className={`w-12 h-12 ${editingBus ? 'bg-blue-700' : 'bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800'} rounded-2xl flex items-center justify-center text-white shadow-md`}>
+              {editingBus ? <Edit2 size={22} className="text-amber-300" /> : <Plus size={22} className="text-amber-400" />}
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 leading-none">
+              <h3 className="text-xl font-extrabold text-slate-900 leading-snug">
                 {editingBus ? 'تحرير بيانات الحافلة' : 'إضافة حافلة جديدة للنظام'}
               </h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">إدارة الأصول المركزية والمزامنة اللحظية</p>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">إدارة الأصول المركزية والمزامنة اللحظية</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
              <input type="file" ref={fileInputRef} className="hidden" accept=".xlsx, .xls" onChange={handleExcelImport} />
              <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-slate-50 border border-slate-100 text-slate-600 rounded-xl font-black text-[10px] hover:bg-slate-100 transition-all uppercase tracking-widest cursor-pointer"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200/90 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-100 transition-all cursor-pointer"
              >
-               {isImporting ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+               {isImporting ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} className="text-slate-500" />}
                <span>استيراد</span>
              </motion.button>
 
              <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleExportExcel}
               disabled={buses.length === 0}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl font-black text-[10px] hover:bg-blue-100 transition-all uppercase tracking-widest cursor-pointer disabled:opacity-40"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200/80 text-blue-800 rounded-xl font-bold text-xs hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-40"
              >
                <Download size={16} />
                <span>تصدير</span>
              </motion.button>
 
              <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setDeletePassword('');
                 setDeleteError('');
                 setShowDeleteAllModal(true);
               }}
               disabled={buses.length === 0}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl font-black text-[10px] hover:bg-red-100 transition-all uppercase tracking-widest cursor-pointer disabled:opacity-40 shadow-xs"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl font-bold text-xs hover:bg-red-100 transition-all cursor-pointer disabled:opacity-40"
               title="مسح جميع الحافلات من الأسطول (مشروط بكلمة سر)"
              >
                <Trash2 size={16} className="text-red-600" />
@@ -337,7 +338,7 @@ export function BusesManagement() {
               initial={{ opacity: 0, height: 0, y: -10 }}
               animate={{ opacity: 1, height: 'auto', y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
-              className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center justify-between gap-3 text-xs font-black shadow-sm"
+              className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl flex items-center justify-between gap-3 text-xs font-bold shadow-2xs"
             >
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
@@ -345,7 +346,7 @@ export function BusesManagement() {
               </div>
               <button 
                 onClick={() => setDeleteSuccess('')} 
-                className="text-emerald-500 hover:text-emerald-700 p-1"
+                className="text-emerald-600 hover:text-emerald-800 p-1"
               >
                 <X size={16} />
               </button>
@@ -354,85 +355,85 @@ export function BusesManagement() {
         </AnimatePresence>
         
         <form onSubmit={handleSaveBus} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <div className="group">
-              <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">رقم الحافلة</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1 group-focus-within:text-blue-700 transition-colors">رقم الحافلة</label>
               <div className="relative">
-                <Bus className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors" size={18} />
+                <Bus className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
                 <input
                   type="text"
                   required
                   value={busNumber}
                   onChange={(e) => setBusNumber(e.target.value)}
-                  className="w-full pr-14 pl-5 py-4 bg-slate-50/50 rounded-xl focus:bg-white border border-slate-100 focus:border-blue-300 outline-none transition-all font-black text-slate-900 placeholder:text-slate-300"
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-bold text-slate-900 text-sm tabular-nums"
                   placeholder="مثلاً: 5040"
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">نوع الحافلة</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1 group-focus-within:text-blue-700 transition-colors">نوع الحافلة</label>
               <div className="relative">
-                <Filter className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors" size={18} />
+                <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
                 <input
                   type="text"
                   value={busType}
                   onChange={(e) => setBusType(e.target.value)}
-                  className="w-full pr-14 pl-5 py-4 bg-slate-50/50 rounded-xl focus:bg-white border border-slate-100 focus:border-blue-300 outline-none transition-all font-black text-slate-900 placeholder:text-slate-300"
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-slate-900 text-sm"
                   placeholder="VIP، مرسيدس..."
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">اسم السائق الثابت</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1 group-focus-within:text-blue-700 transition-colors">اسم السائق الثابت</label>
               <div className="relative">
-                <UserIcon className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors" size={18} />
+                <UserIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
                 <input
                   type="text"
                   required
                   value={driverName}
                   onChange={(e) => setDriverName(e.target.value)}
-                  className="w-full pr-14 pl-5 py-4 bg-slate-50/50 rounded-xl focus:bg-white border border-slate-100 focus:border-blue-300 outline-none transition-all font-black text-slate-900 placeholder:text-slate-300"
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-slate-900 text-sm"
                   placeholder="الاسم الثلاثي..."
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">رقم الهاتف</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1 group-focus-within:text-blue-700 transition-colors">رقم الهاتف</label>
               <div className="relative">
-                <Phone className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-400 transition-colors" size={18} />
+                <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
                 <input
                   type="text"
                   value={driverPhone}
                   onChange={(e) => setDriverPhone(e.target.value)}
-                  className="w-full pr-14 pl-5 py-4 bg-slate-50/50 rounded-xl focus:bg-white border border-slate-100 focus:border-blue-300 outline-none transition-all font-black text-slate-900 placeholder:text-slate-300"
+                  className="w-full pr-12 pl-4 py-3.5 bg-slate-50/90 rounded-xl focus:bg-white border border-slate-200/90 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                   placeholder="مثلاً: 05xxxxxxx"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2.5 justify-end">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               type="submit"
               disabled={isSaving}
-              className={`flex-1 py-4 text-white rounded-xl font-black flex items-center justify-center gap-3 transition-all shadow-xl ${editingBus ? 'bg-indigo-600 shadow-indigo-100' : 'bg-slate-900 shadow-slate-200'} disabled:opacity-50`}
+              className={`flex-1 py-3.5 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all shadow-md cursor-pointer ${editingBus ? 'bg-blue-700 hover:bg-blue-800' : 'bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 hover:opacity-95'} disabled:opacity-50`}
             >
-              {isSaving ? <Loader2 className="animate-spin" size={18} /> : (editingBus ? <Save size={18} /> : <Plus size={18} />)}
-              <span className="uppercase tracking-tighter">{editingBus ? 'تحديث' : 'إضافة'}</span>
+              {isSaving ? <Loader2 className="animate-spin" size={18} /> : (editingBus ? <Save size={18} className="text-amber-300" /> : <Plus size={18} className="text-amber-400" />)}
+              <span>{editingBus ? 'تحديث' : 'إضافة'}</span>
             </motion.button>
 
             {editingBus && (
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-all flex items-center justify-center shadow-md"
+                className="px-4 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all flex items-center justify-center cursor-pointer"
               >
                 <X size={18} />
               </motion.button>
@@ -443,21 +444,21 @@ export function BusesManagement() {
 
       {/* Middle Section: Search Bar */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-5 group transition-all focus-within:ring-4 focus-within:ring-blue-50"
+        className="bg-white px-5 py-4 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-4 group transition-all focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-600"
       >
-        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-focus-within:text-blue-500 transition-colors">
-          <Search size={24} />
+        <div className="w-10 h-10 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-center text-slate-400 group-focus-within:text-blue-700 transition-colors shrink-0">
+          <Search size={20} />
         </div>
         <input
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="flex-1 bg-transparent outline-none text-lg font-black text-slate-900 placeholder:text-slate-300 placeholder:font-bold"
+          className="flex-1 bg-transparent outline-none text-sm font-bold text-slate-900"
           placeholder="البحث السريع في القائمة (رقم حافلة، اسم سائق، أو نوع)..."
         />
-        <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block">
+        <div className="px-3.5 py-1.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-bold text-slate-600 hidden sm:block tabular-nums">
           إجمالي: {filteredBuses.length} حافلة
         </div>
       </motion.div>
@@ -468,7 +469,7 @@ export function BusesManagement() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
         >
           <AnimatePresence mode="popLayout">
             {paginatedBuses.map((b) => {
@@ -480,33 +481,33 @@ export function BusesManagement() {
                   variants={itemVariants}
                   initial="hidden"
                   animate="visible"
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   key={b.id}
-                  className={`p-7 rounded-[3rem] border transition-all duration-500 group relative overflow-hidden flex flex-col justify-between ${
+                  className={`p-6 rounded-[2rem] border transition-all duration-300 group relative overflow-hidden flex flex-col justify-between ${
                     editingBus?.id === b.id 
-                      ? 'bg-gradient-to-br from-indigo-50 to-white border-indigo-500 ring-8 ring-indigo-100 shadow-2xl shadow-indigo-100' 
+                      ? 'bg-blue-50/40 border-blue-600 ring-4 ring-blue-500/10 shadow-lg' 
                       : isUsed 
-                      ? 'bg-gradient-to-br from-red-50/40 to-white border-red-500/30 shadow-xl shadow-red-100/30 ring-4 ring-red-50/60'
-                      : 'bg-gradient-to-br from-white to-slate-50 border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-100/30'
+                      ? 'bg-white border-red-200 shadow-sm ring-2 ring-red-50'
+                      : 'bg-white border-slate-200/90 hover:border-blue-300 hover:shadow-md'
                   }`}
                 >
                   <div className="relative z-10">
                     {/* Header: Number, Type & Status/Actions */}
-                    <div className="flex justify-between items-start mb-8 gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center font-black text-2xl transition-all duration-500 shadow-lg shrink-0 ${
+                    <div className="flex justify-between items-start mb-6 gap-3">
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-extrabold text-xl transition-all duration-300 shadow-xs shrink-0 tabular-nums ${
                           editingBus?.id === b.id 
-                            ? 'bg-indigo-600 text-white rotate-6 scale-110 shadow-indigo-200' 
+                            ? 'bg-blue-700 text-white' 
                             : isUsed
-                            ? 'bg-red-600 text-white shadow-red-200'
-                            : 'bg-white text-slate-900 border border-slate-100 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-500 group-hover:-rotate-3 group-hover:scale-110 shadow-slate-100'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-slate-900 text-white group-hover:bg-blue-800'
                         }`}>
                           {b.busNumber}
                         </div>
                         <div className="flex flex-col justify-center">
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${isUsed ? 'text-red-500' : 'text-slate-400'}`}>فئة الحافلة</span>
-                          <span className={`text-base font-black transition-colors ${
-                            isUsed ? 'text-red-950' : 'text-slate-800 group-hover:text-blue-700'
+                          <span className={`text-xs font-semibold ${isUsed ? 'text-red-600' : 'text-slate-500'}`}>فئة الحافلة</span>
+                          <span className={`text-base font-extrabold transition-colors ${
+                            isUsed ? 'text-red-950' : 'text-slate-900 group-hover:text-blue-800'
                           }`}>
                             {b.busType || 'غير محدد'}
                           </span>
@@ -515,16 +516,16 @@ export function BusesManagement() {
                       
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         {isUsed ? (
-                          <div className="px-3 py-1.5 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-red-200/50">
+                          <div className="px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
                             <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
                             </span>
                             نشطة بالسندات
                           </div>
                         ) : (
-                          <div className="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-slate-200/60">
-                            <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                          <div className="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-emerald-200/80">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                             شبه جاهزة / متاحة
                           </div>
                         )}
@@ -532,7 +533,7 @@ export function BusesManagement() {
                         <div className="flex gap-1.5 mt-1">
                           {!isUsed && (
                             <motion.button 
-                              whileHover={{ scale: 1.15, rotate: 5 }}
+                              whileHover={{ scale: 1.08 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => {
                                 setEditingBus(b);
@@ -542,75 +543,73 @@ export function BusesManagement() {
                                 setBusType(b.busType || '');
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                               }}
-                              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${
+                              className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${
                                 editingBus?.id === b.id 
-                                  ? 'bg-white text-indigo-600 shadow-lg shadow-indigo-100' 
-                                  : 'bg-white text-slate-400 hover:text-blue-600 hover:shadow-lg hover:shadow-blue-100 border border-slate-50 hover:border-blue-100'
+                                  ? 'bg-blue-700 text-white shadow-sm' 
+                                  : 'bg-slate-50 text-slate-500 hover:text-blue-700 hover:bg-blue-50 border border-slate-200/80'
                               }`}
                             >
-                              <Edit2 size={16} />
+                              <Edit2 size={15} />
                             </motion.button>
                           )}
                           <motion.button 
-                            whileHover={{ scale: 1.15, rotate: -5 }}
+                            whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => deleteBus(b.id)}
-                            className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${
+                            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${
                               deletingId === b.id 
-                                ? 'bg-red-500 text-white ring-4 ring-red-100 shadow-lg' 
-                                : 'bg-white text-slate-300 hover:text-red-500 hover:shadow-lg hover:shadow-red-100 border border-slate-50 hover:border-red-100'
+                                ? 'bg-red-600 text-white ring-4 ring-red-100 shadow-sm' 
+                                : 'bg-slate-50 text-slate-400 hover:text-red-600 hover:bg-red-50 border border-slate-200/80'
                             }`}
                           >
-                            {deletingId === b.id ? <Check size={18} /> : <Trash2 size={16} />}
+                            {deletingId === b.id ? <Check size={16} /> : <Trash2 size={15} />}
                           </motion.button>
                         </div>
                       </div>
                     </div>
   
                     {/* Content Details */}
-                    <div className="space-y-5">
-                      <div className="flex items-center gap-5">
-                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
-                          isUsed ? 'bg-white text-red-500 shadow-red-100' : 'bg-white text-slate-400 group-hover:text-blue-500 group-hover:shadow-blue-100'
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                          isUsed ? 'bg-red-50/70 text-red-600 border-red-100' : 'bg-slate-50 text-blue-700 border-slate-200/80'
                         }`}>
-                          <UserIcon size={18} />
+                          <UserIcon size={17} />
                         </div>
                         <div>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-1 ${isUsed ? 'text-red-500' : 'text-slate-400 font-bold'}`}>السائق الفعلي</p>
-                          <p className={`text-lg font-black transition-colors duration-300 ${isUsed ? 'text-red-950' : 'text-slate-900 group-hover:text-blue-700'}`}>{b.driverName}</p>
+                          <p className="text-xs font-semibold text-slate-500 mb-0.5">السائق الفعلي</p>
+                          <p className="text-base font-bold text-slate-900">{b.driverName}</p>
                         </div>
                       </div>
   
-                      <div className="flex items-center gap-5">
-                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
-                          isUsed ? 'bg-white text-red-500 shadow-red-100' : 'bg-white text-slate-400 group-hover:text-blue-500 group-hover:shadow-blue-100'
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                          isUsed ? 'bg-red-50/70 text-red-600 border-red-100' : 'bg-slate-50 text-blue-700 border-slate-200/80'
                         }`}>
-                          <Phone size={18} />
+                          <Phone size={17} />
                         </div>
                         <div>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-1 ${isUsed ? 'text-red-500' : 'text-slate-400 font-bold'}`}>رقم الهاتف</p>
-                          <p className={`text-lg font-black transition-colors duration-300 ${isUsed ? 'text-red-950' : 'text-slate-900 group-hover:text-blue-700'}`}>{b.driverPhone || '---'}</p>
+                          <p className="text-xs font-semibold text-slate-500 mb-0.5">رقم الهاتف</p>
+                          <p className="text-base font-bold text-slate-900 tabular-nums">{b.driverPhone || '---'}</p>
                         </div>
                       </div>
                     </div>
                   </div>
   
                   {/* Decorative Background Bus Icon */}
-                  <Bus size={120} className={`absolute -bottom-8 -left-8 opacity-[0.03] sm:opacity-[0.05] pointer-events-none transition-all duration-1000 ${
-                    isUsed ? 'text-red-950/20 -rotate-12 scale-125' : 'text-slate-900 group-hover:text-blue-600 group-hover:scale-150 group-hover:-rotate-12 group-hover:opacity-10'
-                  }`} />
+                  <Bus size={110} className="absolute -bottom-6 -left-6 opacity-[0.03] pointer-events-none text-slate-900" />
   
-                  <div className={`mt-8 pt-6 border-t flex flex-col gap-3 ${
-                    isUsed ? 'border-red-100/60 text-red-600' : 'border-slate-100 text-slate-300'
+                  <div className={`mt-6 pt-4 border-t flex flex-col gap-2.5 ${
+                    isUsed ? 'border-red-100 text-red-600' : 'border-slate-100 text-slate-400'
                   }`}>
                     {isUsed && (
-                      <div className="flex items-center gap-2.5 px-4 py-2 bg-red-50 rounded-2xl border border-red-100">
+                      <div className="flex items-center gap-2 px-3.5 py-2 bg-red-50 rounded-xl border border-red-100">
                         <FileText size={14} className="text-red-600" />
-                        <span className="text-[10px] font-black text-red-700">سند النشاط: #{voucherNum}</span>
+                        <span className="text-xs font-bold text-red-800 tabular-nums">سند النشاط: #{voucherNum}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2.5 text-[9px] font-bold uppercase tracking-widest px-1">
-                      <Clock size={12} className="opacity-40" />
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-400 px-1 tabular-nums">
+                      <Clock size={12} />
                       {b.updatedAt && typeof b.updatedAt.toDate === 'function' ? (
                         <span>تعديل: {format(b.updatedAt.toDate(), 'yyyy-MM-dd HH:mm')}</span>
                       ) : (
@@ -626,26 +625,25 @@ export function BusesManagement() {
   
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 py-8">
+          <div className="flex items-center justify-center gap-3 py-6">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400 transition-all shadow-sm"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-blue-700 disabled:opacity-30 transition-all shadow-2xs cursor-pointer"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={20} />
             </button>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {[...Array(totalPages)].map((_, i) => {
                 const page = i + 1;
-                // Only show current, first, last, and neighbors if many pages
                 if (
                   totalPages > 7 &&
                   page !== 1 &&
                   page !== totalPages &&
                   Math.abs(page - currentPage) > 1
                 ) {
-                  if (page === 2 || page === totalPages - 1) return <span key={page} className="text-slate-300 px-2 italic">...</span>;
+                  if (page === 2 || page === totalPages - 1) return <span key={page} className="text-slate-400 px-1.5">...</span>;
                   return null;
                 }
                 
@@ -653,10 +651,10 @@ export function BusesManagement() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-10 h-10 rounded-xl text-xs font-black transition-all ${
+                    className={`w-10 h-10 rounded-xl text-xs font-bold transition-all cursor-pointer tabular-nums ${
                       currentPage === page
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                        : 'bg-white border border-slate-100 text-slate-400 hover:bg-slate-50'
+                        ? 'bg-blue-800 text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     {page}
@@ -668,9 +666,9 @@ export function BusesManagement() {
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400 transition-all shadow-sm"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-blue-700 disabled:opacity-30 transition-all shadow-2xs cursor-pointer"
             >
-              <ChevronLeft size={24} /> 
+              <ChevronLeft size={20} /> 
             </button>
           </div>
         )}
@@ -678,15 +676,15 @@ export function BusesManagement() {
 
       {filteredBuses.length === 0 && (
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="py-40 text-center"
+          className="py-28 text-center bg-white rounded-[2rem] border border-slate-200/80"
         >
-          <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-dashed border-slate-200 shadow-2xl shadow-slate-100 animate-pulse">
-             <Bus size={56} className="text-slate-200" />
+          <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-dashed border-slate-300">
+             <Bus size={44} className="text-slate-300" />
           </div>
-          <h4 className="text-slate-300 font-black uppercase text-sm tracking-[0.4em] mb-3 leading-none">لا تـوجـد حـافـلات</h4>
-          <p className="text-xs text-slate-400 font-bold max-w-xs mx-auto">لم نعثر على أي حافلات تطابق بحثك الحالي، جرب كلمات بحث أخرى</p>
+          <h4 className="text-slate-700 font-extrabold text-base mb-1.5">لا تـوجـد حـافـلات</h4>
+          <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">لم نعثر على أي حافلات تطابق بحثك الحالي، جرب كلمات بحث أخرى</p>
         </motion.div>
       )}
 

@@ -538,35 +538,35 @@ export function VoucherEntry() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-200/90 p-8 md:p-10 relative overflow-hidden"
+        className="bg-white rounded-[2rem] shadow-sm border border-slate-200/90 p-7 md:p-10 relative overflow-hidden"
       >
         {/* Top Brand Accent Line */}
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-amber-400 via-blue-600 to-indigo-900"></div>
+        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 pb-8 border-b border-slate-100">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-gradient-to-tr from-blue-700 to-indigo-900 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-900/20 ring-4 ring-amber-400/20">
-              <ClipboardList size={28} className="text-amber-300" />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-7 pb-7 border-b border-slate-100">
+          <div className="flex items-center gap-4">
+            <div className="w-13 h-13 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-2xl flex items-center justify-center text-white shadow-md border border-blue-800">
+              <ClipboardList size={26} className="text-amber-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-2xl font-black text-slate-900">إصدار سند جديد</h3>
+                <h3 className="text-2xl font-extrabold text-slate-900">إصدار سند جديد</h3>
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="px-2 py-0.5 rounded-md bg-blue-100/80 text-blue-800 font-black text-[11px] border border-blue-200">
+              <div className="flex items-center gap-2.5 mt-1.5">
+                <span className="px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-900 font-bold text-xs border border-blue-200/80">
                   موسم حج 1448 هـ
                 </span>
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                <p className="text-xs font-black text-emerald-700 uppercase tracking-wider leading-none">جاهز للترحيل</p>
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                <p className="text-xs font-bold text-emerald-700 leading-none">جاهز للترحيل</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-amber-50/60 to-blue-50/40 px-5 py-3 rounded-2xl border border-amber-200/80 flex flex-col items-end min-w-[130px] shadow-xs">
-            <span className="text-[9px] text-amber-700 font-black block uppercase tracking-widest mb-1">رقم السند الرقمي</span>
-            <div className="flex items-center gap-2">
-              <span className="text-amber-500 font-mono font-bold">#</span>
+          <div className="bg-slate-50 px-5 py-3 rounded-2xl border border-slate-200/90 flex flex-col items-end min-w-[140px]">
+            <span className="text-[11px] text-slate-500 font-bold block mb-1">رقم السند الرقمي</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-amber-600 font-mono font-bold text-lg">#</span>
               {isSuperAdmin ? (
                 <div className="relative">
                   <input
@@ -575,17 +575,17 @@ export function VoucherEntry() {
                     dir="ltr"
                     value={finalVoucherNumber}
                     onChange={(e) => setManualVoucherNumber(parseInt(e.target.value) || 0)}
-                    className={`text-xl font-mono font-black border rounded-lg px-2 py-0.5 outline-none w-28 text-right focus:ring-2 transition-all ${
+                    className={`text-xl font-mono font-extrabold border rounded-lg px-2.5 py-0.5 outline-none w-28 text-right focus:ring-2 transition-all tabular-nums ${
                       isVoucherDuplicate 
                         ? 'text-red-600 border-red-500 bg-red-50 focus:ring-red-400' 
-                        : 'text-blue-700 border-blue-200 bg-white focus:ring-blue-400'
+                        : 'text-blue-900 border-slate-300 bg-white focus:ring-blue-500/20 focus:border-blue-600'
                     }`}
                   />
                   {isVoucherDuplicate && (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="absolute -bottom-8 right-0 bg-red-500 text-white text-[8px] px-2 py-1 rounded-md font-black whitespace-nowrap z-20 shadow-lg"
+                      className="absolute -bottom-8 right-0 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-md font-bold whitespace-nowrap z-20 shadow-md"
                     >
                       رقم مكرر!
                     </motion.div>
@@ -593,9 +593,9 @@ export function VoucherEntry() {
                 </div>
               ) : (
                 <div className="relative">
-                  <span className={`text-xl font-mono font-black ${isVoucherDuplicate ? 'text-red-600' : 'text-blue-700'}`} lang="en" dir="ltr">{finalVoucherNumber}</span>
+                  <span className={`text-xl font-mono font-extrabold tabular-nums ${isVoucherDuplicate ? 'text-red-600' : 'text-blue-900'}`} lang="en" dir="ltr">{finalVoucherNumber}</span>
                   {isVoucherDuplicate && (
-                    <div className="absolute -bottom-6 right-0 text-red-500 text-[8px] font-black whitespace-nowrap">
+                    <div className="absolute -bottom-6 right-0 text-red-600 text-[10px] font-bold whitespace-nowrap">
                       رقم مكرر!
                     </div>
                   )}
@@ -606,32 +606,32 @@ export function VoucherEntry() {
         </div>
 
         {/* Keyboard Shortcuts Prompt Banner */}
-        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 sm:px-5 sm:py-3 mb-8 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-3 sm:px-5 sm:py-3 mb-8 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-slate-700 font-bold">
-            <Keyboard size={16} className="text-blue-600 shrink-0" />
-            <span className="font-black text-slate-800">اختصارات لوحة المفاتيح:</span>
+            <Keyboard size={16} className="text-blue-700 shrink-0" />
+            <span className="font-bold text-slate-800">اختصارات لوحة المفاتيح:</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-bold text-[11px] shadow-2xs">
-              <kbd className="font-mono bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-black">Ctrl + Enter</kbd>
+            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-semibold text-xs">
+              <kbd className="font-mono bg-blue-50 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200 text-[11px] font-bold" dir="ltr">Ctrl + Enter</kbd>
               <span>إرسال وطباعة</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-bold text-[11px] shadow-2xs">
-              <kbd className="font-mono bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 text-[10px] font-black">Enter ↵</kbd>
+            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-semibold text-xs">
+              <kbd className="font-mono bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 text-[11px] font-bold" dir="ltr">Enter ↵</kbd>
               <span>إضافة حافلة</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-bold text-[11px] shadow-2xs">
-              <kbd className="font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-bold">Alt + C</kbd>
+            <div className="inline-flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-semibold text-xs">
+              <kbd className="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[11px] font-bold" dir="ltr">Alt + C</kbd>
               <span>مسح الحقول</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+          <div className="space-y-6">
             <div className="group relative">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">
-                <UserIcon size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">
+                <UserIcon size={14} className="text-blue-700" />
                 اسم المستلم (مندوب الميدان)
               </label>
               <input
@@ -640,7 +640,7 @@ export function VoucherEntry() {
                 onFocus={() => setActiveSuggestionField('receiverName')}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                 onChange={(e) => setReceiverName(e.target.value)}
-                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                 placeholder="أدخل اسم المندوب المستلم..."
               />
               <AnimatePresence>
@@ -649,14 +649,14 @@ export function VoucherEntry() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
                   >
                     {history.receiverNames.filter(n => n.includes(receiverName)).map((name, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setReceiverName(name)}
-                        className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                        className="w-full text-right px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 transition-colors border-b border-slate-100 last:border-0"
                       >
                         {name}
                       </button>
@@ -667,8 +667,8 @@ export function VoucherEntry() {
             </div>
 
             <div className="group relative">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">
-                <Phone size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">
+                <Phone size={14} className="text-blue-700" />
                 رقم موبايل المستلم
               </label>
               <input
@@ -677,7 +677,7 @@ export function VoucherEntry() {
                 onFocus={() => setActiveSuggestionField('receiverMobile')}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                 onChange={(e) => setReceiverMobile(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                 placeholder="05xxxxxxx"
               />
               <AnimatePresence>
@@ -686,14 +686,14 @@ export function VoucherEntry() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
                   >
                     {history.receiverMobiles.filter(m => m.includes(receiverMobile)).map((mobile, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setReceiverMobile(mobile)}
-                        className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                        className="w-full text-right px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 transition-colors border-b border-slate-100 last:border-0 tabular-nums"
                       >
                         {mobile}
                       </button>
@@ -704,8 +704,8 @@ export function VoucherEntry() {
             </div>
 
             <div className="group relative">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">
-                <CreditCard size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">
+                <CreditCard size={14} className="text-blue-700" />
                 رقم هوية المستلم
               </label>
               <input
@@ -714,7 +714,7 @@ export function VoucherEntry() {
                 onFocus={() => setActiveSuggestionField('receiverId')}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                 onChange={(e) => setReceiverId(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                 placeholder="10xxxxxxxx"
               />
               <AnimatePresence>
@@ -723,14 +723,14 @@ export function VoucherEntry() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                    className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
                   >
                     {history.receiverIds.filter(id => id.includes(receiverId)).map((idNum, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setReceiverId(idNum)}
-                        className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                        className="w-full text-right px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 transition-colors border-b border-slate-100 last:border-0 tabular-nums"
                       >
                         {idNum}
                       </button>
@@ -740,16 +740,16 @@ export function VoucherEntry() {
               </AnimatePresence>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               <div className="group relative">
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">رقم المكتب</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">رقم المكتب</label>
                 <input
                   type="text"
                   value={delegateNumber}
                   onFocus={() => setActiveSuggestionField('delegateNumber')}
                   onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                   onChange={(e) => setDelegateNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                   placeholder="رقم المكتب..."
                 />
                 <AnimatePresence>
@@ -758,14 +758,14 @@ export function VoucherEntry() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                      className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
                     >
                       {history.delegateNumbers.filter(d => d.includes(delegateNumber)).map((num, i) => (
                         <button
                           key={i}
                           type="button"
                           onClick={() => setDelegateNumber(num)}
-                          className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                          className="w-full text-right px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 transition-colors border-b border-slate-100 last:border-0 tabular-nums"
                         >
                           {num}
                         </button>
@@ -775,14 +775,14 @@ export function VoucherEntry() {
                 </AnimatePresence>
               </div>
               <div className="group relative">
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">التابع لمؤسسة</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">التابع لمؤسسة</label>
                 <input
                   type="text"
                   value={organization}
                   onFocus={() => setActiveSuggestionField('organization')}
                   onBlur={() => setTimeout(() => setActiveSuggestionField(null), 200)}
                   onChange={(e) => setOrganization(e.target.value)}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                   placeholder="المؤسسة..."
                 />
                 <AnimatePresence>
@@ -791,14 +791,14 @@ export function VoucherEntry() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                      className="absolute z-50 top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
                     >
                       {history.organizations.filter(o => o.includes(organization)).map((org, i) => (
                         <button
                           key={i}
                           type="button"
                           onClick={() => setOrganization(org)}
-                          className="w-full text-right px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors border-b border-slate-50 last:border-0"
+                          className="w-full text-right px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50/60 hover:text-blue-800 transition-colors border-b border-slate-100 last:border-0"
                         >
                           {org}
                         </button>
@@ -809,66 +809,66 @@ export function VoucherEntry() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">عدد الحافلات</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2.5 mr-1">عدد الحافلات</label>
                 <input
                   type="text"
                   value={busesQuantity}
                   readOnly
-                  className="w-full px-6 py-4 bg-slate-100/50 border border-slate-100 rounded-[1.25rem] outline-none font-black text-blue-600 text-center"
+                  className="w-full px-5 py-3.5 bg-blue-50/60 border border-blue-200/80 rounded-2xl outline-none font-extrabold text-blue-800 text-center text-base tabular-nums"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">عدد التذاكر</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2.5 mr-1">عدد التذاكر</label>
                 <input
                   type="text"
                   value={ticketsCount}
                   onChange={(e) => setTicketsCount(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                   placeholder="0"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">عدد الحجاج</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2.5 mr-1">عدد الحجاج</label>
                 <input
                   type="text"
                   value={pilgrimsCount}
                   onChange={(e) => setPilgrimsCount(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                   placeholder="عدد الحجاج..."
                 />
               </div>
             </div>
 
-            <div className="pt-8 border-t border-slate-100">
+            <div className="pt-6 border-t border-slate-100">
               <div className="group">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest group-focus-within:text-blue-500 transition-colors">
-                  <Layers size={12} />
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1 group-focus-within:text-blue-700 transition-colors">
+                  <Layers size={14} className="text-blue-700" />
                   بموجب اعتماد رقم
                 </label>
                 <input
                   type="text"
                   value={approvalNumber}
                   onChange={(e) => setApprovalNumber(e.target.value)}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                   placeholder="أدخل رقم الاعتماد..."
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div className="bg-gradient-to-br from-blue-50/50 via-slate-50/30 to-amber-50/30 p-6 rounded-[2rem] border border-blue-100/80 shadow-xs space-y-6">
+          <div className="space-y-6">
+            <div className="bg-slate-50/90 p-6 rounded-3xl border border-slate-200/90 space-y-5">
               <div className="flex items-center justify-between">
-                <label className="block text-[10px] font-black text-blue-900 uppercase mr-1 tracking-widest flex items-center gap-2">
+                <label className="text-xs font-extrabold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                   إضافة الحافلات المشمولة بالسند
                 </label>
-                <span className="text-[10px] font-black text-amber-700 bg-amber-100/70 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-blue-900 bg-blue-100/80 border border-blue-200 px-3 py-0.5 rounded-full tabular-nums">
                   العدد المضاف: {selectedBuses.length}
                 </span>
               </div>
@@ -886,19 +886,19 @@ export function VoucherEntry() {
                         }
                       }
                     }}
-                    className={`w-full px-6 py-4 bg-white border-2 rounded-2xl text-2xl font-black tracking-widest outline-none transition-all ${
+                    className={`w-full px-5 py-3.5 bg-white border-2 rounded-2xl text-xl font-extrabold outline-none transition-all tabular-nums ${
                       isDuplicate 
                         ? 'border-red-500 text-red-600 ring-4 ring-red-50' 
                         : busNumber && driverName 
-                          ? 'border-blue-600 text-blue-800 shadow-xl shadow-blue-500/10' 
-                          : 'border-slate-200 text-slate-900 focus:border-blue-400 focus:ring-4 focus:ring-blue-50'
+                          ? 'border-blue-600 text-blue-900 shadow-sm' 
+                          : 'border-slate-200 text-slate-900 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
                     }`}
                     placeholder="رقم الحافلة..."
                   />
                   {isDuplicate && (
                     <motion.div 
                       initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-                      className="absolute top-full right-0 mt-3 flex items-center gap-2 text-red-600 text-[10px] font-black bg-red-50 px-3 py-1.5 rounded-xl z-10 border border-red-200 shadow-xs"
+                      className="absolute top-full right-0 mt-2.5 flex items-center gap-2 text-red-700 text-xs font-bold bg-red-50 px-3 py-1.5 rounded-xl z-10 border border-red-200 shadow-xs"
                     >
                       <AlertCircle size={14} />
                       هذه الحافلة مسجلة مسبقاً في النظام
@@ -906,16 +906,16 @@ export function VoucherEntry() {
                   )}
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                   onClick={addBusToList}
                   disabled={!busNumber || !driverName || isDuplicate || usedBusNumbers.has(busNumber)}
-                  className="px-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white rounded-2xl font-black hover:from-blue-800 hover:to-indigo-900 transition-all disabled:bg-slate-100 disabled:text-slate-300 disabled:from-slate-100 disabled:to-slate-100 flex items-center justify-center gap-2 shadow-lg shadow-blue-900/15 cursor-pointer group"
+                  className="px-5 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-bold hover:opacity-95 transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:from-slate-200 disabled:to-slate-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer group"
                   title="إضافة الحافلة (Enter)"
                 >
-                  <PlusCircle size={24} className="text-amber-300 group-hover:scale-110 transition-transform" />
-                  <span className="hidden sm:inline-block text-[11px] font-mono font-bold bg-white/20 px-1.5 py-0.5 rounded text-white/90">↵</span>
+                  <PlusCircle size={22} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline-block text-xs font-mono font-bold bg-white/15 px-1.5 py-0.5 rounded text-white">↵</span>
                 </motion.button>
               </div>
               <div className="grid grid-cols-1 gap-3">
@@ -932,10 +932,10 @@ export function VoucherEntry() {
                         }
                       }
                     }}
-                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all placeholder:text-slate-400 font-bold text-slate-700 text-sm"
+                    className="w-full px-5 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-800 text-sm tabular-nums"
                     placeholder="رقم هاتف السائق..."
                   />
-                  <Phone size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
               </div>
 
@@ -945,9 +945,9 @@ export function VoucherEntry() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-50/50 overflow-hidden"
+                    className="bg-white rounded-2xl p-4 border border-slate-200/80 overflow-hidden"
                   >
-                    <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 mr-1">الحافلات المضافة ({selectedBuses.length})</h4>
+                    <h4 className="text-xs font-bold text-slate-600 mb-3 mr-1">الحافلات المضافة ({selectedBuses.length})</h4>
                     <div className="space-y-2">
                       {selectedBuses.map((bus, idx) => {
                         const isUsed = usedBusNumbers.has(bus.busNumber);
@@ -958,14 +958,14 @@ export function VoucherEntry() {
                             key={idx} 
                             className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                               isUsed 
-                                ? 'bg-red-50/50 border-red-100' 
-                                : 'bg-green-50/50 border-green-100'
+                                ? 'bg-red-50/70 border-red-200' 
+                                : 'bg-emerald-50/70 border-emerald-200'
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              <span className={`text-base font-black ${isUsed ? 'text-red-900' : 'text-green-900'}`}>{bus.busNumber}</span>
-                              <span className={`text-[8px] px-1.5 py-0.5 rounded font-black ${
-                                isUsed ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+                              <span className={`text-base font-extrabold tabular-nums ${isUsed ? 'text-red-900' : 'text-emerald-950'}`}>{bus.busNumber}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
+                                isUsed ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
                               }`}>
                                 {isUsed ? 'مسددة' : 'جاهزة'}
                               </span>
@@ -973,9 +973,9 @@ export function VoucherEntry() {
                             <button
                               type="button"
                               onClick={() => removeBusFromList(idx)}
-                              className="text-slate-300 hover:text-red-500 transition-colors"
+                              className="text-slate-400 hover:text-red-600 transition-colors p-1"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={15} />
                             </button>
                           </motion.div>
                         );
@@ -987,18 +987,18 @@ export function VoucherEntry() {
             </div>
 
             <div className="group">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest opacity-60">
-                <UserIcon size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-600 mb-2.5 mr-1">
+                <UserIcon size={14} className="text-slate-500" />
                 السائق (تعريف تلقائي)
               </label>
-              <div className="w-full px-6 py-4 bg-slate-100/50 border border-dashed border-slate-200 rounded-[1.25rem] text-slate-600 font-black min-h-[60px] flex items-center text-sm shadow-inner">
-                {driverName || <span className="text-slate-300 font-bold italic tracking-tight opacity-50">سيظهر اسم السائق عند إدخال رقم الحافلة...</span>}
+              <div className="w-full px-5 py-3.5 bg-slate-100/80 border border-dashed border-slate-300 rounded-2xl text-slate-800 font-bold min-h-[54px] flex items-center text-sm">
+                {driverName || <span className="text-slate-400 font-medium text-xs">سيظهر اسم السائق عند إدخال رقم الحافلة...</span>}
               </div>
             </div>
 
             <div className="group">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">
-                <Calendar size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                <Calendar size={14} className="text-blue-700" />
                 التاريخ ميلادي / هجري
               </label>
               <div className="grid grid-cols-2 gap-4">
@@ -1006,21 +1006,21 @@ export function VoucherEntry() {
                   type="date"
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all font-bold text-slate-900 text-sm"
+                  className="w-full px-4 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm tabular-nums"
                 />
                 <input
                   type="text"
                   value={hijriDate}
                   onChange={(e) => setHijriDate(e.target.value)}
-                  className="w-full px-5 py-4 bg-slate-100/50 border border-slate-100 rounded-[1.25rem] outline-none font-bold text-slate-500 text-sm italic"
+                  className="w-full px-4 py-3.5 bg-slate-100/80 border border-slate-200/80 rounded-2xl outline-none font-bold text-slate-600 text-sm tabular-nums"
                   readOnly
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">
-                <MapPin size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                <MapPin size={14} className="text-blue-700" />
                 خط السير والإتجاه
               </label>
               <div className="grid grid-cols-2 gap-4">
@@ -1029,104 +1029,104 @@ export function VoucherEntry() {
                   value={directionFrom}
                   onChange={(e) => setDirectionFrom(e.target.value)}
                   placeholder="من..."
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all font-bold text-slate-900 text-sm"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                 />
                 <input
                   type="text"
                   value={directionTo}
                   onChange={(e) => setDirectionTo(e.target.value)}
                   placeholder="إلى..."
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all font-bold text-slate-900 text-sm"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               <div className="group">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">
-                  <MapPin size={12} />
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                  <MapPin size={14} className="text-blue-700" />
                   مكان التحميل
                 </label>
                 <input
                   type="text"
                   value={loadingLocation}
                   onChange={(e) => setLoadingLocation(e.target.value)}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                   placeholder="أدخل مكان التحميل..."
                 />
               </div>
               <div className="group">
-                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">
-                  <Layers size={12} />
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                  <Layers size={14} className="text-blue-700" />
                   اسم الفندق
                 </label>
                 <input
                   type="text"
                   value={hotelName}
                   onChange={(e) => setHotelName(e.target.value)}
-                  className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                  className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                   placeholder="أدخل اسم الفندق..."
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest">
-                <Clock size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                <Clock size={14} className="text-blue-700" />
                 توقيت الحركة
               </label>
               <input
                 type="text"
                 value={eventTime}
                 onChange={(e) => setEventTime(e.target.value)}
-                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm"
                 placeholder="مثلاً: 09:30 صباحاً"
               />
             </div>
 
             <div className="group">
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-3 mr-1 tracking-widest leading-none">
-                <ClipboardList size={12} />
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-2.5 mr-1">
+                <ClipboardList size={14} className="text-blue-700" />
                 ملاحظات إضافية
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900 resize-none"
+                className="w-full px-5 py-3.5 bg-slate-50/80 border border-slate-200/90 rounded-2xl hover:border-slate-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-slate-900 text-sm resize-none"
                 placeholder="أدخل أي ملاحظات إضافية هنا..."
               />
             </div>
           </div>
         </div>
 
-        <div className="mt-12">
+        <div className="mt-10 pt-6 border-t border-slate-100">
           <AnimatePresence mode="wait">
             {status.type && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className={`p-5 rounded-[1.5rem] flex items-center gap-4 mb-8 shadow-lg ${
+                className={`p-4 rounded-2xl flex items-center gap-4 mb-6 shadow-md ${
                   status.type === 'success' 
-                    ? 'bg-green-600 text-white shadow-green-100' 
-                    : 'bg-red-600 text-white shadow-red-100'
+                    ? 'bg-emerald-600 text-white' 
+                    : 'bg-red-600 text-white'
                 }`}
               >
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                  {isPrinting ? <Loader2 size={24} className="animate-spin" /> : (status.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />)}
+                  {isPrinting ? <Loader2 size={22} className="animate-spin" /> : (status.type === 'success' ? <CheckCircle2 size={22} /> : <AlertCircle size={22} />)}
                 </div>
                 <div>
-                  <p className="text-sm font-black leading-tight">
+                  <p className="text-sm font-bold leading-snug">
                     {isPrinting ? 'جـاري تـحضـير الـسـند للـطبـاعة...' : status.msg}
                   </p>
-                  <p className="text-[10px] opacity-80 font-bold mt-1 uppercase tracking-wider">نظام محطة درة المنورة الرقمي</p>
+                  <p className="text-xs opacity-85 font-medium mt-0.5">نظام محطة درة المنورة الرقمي</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="flex flex-col sm:flex-row gap-5">
+          <div className="flex flex-col sm:flex-row gap-4">
             <AnimatePresence>
               {isFormDirty && !isSubmitting && (
                 <motion.button
@@ -1135,34 +1135,34 @@ export function VoucherEntry() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   whileHover={{ backgroundColor: '#fee2e2' }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
                   onClick={handleClear}
-                  className="px-8 py-5 bg-red-50 text-red-600 rounded-[1.5rem] font-black text-lg transition-all flex items-center justify-center gap-3 border border-red-100 shrink-0"
+                  className="px-6 py-4 bg-red-50 text-red-700 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2.5 border border-red-200 shrink-0 cursor-pointer"
                   title="مسح الحقول (Alt + C)"
                 >
-                  <Trash2 size={24} />
+                  <Trash2 size={20} />
                   <span>إفراغ الحقول</span>
-                  <span className="text-[10px] font-mono font-bold bg-red-100/80 px-2 py-0.5 rounded-md text-red-700">Alt+C</span>
+                  <span className="text-xs font-mono font-bold bg-red-100 px-2 py-0.5 rounded-md text-red-800" dir="ltr">Alt+C</span>
                 </motion.button>
               )}
             </AnimatePresence>
 
             <motion.button
               disabled={isSubmitting || selectedBuses.length === 0}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => handleRegister()}
-              className="flex-1 py-5 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-blue-900/25 transition-all disabled:bg-slate-100 disabled:from-slate-100 disabled:to-slate-100 disabled:text-slate-300 disabled:shadow-none flex items-center justify-center gap-4 group cursor-pointer"
+              className="flex-1 py-4 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-extrabold text-lg shadow-lg shadow-blue-950/15 transition-all disabled:bg-slate-200 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:shadow-none flex items-center justify-center gap-3.5 group cursor-pointer"
               title="اعتماد وطباعة السند (Ctrl + Enter)"
             >
               {isSubmitting ? (
-                <Loader2 className="animate-spin" size={28} />
+                <Loader2 className="animate-spin" size={24} />
               ) : (
-                <Printer size={28} className="text-amber-300 group-hover:rotate-12 transition-transform" />
+                <Printer size={24} className="text-amber-400 group-hover:scale-105 transition-transform" />
               )}
               <span>اعتماد وتسجيل السند الرقمي</span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-white/20 px-2.5 py-1 rounded-lg font-mono font-black text-white border border-white/20 shadow-2xs">
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-white/15 px-2.5 py-1 rounded-lg font-mono font-bold text-white border border-white/20" dir="ltr">
                 <span>Ctrl</span>
                 <span>+</span>
                 <span>Enter ↵</span>
@@ -1171,7 +1171,7 @@ export function VoucherEntry() {
           </div>
           
           {selectedBuses.length === 0 && !isSubmitting && (
-            <p className="text-center text-[10px] text-amber-600 font-black mt-4 uppercase tracking-[0.2em] animate-pulse">يجب إضافة حافلة واحدة على الأقل للاعتماد</p>
+            <p className="text-center text-xs text-amber-700 font-bold mt-4">يجب إضافة حافلة واحدة على الأقل للاعتماد</p>
           )}
         </div>
       </motion.div>

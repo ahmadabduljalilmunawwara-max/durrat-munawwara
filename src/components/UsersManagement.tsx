@@ -323,78 +323,79 @@ export function UsersManagement() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* User Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-2.5 mb-2.5">
             <div className="w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center">
               <Users size={16} />
             </div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الإجمالي</span>
+            <span className="text-xs font-bold text-slate-600">الإجمالي</span>
           </div>
-          <div className="text-3xl font-black text-slate-900">{stats.total}</div>
-          <div className="text-[10px] font-bold text-slate-400 mt-1">مستخدم مسجل</div>
+          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.total}</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">مستخدم مسجل</div>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-amber-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-amber-100">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-8 h-8 bg-amber-500 text-white rounded-xl flex items-center justify-center">
               <Crown size={16} />
             </div>
-            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">المدراء</span>
+            <span className="text-xs font-bold text-amber-700">المدراء</span>
           </div>
-          <div className="text-3xl font-black text-slate-900">{stats.gm}</div>
-          <div className="text-[10px] font-bold text-slate-400 mt-1">مدير عام</div>
+          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.gm}</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">مدير عام</div>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-indigo-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-8 h-8 bg-blue-800 text-white rounded-xl flex items-center justify-center">
               <UserCog size={16} />
             </div>
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">المشرفين</span>
+            <span className="text-xs font-bold text-blue-800">المشرفين</span>
           </div>
-          <div className="text-3xl font-black text-slate-900">{stats.supervisor}</div>
-          <div className="text-[10px] font-bold text-slate-400 mt-1">مشرف نشط</div>
+          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.supervisor}</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">مشرف نشط</div>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-blue-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center">
               <UserCircle size={16} />
             </div>
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">المدخلين</span>
+            <span className="text-xs font-bold text-blue-700">المدخلين</span>
           </div>
-          <div className="text-3xl font-black text-slate-900">{stats.dataEntry}</div>
-          <div className="text-[10px] font-bold text-slate-400 mt-1">مدخل بيانات</div>
+          <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{stats.dataEntry}</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">مدخل بيانات</div>
         </div>
 
-        <div className="bg-white p-6 rounded-[2rem] border border-amber-100 shadow-sm shadow-amber-50/50 transition-all hover:shadow-md">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-white border-2 border-amber-200 text-amber-600 rounded-xl flex items-center justify-center animate-pulse">
+        <div className="bg-white p-5 rounded-2xl border border-amber-200 shadow-2xs transition-all hover:shadow-sm">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-8 h-8 bg-amber-50 border border-amber-200 text-amber-600 rounded-xl flex items-center justify-center">
               <UserPlus size={16} />
             </div>
-            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">الانتظار</span>
+            <span className="text-xs font-bold text-amber-700">الانتظار</span>
           </div>
-          <div className="text-3xl font-black text-amber-600">{stats.pending}</div>
-          <div className="text-[10px] font-bold text-slate-400 mt-1">بانتظار الموافقة</div>
+          <div className="text-3xl font-extrabold text-amber-600 tabular-nums">{stats.pending}</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">بانتظار الموافقة</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1">
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 sticky top-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-              <UserPlus size={20} />
+        <div className="bg-white rounded-[2rem] p-7 shadow-sm border border-slate-200/90 sticky top-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-l from-blue-950 via-blue-700 to-amber-500"></div>
+          <div className="flex items-center gap-3 mb-7">
+            <div className="w-10 h-10 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-xl flex items-center justify-center text-white shadow-sm">
+              <UserPlus size={19} className="text-amber-400" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight">إضافة مستخدم جديد</h3>
+            <h3 className="text-lg font-extrabold text-slate-900">إضافة مستخدم جديد</h3>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-6">
+          <form onSubmit={handleSave} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-2 mr-1">اسم المستخدم (Login)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">اسم المستخدم (Login)</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
@@ -402,13 +403,13 @@ export function UsersManagement() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Username..."
-                  className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none transition-all placeholder:text-slate-300 font-medium"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-2 mr-1">كلمة المرور</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">كلمة المرور</label>
               <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
@@ -416,13 +417,13 @@ export function UsersManagement() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password..."
-                  className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none transition-all placeholder:text-slate-300 font-medium"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-2 mr-1">الاسم الكامل (يظهر في السند)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">الاسم الكامل (يظهر في السند)</label>
               <div className="relative">
                 <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
@@ -430,17 +431,17 @@ export function UsersManagement() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Display Name..."
-                  className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none transition-all placeholder:text-slate-300 font-medium"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-semibold text-sm text-slate-900"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase mb-2 mr-1">الصلاحيات</label>
+              <label className="block text-xs font-bold text-slate-700 mb-2 mr-1">الصلاحيات</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 outline-none transition-all font-medium"
+                className="w-full px-4 py-3.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-bold text-sm text-slate-800 cursor-pointer"
               >
                 <option value="data_entry">مدخل بيانات</option>
                 <option value="supervisor">مشرف</option>
@@ -450,9 +451,9 @@ export function UsersManagement() {
             <button 
               type="submit" 
               disabled={isSaving}
-              className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full py-4 bg-gradient-to-l from-slate-900 via-blue-950 to-blue-800 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md cursor-pointer"
             >
-              {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
+              {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="text-amber-400" />}
               حـفـظ الـمـسـتـخـدم
             </button>
           </form>
@@ -460,9 +461,9 @@ export function UsersManagement() {
       </div>
 
       <div className="md:col-span-2">
-        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-            <h3 className="text-2xl font-bold text-slate-800 font-sans tracking-tight">قـائـمـة الـمـسـتـخـدمـيـن</h3>
+        <div className="bg-white rounded-[2rem] p-7 shadow-sm border border-slate-200/90">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-7">
+            <h3 className="text-xl font-extrabold text-slate-900">قـائـمـة الـمـسـتـخـدمـيـن</h3>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
@@ -470,40 +471,40 @@ export function UsersManagement() {
                 placeholder="بحث عن مستخدم..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-12 pr-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none w-full md:w-64 transition-all"
+                className="pl-11 pr-5 py-2.5 bg-slate-50/90 border border-slate-200/90 rounded-xl focus:bg-white focus:border-blue-600 outline-none w-full md:w-64 transition-all text-sm font-semibold"
               />
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {pendingUsers.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 px-2 text-amber-600">
-                  <UserPlus size={18} />
-                  <span className="text-sm font-black uppercase tracking-widest">بانتظار الموافقة ({pendingUsers.length})</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 px-1 text-amber-700">
+                  <UserPlus size={17} />
+                  <span className="text-xs font-extrabold">بانتظار الموافقة ({pendingUsers.length})</span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {pendingUsers.map(u => <UserCard key={u.id} u={u} />)}
                 </div>
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {pendingUsers.length > 0 && activeUsers.length > 0 && (
-                <div className="flex items-center gap-2 px-2 text-slate-400 mt-4">
-                  <User size={18} />
-                  <span className="text-sm font-black uppercase tracking-widest">المستخدمون النشطون</span>
+                <div className="flex items-center gap-2 px-1 text-slate-600 mt-4">
+                  <User size={17} />
+                  <span className="text-xs font-extrabold">المستخدمون النشطون</span>
                 </div>
               )}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {activeUsers.map((u) => <UserCard key={u.id} u={u} />)}
               </div>
             </div>
             
             {filteredUsers.length === 0 && (
-              <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-[2rem]">
-                <User size={48} className="mx-auto text-slate-200 mb-4" />
-                <p className="text-slate-400 font-medium">لم يتم العثور على مستخدمين</p>
+              <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+                <User size={42} className="mx-auto text-slate-300 mb-3" />
+                <p className="text-slate-500 font-semibold text-sm">لم يتم العثور على مستخدمين</p>
               </div>
             )}
           </div>

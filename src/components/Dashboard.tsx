@@ -845,40 +845,40 @@ export function Dashboard() {
       className="space-y-6"
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-tr from-blue-700 to-indigo-900 rounded-2xl flex items-center justify-center border border-amber-400/20 shadow-md">
-            <LayoutDashboard size={24} className="text-amber-300" />
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-2xl flex items-center justify-center border border-amber-400/20 shadow-md">
+            <LayoutDashboard size={24} className="text-amber-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-black text-slate-900">لوحة التحكم</h1>
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             </div>
-            <p className="text-[10px] text-blue-800 font-black uppercase tracking-widest mt-0.5">
+            <p className="text-xs text-slate-600 font-bold mt-0.5">
               نظرة عامة على نشاط النقل والعمليات الجارية - درة المنورة
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-200/90 shadow-xs group hover:border-amber-300 transition-colors">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/90 shadow-xs group hover:border-amber-300 transition-colors">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-          <span className="text-[10px] font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700">
             تحديث سحابي فوري
           </span>
           <span className="text-slate-300 mx-2">|</span>
-          <span className="text-[10px] font-bold text-amber-700 uppercase">
+          <span className="text-xs font-bold text-amber-700 tabular-nums">
             {format(new Date(), "dd MMMM yyyy")}
           </span>
         </div>
       </div>
 
       {/* Hajj Seasons Selector Tabs */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/90 backdrop-blur-xl p-2 sm:p-2.5 rounded-2xl border border-slate-800/80 shadow-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-gradient-to-l from-slate-900 via-blue-950 to-slate-900 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow-md">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setSelectedSeason("1448")}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-3 px-6 py-2.5 rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
               selectedSeason === "1448"
-                ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 border border-blue-400/40 ring-1 ring-white/20 scale-[1.02]"
+                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 border border-blue-400/40 ring-1 ring-white/20 scale-[1.02]"
                 : "text-slate-300 hover:text-white hover:bg-white/10"
             }`}
           >
@@ -888,9 +888,9 @@ export function Dashboard() {
               )}
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
             </span>
-            <span className="tracking-wide">موسم حج 1448 هـ</span>
+            <span>موسم حج 1448 هـ</span>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
                 selectedSeason === "1448"
                   ? "bg-white/25 text-white border border-white/30"
                   : "bg-white/10 text-slate-300"
@@ -904,7 +904,7 @@ export function Dashboard() {
             onClick={() => setSelectedSeason("1447")}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-3 px-6 py-2.5 rounded-xl font-black text-xs transition-all duration-300 cursor-pointer select-none ${
               selectedSeason === "1447"
-                ? "bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/30 border border-amber-300/60 ring-1 ring-white/30 scale-[1.02]"
+                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/30 border border-amber-300/60 ring-1 ring-white/30 scale-[1.02]"
                 : "text-slate-300 hover:text-white hover:bg-white/10"
             }`}
           >
@@ -914,9 +914,9 @@ export function Dashboard() {
                 selectedSeason === "1447" ? "text-slate-950" : "text-amber-400"
               }
             />
-            <span className="tracking-wide">موسم حج 1447 هـ</span>
+            <span>موسم حج 1447 هـ</span>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold tabular-nums transition-colors ${
                 selectedSeason === "1447"
                   ? "bg-slate-950/20 text-slate-950 border border-slate-950/20"
                   : "bg-white/10 text-slate-300"
@@ -929,16 +929,16 @@ export function Dashboard() {
       </div>
 
       {/* Sub-tabs Selection */}
-      <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl w-fit border border-slate-200/60 shadow-inner">
+      <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl w-fit border border-slate-200/80 shadow-xs">
         <button
           onClick={() => setDashboardTab("analytics")}
           className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black text-xs transition-all cursor-pointer ${
             dashboardTab === "analytics"
-              ? "bg-gradient-to-r from-blue-700 to-indigo-900 text-white shadow-md"
+              ? "bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-md"
               : "text-slate-600 hover:text-slate-900"
           }`}
         >
-          <Activity size={16} className={dashboardTab === "analytics" ? "text-amber-300" : ""} />
+          <Activity size={16} className={dashboardTab === "analytics" ? "text-amber-400" : ""} />
           <span>الإحصائيات والنشاط ({selectedSeason === "1448" ? "حج 1448 هـ" : "حج 1447 هـ"})</span>
         </button>
         {canManage && (
@@ -964,27 +964,27 @@ export function Dashboard() {
             whileHover={{ y: -5 }}
             className="col-span-12 md:col-span-4 lg:col-span-4 bg-white p-6 rounded-[2.5rem] border border-slate-200/90 shadow-sm relative overflow-hidden group"
           >
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-blue-600 to-amber-400"></div>
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-blue-700 to-amber-400"></div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-60 group-hover:bg-amber-50 transition-colors duration-500"></div>
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="w-10 h-10 bg-gradient-to-tr from-blue-50 to-blue-100/80 rounded-xl flex items-center justify-center border border-blue-200">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-200/80">
                 <Activity size={20} className="text-blue-700" />
               </div>
               <div className="flex flex-col items-end">
-                <div className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg font-black border border-emerald-200/80 flex items-center gap-1">
-                  <ArrowUpRight size={8} />
+                <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg font-black border border-emerald-200/80 flex items-center gap-1 tabular-nums">
+                  <ArrowUpRight size={10} />
                   {Math.round((todayCount / (averageWeekly || 1)) * 100)}%
                 </div>
               </div>
             </div>
-            <h3 className="text-slate-400 text-[10px] font-black uppercase mb-1 tracking-wider relative z-10">
+            <h3 className="text-slate-600 text-xs font-black mb-1 relative z-10">
               سندات اليوم
             </h3>
             <div className="flex items-end justify-between relative z-10">
-              <div className="text-4xl font-black text-slate-900 leading-none">
+              <div className="text-4xl font-black text-slate-900 leading-none tabular-nums">
                 {todayCount}
               </div>
-              <span className="text-[9px] text-blue-700 font-bold mb-1 uppercase tracking-tighter">
+              <span className="text-xs text-blue-700 font-bold mb-1">
                 سند صادر اليوم
               </span>
             </div>
@@ -1005,26 +1005,26 @@ export function Dashboard() {
             whileHover={{ y: -5 }}
             className="col-span-12 md:col-span-4 lg:col-span-4 bg-white p-6 rounded-[2.5rem] border border-slate-200/90 shadow-sm flex flex-col justify-between group relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-indigo-800 to-blue-600"></div>
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-slate-900 to-blue-700"></div>
             <div>
               <div className="flex justify-between items-start mb-6">
-                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-100 transition-colors">
-                  <Bus className="text-indigo-700" size={20} />
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-200/80 group-hover:bg-blue-100 transition-colors">
+                  <Bus className="text-blue-700" size={20} />
                 </div>
-                <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                <h3 className="text-slate-600 text-xs font-black">
                   الأسطول
                 </h3>
               </div>
               <div>
-                <div className="text-4xl font-black mb-1 text-slate-900">
+                <div className="text-4xl font-black mb-1 text-slate-900 tabular-nums">
                   {totalBuses}
                 </div>
-                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-tight">
+                <p className="text-slate-500 text-xs font-bold">
                   إجمالي الحافلات المسجلة
                 </p>
               </div>
             </div>
-            <div className="mt-6 flex flex-wrap gap-1">
+            <div className="mt-6 flex flex-wrap gap-1.5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
@@ -1044,19 +1044,19 @@ export function Dashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50 group-hover:bg-amber-100/50 transition-colors duration-500"></div>
 
             <div className="relative z-10 flex justify-between items-start mb-3">
-              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-200/60">
+              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-200/80">
                 <Bus size={20} className="text-amber-600 animate-pulse" />
               </div>
-              <span className="text-[9px] text-amber-800 font-black bg-amber-100/70 px-2.5 py-0.5 rounded-lg border border-amber-200 flex items-center gap-1">
+              <span className="text-[11px] text-amber-800 font-black bg-amber-100/70 px-2.5 py-0.5 rounded-lg border border-amber-200 flex items-center gap-1">
                 مؤشر تفاعلي مباشر
               </span>
             </div>
 
             <div className="relative z-10 mb-2">
-              <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+              <h3 className="text-slate-600 text-xs font-bold">
                 الحافلات الموزعة في العقود
               </h3>
-              <p className="text-[10.5px] text-slate-700 font-black mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
+              <p className="text-xs text-slate-800 font-black mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
                 مؤشرات النشاط وتفاصيل التوزيع
               </p>
             </div>
@@ -1072,13 +1072,13 @@ export function Dashboard() {
                 }}
                 className="flex flex-col items-center justify-center p-2 rounded-2xl bg-amber-50/80 border border-amber-200/80 hover:bg-amber-100 hover:border-amber-300 hover:shadow-sm active:scale-95 transition-all text-center group/btn cursor-pointer"
               >
-                <span className="text-lg font-black text-amber-700">
+                <span className="text-lg font-black text-amber-700 tabular-nums">
                   {distributedBusesToday.length}
                 </span>
-                <span className="text-[9px] font-black text-amber-950 mt-1">
+                <span className="text-[11px] font-black text-amber-950 mt-1">
                   الموزعة اليوم
                 </span>
-                <span className="text-[8px] text-amber-600 mt-0.5 group-hover/btn:text-amber-800 transition-colors font-bold">
+                <span className="text-[10px] text-amber-700 mt-0.5 group-hover/btn:text-amber-900 transition-colors font-bold">
                   تفاصيل ←
                 </span>
               </button>

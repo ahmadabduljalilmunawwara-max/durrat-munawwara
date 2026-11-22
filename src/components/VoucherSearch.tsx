@@ -461,21 +461,21 @@ export function VoucherSearch() {
     <div className="max-w-7xl mx-auto space-y-6" dir="rtl">
       
       {/* Top Header Card */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200/90 p-6 md:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-700 to-indigo-900 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-100 ring-4 ring-blue-50">
+            <div className="w-14 h-14 bg-gradient-to-br from-slate-900 via-blue-950 to-blue-800 rounded-2xl flex items-center justify-center text-amber-400 shadow-lg shadow-blue-900/15 ring-4 ring-blue-50">
               <Search size={28} />
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">البحث والأرشيف الشامل</h2>
+                <h2 className="text-2xl font-black text-slate-900">البحث والأرشيف الشامل</h2>
                 <span className="bg-emerald-50 text-emerald-700 text-xs font-black px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   تحديث لحظي
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-bold mt-1">
+              <p className="text-xs text-slate-600 font-bold mt-1">
                 استعراض وتصفية السجلات، وتوليد كشوفات وتقارير PDF الشهرية والموسمية
               </p>
             </div>
@@ -485,7 +485,7 @@ export function VoucherSearch() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white rounded-2xl font-black text-sm hover:opacity-95 transition-all shadow-xl shadow-blue-100 hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white rounded-2xl font-black text-sm hover:opacity-95 transition-all shadow-lg shadow-blue-900/15 hover:scale-[1.02] active:scale-[0.98]"
             >
               <FileText size={18} className="text-blue-200" />
               <span>توليد كشف وتقارير PDF</span>
@@ -507,18 +507,18 @@ export function VoucherSearch() {
 
         {/* Season Selector Tabs */}
         <div className="mt-6 flex flex-wrap items-center gap-2">
-          <div className="text-xs font-black text-slate-400 ml-2">الموسم:</div>
+          <div className="text-xs font-black text-slate-600 ml-2">الموسم:</div>
           <button
             onClick={() => setSelectedSeason('1448')}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               selectedSeason === '1448'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                ? 'bg-blue-700 text-white shadow-md shadow-blue-700/20'
                 : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <span>موسم 1448 هـ (الحالي)</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-              selectedSeason === '1448' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
+              selectedSeason === '1448' ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {countSeason1448}
             </span>
@@ -528,12 +528,12 @@ export function VoucherSearch() {
             onClick={() => setSelectedSeason('1447')}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               selectedSeason === '1447'
-                ? 'bg-amber-600 text-white shadow-md shadow-amber-100'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
                 : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <span>موسم 1447 هـ (المؤرشف)</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
               selectedSeason === '1447' ? 'bg-amber-800 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {countSeason1447}
@@ -544,12 +544,12 @@ export function VoucherSearch() {
             onClick={() => setSelectedSeason('all')}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               selectedSeason === 'all'
-                ? 'bg-slate-900 text-white shadow-md shadow-slate-200'
+                ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
                 : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <span>جميع المواسم</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tabular-nums ${
               selectedSeason === 'all' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {allVouchers.length}
@@ -567,7 +567,7 @@ export function VoucherSearch() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="ابحث برقم السند، رقم الاعتماد، المؤسسة، اسم السائق، رقم اللوحة، المندوب..."
-              className="w-full pr-12 pl-10 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none transition-all font-bold text-sm placeholder:text-slate-400 text-slate-900"
+              className="w-full pr-12 pl-10 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all font-bold text-sm placeholder:text-slate-400 text-slate-900"
             />
             {searchTerm && (
               <button
@@ -584,7 +584,7 @@ export function VoucherSearch() {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value as PeriodFilter)}
-              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-sm text-slate-700 outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all cursor-pointer"
+              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 font-bold text-sm text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all cursor-pointer"
             >
               <option value="all">📅 كافة الفترات الزمنية</option>
               <option value="today">اليوم</option>
@@ -600,7 +600,7 @@ export function VoucherSearch() {
             <select
               value={selectedOrg}
               onChange={(e) => setSelectedOrg(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 font-bold text-sm text-slate-700 outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all cursor-pointer"
+              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 font-bold text-sm text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all cursor-pointer"
             >
               <option value="all">🏢 كافة المؤسسات والجهات</option>
               {organizationsList.map((org) => (
@@ -618,7 +618,7 @@ export function VoucherSearch() {
               type="month"
               value={customMonth}
               onChange={(e) => setCustomMonth(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white border border-blue-200 font-bold text-sm text-slate-800 outline-none"
+              className="px-4 py-2 rounded-xl bg-white border border-blue-200 font-bold text-sm text-slate-800 outline-none tabular-nums"
             />
           </div>
         )}
@@ -631,7 +631,7 @@ export function VoucherSearch() {
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none"
+                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none tabular-nums"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -640,7 +640,7 @@ export function VoucherSearch() {
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none"
+                className="px-3 py-2 rounded-xl bg-white border border-blue-200 font-bold text-xs text-slate-800 outline-none tabular-nums"
               />
             </div>
           </div>
@@ -648,62 +648,62 @@ export function VoucherSearch() {
 
         {/* Summary Metric Strip */}
         <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center shrink-0">
               <FileText size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase">السندات المفلترة</p>
-              <p className="text-lg font-black text-slate-900 leading-tight">{metrics.vouchersCount}</p>
+              <p className="text-xs font-bold text-slate-600">السندات المفلترة</p>
+              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.vouchersCount}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center shrink-0">
               <Bus size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase">إجمالي الحافلات</p>
-              <p className="text-lg font-black text-slate-900 leading-tight">{metrics.totalBuses}</p>
+              <p className="text-xs font-bold text-slate-600">إجمالي الحافلات</p>
+              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.totalBuses}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center shrink-0">
               <UserCheck size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase">إجمالي الحجاج</p>
-              <p className="text-lg font-black text-slate-900 leading-tight">{metrics.totalPilgrims}</p>
+              <p className="text-xs font-bold text-slate-600">إجمالي الحجاج</p>
+              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.totalPilgrims}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center shrink-0">
+          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/80 flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-200/80 text-slate-800 rounded-xl flex items-center justify-center shrink-0">
               <Building2 size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase">الجهات المستفيدة</p>
-              <p className="text-lg font-black text-slate-900 leading-tight">{metrics.organizationsCount}</p>
+              <p className="text-xs font-bold text-slate-600">الجهات المستفيدة</p>
+              <p className="text-xl font-black text-slate-900 leading-tight tabular-nums">{metrics.organizationsCount}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Results List Card */}
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200/90 overflow-hidden flex flex-col">
         {/* Header Bar */}
-        <div className="px-6 py-4 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History size={16} className="text-slate-400" />
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">سجلات السندات والعمليات</span>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 mr-2">
+            <History size={16} className="text-blue-600" />
+            <span className="text-xs font-black text-slate-700">سجلات السندات والعمليات</span>
+            <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/80 mr-2 tabular-nums">
               {filteredVouchers.length} سند
             </span>
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-600 tabular-nums">
               <span>صفحة {currentPage} من {totalPages}</span>
               <div className="flex items-center gap-1 mr-2">
                 <button
@@ -736,8 +736,8 @@ export function VoucherSearch() {
             <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-slate-100">
               <History size={36} className="text-slate-300" />
             </div>
-            <p className="font-bold text-base text-slate-600">لا توجد سندات مطابقة لمعايير البحث</p>
-            <p className="text-xs text-slate-400 mt-1">جرب تغيير الموسم أو الفترة الزمنية أو إزالة مصطلح البحث</p>
+            <p className="font-bold text-base text-slate-700">لا توجد سندات مطابقة لمعايير البحث</p>
+            <p className="text-xs text-slate-500 mt-1">جرب تغيير الموسم أو الفترة الزمنية أو إزالة مصطلح البحث</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -747,29 +747,29 @@ export function VoucherSearch() {
                 : (Number(v.busesQuantity) || (v.busNumber ? 1 : 0));
 
               return (
-                <div key={v.id} className="p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-50/80 transition-colors group">
+                <div key={v.id} className="p-6 md:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-50/70 transition-colors group">
                   <div className="flex-1 space-y-4">
                     {/* Voucher Header row */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-base font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-xl border border-blue-100">
+                      <span className="text-base font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-xl border border-blue-200/80 tabular-nums">
                         سند #{v.voucherNumber}
                       </span>
 
                       {v.approvalNumber && (
-                        <span className="flex items-center gap-1 bg-slate-100 text-slate-700 px-3 py-1 rounded-xl text-xs font-bold">
+                        <span className="flex items-center gap-1 bg-slate-100 text-slate-700 px-3 py-1 rounded-xl text-xs font-bold tabular-nums">
                           اعتماد: {v.approvalNumber}
                         </span>
                       )}
 
                       {v.organization && (
-                        <span className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl text-xs font-bold border border-indigo-100">
-                          <Building2 size={13} />
+                        <span className="flex items-center gap-1 bg-blue-50/70 text-blue-900 px-3 py-1 rounded-xl text-xs font-bold border border-blue-100">
+                          <Building2 size={13} className="text-blue-600" />
                           {v.organization}
                         </span>
                       )}
 
                       {v.hajjSeason && (
-                        <span className={`px-2.5 py-1 rounded-xl text-xs font-black ${
+                        <span className={`px-2.5 py-1 rounded-xl text-xs font-black tabular-nums ${
                           v.hajjSeason === '1448'
                             ? 'bg-blue-100 text-blue-800'
                             : 'bg-amber-100 text-amber-800'
@@ -778,7 +778,7 @@ export function VoucherSearch() {
                         </span>
                       )}
 
-                      <span className="flex items-center gap-1.5 bg-slate-50 text-slate-500 px-3 py-1 rounded-xl text-xs font-bold mr-auto">
+                      <span className="flex items-center gap-1.5 bg-slate-100/80 text-slate-600 px-3 py-1 rounded-xl text-xs font-bold mr-auto tabular-nums">
                         <Calendar size={13} className="text-slate-400" />
                         {v.customDate || (v.timestamp ? format(new Date(v.timestamp), 'yyyy/MM/dd | HH:mm') : '-')}
                       </span>
@@ -790,7 +790,7 @@ export function VoucherSearch() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
                             <Bus size={14} className="text-blue-600" />
-                            <span className="text-xs font-black text-slate-700">الحافلات المسجلة ({v.buses.length})</span>
+                            <span className="text-xs font-black text-slate-700 tabular-nums">الحافلات المسجلة ({v.buses.length})</span>
                           </div>
                           {v.buses.length > 8 && (
                             <div className="flex items-center gap-1">
@@ -805,7 +805,7 @@ export function VoucherSearch() {
                               >
                                 <ChevronRight size={12} />
                               </button>
-                              <span className="text-[10px] font-bold text-slate-400">
+                              <span className="text-[11px] font-bold text-slate-500 tabular-nums">
                                 {(busPages[v.id] || 1)} / {Math.ceil(v.buses.length / 8)}
                               </span>
                               <button
@@ -827,13 +827,13 @@ export function VoucherSearch() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                           {v.buses.slice(((busPages[v.id] || 1) - 1) * 8, (busPages[v.id] || 1) * 8).map((bus: any, idx: number) => (
                             <div key={idx} className="bg-slate-50 border border-slate-200/80 rounded-xl p-2 flex items-center gap-2.5">
-                              <div className="w-7 h-7 bg-slate-900 rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0">
+                              <div className="w-7 h-7 bg-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-black shrink-0 tabular-nums">
                                 {bus.busNumber}
                               </div>
                               <div className="min-w-0">
                                 <p className="text-xs font-bold text-slate-900 truncate">{bus.driverName || 'سائق غير محدد'}</p>
                                 {bus.driverPhone && (
-                                  <p className="text-[9px] text-slate-400">{bus.driverPhone}</p>
+                                  <p className="text-[11px] text-slate-500 tabular-nums">{bus.driverPhone}</p>
                                 )}
                               </div>
                             </div>
@@ -841,14 +841,14 @@ export function VoucherSearch() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                      <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
                         <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[8px] text-slate-400 font-bold">حافلة</span>
-                          <span className="text-base font-black text-slate-900">{v.busNumber || '-'}</span>
+                          <span className="text-[9px] text-slate-500 font-bold">حافلة</span>
+                          <span className="text-base font-black text-slate-900 tabular-nums">{v.busNumber || '-'}</span>
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-900">{v.driverName || 'سائق غير محدد'}</p>
-                          <p className="text-xs text-slate-400">{v.driverPhone || 'بدون هاتف'}</p>
+                          <p className="text-xs text-slate-500 tabular-nums">{v.driverPhone || 'بدون هاتف'}</p>
                         </div>
                       </div>
                     )}
@@ -862,44 +862,44 @@ export function VoucherSearch() {
                       )}
 
                       {v.receiverMobile && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
                           موبايل المستلم: {v.receiverMobile}
                         </span>
                       )}
 
                       {v.receiverId && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
                           هوية المستلم: {v.receiverId}
                         </span>
                       )}
 
                       {v.delegateNumber && (
-                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg tabular-nums">
                           رقم المكتب: {v.delegateNumber}
                         </span>
                       )}
 
                       {(v.directionFrom || v.directionTo) && (
-                        <span className="bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-100">
+                        <span className="bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200/70">
                           المسار: {v.directionFrom || ''} ➔ {v.directionTo || ''}
                         </span>
                       )}
 
                       {v.pilgrimsCount && Number(v.pilgrimsCount) > 0 && (
-                        <span className="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-100">
+                        <span className="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-200/70 tabular-nums">
                           {v.pilgrimsCount} حاج
                         </span>
                       )}
 
                       {v.loadingLocation && (
-                        <span className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-lg border border-purple-100">
+                        <span className="bg-blue-50 text-blue-800 px-2.5 py-1 rounded-lg border border-blue-200/70">
                           موقع التحميل: {v.loadingLocation}
                         </span>
                       )}
 
                       {v.notes && (
-                        <div className="w-full bg-yellow-50/70 border border-yellow-100 text-yellow-800 p-2 rounded-xl text-xs flex items-center gap-2">
-                          <ClipboardList size={14} className="text-yellow-600 shrink-0" />
+                        <div className="w-full bg-amber-50/70 border border-amber-200/70 text-amber-900 p-2 rounded-xl text-xs flex items-center gap-2">
+                          <ClipboardList size={14} className="text-amber-600 shrink-0" />
                           <span className="truncate">{v.notes}</span>
                         </div>
                       )}
@@ -913,8 +913,8 @@ export function VoucherSearch() {
                       disabled={isPrinting !== null}
                       className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
                         isPrinting === v.id
-                          ? 'bg-blue-600 text-white shadow-md'
-                          : 'bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-300 shadow-sm'
+                          ? 'bg-blue-700 text-white shadow-md'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:text-blue-700 hover:border-blue-300 shadow-sm'
                       }`}
                     >
                       {isPrinting === v.id ? (
@@ -927,7 +927,7 @@ export function VoucherSearch() {
 
                     <button
                       onClick={() => handleEditVoucher(v)}
-                      className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
+                      className="p-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
                       title="تعديل السند"
                     >
                       <Edit2 size={16} />
@@ -936,7 +936,7 @@ export function VoucherSearch() {
                     {isAllowedToDelete && (
                       <button
                         onClick={() => handleConfirmDelete(v)}
-                        className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-all"
+                        className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all"
                         title="حذف السند"
                       >
                         <Trash2 size={16} />

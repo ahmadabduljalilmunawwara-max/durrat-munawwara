@@ -89,9 +89,9 @@ export function CompanyLogo({ className = "", size = "100%", src }: LogoProps) {
         <path d="M260 200C320 210 340 240 320 270C290 260 270 220 260 200Z" fill="url(#grad-bot-right)" />
         
         {/* Text Area */}
-        <text x="200" y="320" textAnchor="middle" className="font-black" style={{ fill: '#333366', fontSize: '50px', fontFamily: 'sans-serif' }}>DMTC</text>
-        <text x="200" y="370" textAnchor="middle" className="font-black" style={{ fill: '#442266', fontSize: '36px', fontFamily: 'sans-serif' }}>درة المنورة</text>
-        <text x="200" y="395" textAnchor="middle" className="font-bold" style={{ fill: '#666', fontSize: '14px', fontFamily: 'sans-serif' }}>لنقل الحجاج والمعتمرين</text>
+        <text x="200" y="320" textAnchor="middle" className="font-black" style={{ fill: '#333366', fontSize: '50px', fontFamily: 'var(--font-display)' }}>DMTC</text>
+        <text x="200" y="370" textAnchor="middle" className="font-black" style={{ fill: '#442266', fontSize: '36px', fontFamily: 'var(--font-display)' }}>درة المنورة</text>
+        <text x="200" y="395" textAnchor="middle" className="font-bold" style={{ fill: '#666', fontSize: '14px', fontFamily: 'var(--font-sans)' }}>لنقل الحجاج والمعتمرين</text>
 
         <defs>
           <linearGradient id="grad-top" x1="180" y1="20" x2="220" y2="180" gradientUnits="userSpaceOnUse">
