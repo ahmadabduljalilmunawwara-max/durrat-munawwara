@@ -66,15 +66,15 @@ const STATIC_ASSET_EXT_REGEX =
   /\.(?:js|css|woff2?|ttf|otf|svg|png|jpe?g|webp|ico|webmanifest)$/i;
 
 function isApiOrFirebaseRequest(url: URL): boolean {
+  if (url.origin === sw.location.origin) {
+    return url.pathname.startsWith('/api/');
+  }
   if (NEVER_CACHE_HOSTS.includes(url.hostname)) return true;
   if (
     url.hostname.endsWith('.firebaseio.com') ||
     url.hostname.endsWith('.cloudfunctions.net') ||
     url.hostname.endsWith('.run.app')
   ) {
-    return true;
-  }
-  if (url.origin === sw.location.origin && url.pathname.startsWith('/api/')) {
     return true;
   }
   return false;
