@@ -45,6 +45,7 @@ import { AboutApp } from './components/AboutApp';
 import { CompanyLogo } from './components/CompanyLogo';
 import { WelcomeModal } from './components/WelcomeModal';
 import { PendingApproval } from './components/PendingApproval';
+import { PWAUpdateBanner } from './components/PWAUpdateBanner';
 
 // ============================================================================
 // إعدادات الإصدار والمظهر
@@ -537,7 +538,12 @@ export default function App() {
   }
 
   if (!user) {
-    return <LoginScreen onLogin={handleCustomLogin} onGoogleLogin={loginWithGoogle} />;
+    return (
+      <>
+        <LoginScreen onLogin={handleCustomLogin} onGoogleLogin={loginWithGoogle} />
+        <PWAUpdateBanner />
+      </>
+    );
   }
 
   const userDisplayName =
@@ -772,6 +778,9 @@ export default function App() {
           version={CURRENT_VERSION_TAG}
           onClose={closeWelcome}
         />
+
+        {/* PWA Update Available Banner */}
+        <PWAUpdateBanner />
 
         {/* Email Verification Modal */}
         <AnimatePresence>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CompanyLogo } from './CompanyLogo';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface AboutAppProps {
   onBack?: () => void;
@@ -141,7 +142,7 @@ export function AboutApp({ onBack }: AboutAppProps) {
       dir="rtl"
     >
       {/* Sticky Top Action Bar */}
-      <div className="sticky top-[var(--space-3)] z-30 flex justify-start mb-[var(--space-6)]">
+      <div className="sticky top-[var(--space-3)] z-30 flex flex-wrap items-center justify-between gap-[var(--space-3)] mb-[var(--space-6)]">
         <button
           type="button"
           onClick={handleBackToLogin}
@@ -150,6 +151,8 @@ export function AboutApp({ onBack }: AboutAppProps) {
           <ArrowRight size={17} className="text-[var(--gold)]" />
           <span>العودة لتسجيل الدخول</span>
         </button>
+
+        <PWAInstallButton variant="topbar" />
       </div>
 
       {/* Major Sections Container (--space-16 between major sections) */}

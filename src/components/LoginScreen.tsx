@@ -23,6 +23,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AboutApp } from './AboutApp';
 import { CompanyLogo } from './CompanyLogo';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface LoginScreenProps {
   onLogin: (user: any) => void;
@@ -1113,6 +1114,8 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                         <span>دخول المسؤولين</span>
                       </button>
                     </div>
+
+                    <PWAInstallButton variant="login" />
                   </motion.div>
                 ) : (
                   <motion.div
