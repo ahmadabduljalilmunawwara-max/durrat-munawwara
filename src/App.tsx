@@ -157,7 +157,7 @@ const getHijriDate = () => {
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialVoucherSearch] = useState<string>(() => {
+  const [initialVoucherSearch, setInitialVoucherSearch] = useState<string>(() => {
     try {
       if (typeof window !== 'undefined') {
         return new URLSearchParams(window.location.search).get('voucher')?.trim() || '';
@@ -515,7 +515,16 @@ export default function App() {
   };
 
   const handleSelectTab = (tab: ActiveTab) => {
+    if (tab === 'search') {
+      setInitialVoucherSearch('');
+    }
     setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
+
+  const handleOpenVoucherFromBuses = (voucherNumber: string) => {
+    setInitialVoucherSearch(voucherNumber);
+    setActiveTab('search');
     setMobileMenuOpen(false);
   };
 
@@ -743,10 +752,17 @@ export default function App() {
     </div>
   );
 
+  const isEntryTab =
+    activeTab === 'entry' && user.role !== 'pending' && user.role !== 'rejected';
+
   return (
     <AuthContext.Provider value={{ user, loading }}>
       <div
-        className="min-h-screen bg-[var(--bg)] flex flex-col md:flex-row p-[var(--space-2)] gap-[var(--space-2)] font-sans text-[var(--text)] transition-colors duration-200"
+        className={`min-h-screen bg-[var(--bg)] flex flex-col md:flex-row font-sans text-[var(--text)] transition-colors duration-200 ${
+          isEntryTab
+            ? 'p-[var(--space-3)] md:p-[var(--space-4)] gap-[var(--space-4)] md:gap-[var(--space-6)]'
+            : 'p-[var(--space-2)] gap-[var(--space-2)]'
+        }`}
         dir="rtl"
       >
         {/* Welcome Message Modal */}
@@ -801,9 +817,11 @@ export default function App() {
 
         {/* Desktop Sidebar (Collapsible on md+) */}
         <aside
-          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs overflow-hidden relative shrink-0 transition-all duration-300 md:sticky md:top-[var(--space-2)] md:h-[calc(100vh-16px)] ${
-            sidebarCollapsed ? 'md:w-[84px]' : 'md:w-72'
-          }`}
+          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs overflow-hidden relative shrink-0 transition-all duration-300 md:sticky ${
+            isEntryTab
+              ? 'md:top-[var(--space-4)] md:h-[calc(100vh-32px)]'
+              : 'md:top-[var(--space-2)] md:h-[calc(100vh-16px)]'
+          } ${sidebarCollapsed ? 'md:w-[84px]' : 'md:w-72'}`}
         >
           {renderSidebarContent(sidebarCollapsed, false)}
         </aside>
@@ -833,7 +851,11 @@ export default function App() {
         </AnimatePresence>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col gap-[var(--space-2)] min-w-0">
+        <div
+          className={`flex-1 flex flex-col min-w-0 ${
+            isEntryTab ? 'gap-[var(--space-5)] md:gap-[var(--space-6)]' : 'gap-[var(--space-2)]'
+          }`}
+        >
           {/* Top Bar (64px height, --space-6 horizontal padding, --space-3 gap) */}
           <header className="min-h-[64px] sm:h-[64px] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs px-[var(--space-4)] sm:px-[var(--space-6)] py-[var(--space-2)] sm:py-0 flex flex-wrap items-center justify-between gap-[var(--space-3)] relative">
             <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)] rounded-t-2xl" />
@@ -1088,7 +1110,9 @@ export default function App() {
                 {activeTab === 'search' && user.role !== 'pending' && user.role !== 'rejected' && (
                   <VoucherSearch initialSearchTerm={initialVoucherSearch} />
                 )}
-                {activeTab === 'buses' && canManageBuses && <BusesManagement />}
+                {activeTab === 'buses' && canManageBuses && (
+                  <BusesManagement onOpenVoucher={handleOpenVoucherFromBuses} />
+                )}
                 {activeTab === 'users' && canManageAdmin && <UsersManagement />}
                 {activeTab === 'settings' && canManageAdmin && <AppSettings />}
                 {activeTab === 'about' && <AboutApp />}

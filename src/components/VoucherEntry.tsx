@@ -752,13 +752,14 @@ export function VoucherEntry() {
       Boolean(busNumber && driverName && !isDuplicate && !usedBusNumbers.has(busNumber)));
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-5xl mx-auto px-[var(--space-2)] sm:px-[var(--space-4)] pt-[var(--space-1)] sm:pt-[var(--space-2)] pb-[var(--space-6)]">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs p-[var(--space-4)] lg:p-[var(--space-6)] relative"
+        className="bg-[var(--surface)] rounded-3xl border border-[var(--border)] shadow-xs p-[var(--space-5)] sm:p-[var(--space-8)] lg:p-10 relative overflow-hidden"
       >
+        <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)]" />
 
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[var(--space-5)] mb-[var(--space-6)] pb-[var(--space-6)] border-b border-[var(--border)]">
@@ -1476,7 +1477,7 @@ export function VoucherEntry() {
       </motion.div>
 
       {/* Sticky Bottom Actions Bar */}
-      <div className="sticky bottom-3 z-30 bg-[var(--surface)]/95 backdrop-blur-md border border-[var(--border)] rounded-2xl p-[var(--space-4)] shadow-xl">
+      <div className="sticky bottom-3 z-30 mt-[var(--space-6)] bg-[var(--surface)]/95 backdrop-blur-md border border-[var(--border)] rounded-2xl p-[var(--space-4)] sm:p-[var(--space-5)] shadow-xl">
         {printAlert && (
           <div className="mb-[var(--space-3)] p-[var(--space-3)] rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 flex flex-wrap items-center justify-between gap-[var(--space-2)] text-xs">
             <div className="flex items-center gap-[var(--space-2)] font-bold text-[var(--gold-text)]">
