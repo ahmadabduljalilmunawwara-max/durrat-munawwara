@@ -885,10 +885,10 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-[var(--space-6)]"
+      className="w-full space-y-[var(--space-3)]"
     >
       {/* Unified Compact Top Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-3)] lg:p-[var(--space-4)] rounded-2xl border border-[var(--border)] shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-3)] lg:p-[var(--space-4)] rounded-2xl border border-[var(--border)] shadow-2xs">
         {/* Two Main Tabs Only */}
         <div className="flex items-center gap-[var(--space-2)] bg-[var(--surface-subtle)] p-[var(--space-1)] rounded-xl border border-[var(--border)] w-full sm:w-fit">
           <button

@@ -44,6 +44,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { AboutApp } from './components/AboutApp';
 import { CompanyLogo } from './components/CompanyLogo';
 import { WelcomeModal } from './components/WelcomeModal';
+import { PendingApproval } from './components/PendingApproval';
 
 // ============================================================================
 // إعدادات الإصدار والمظهر
@@ -53,7 +54,7 @@ const CURRENT_VERSION_TAG = `v${APP_VERSION}`;
 const LAST_SEEN_VERSION_KEY = 'lastSeenVersion';
 const THEME_STORAGE_KEY = 'dmtc_login_theme';
 
-export type UserRole = 'general_manager' | 'supervisor' | 'data_entry' | 'pending';
+export type UserRole = 'general_manager' | 'supervisor' | 'data_entry' | 'pending' | 'rejected';
 
 interface AppUser {
   uid: string;
@@ -63,6 +64,7 @@ interface AppUser {
   role: UserRole;
   username?: string;
   isCustom?: boolean;
+  createdAt?: string;
 }
 
 type ActiveTab = 'entry' | 'dashboard' | 'search' | 'buses' | 'users' | 'settings' | 'about';
@@ -87,6 +89,8 @@ const getRoleLabel = (role?: UserRole): string => {
       return 'مدخل بيانات';
     case 'pending':
       return 'قيد المراجعة';
+    case 'rejected':
+      return 'مرفوض';
     default:
       return 'مستخدم';
   }
@@ -278,11 +282,19 @@ export default function App() {
 
           let role: UserRole = 'pending';
           let displayName = u.displayName || 'Google User';
+          let createdAt: string | undefined = u.metadata?.creationTime || undefined;
 
           if (snap.exists()) {
             const data = snap.data();
             role = data.role || 'pending';
             displayName = data.displayName || displayName;
+            if (typeof data.createdAt === 'string') {
+              createdAt = data.createdAt;
+            } else if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+              createdAt = data.createdAt.toDate().toISOString();
+            } else if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
+              createdAt = data.updatedAt.toDate().toISOString();
+            }
           } else {
             role = isGM ? 'general_manager' : 'pending';
             await setDoc(userRef, {
@@ -303,6 +315,7 @@ export default function App() {
             photoURL: u.photoURL,
             role: role,
             isCustom: false,
+            createdAt,
           };
           setUser(googleUser);
 
@@ -477,6 +490,30 @@ export default function App() {
     localStorage.removeItem('dmtc_session');
   };
 
+  const handlePendingStatusUpdate = (
+    nextRole: UserRole,
+    nextDisplayName?: string,
+    createdAt?: string
+  ) => {
+    setUser((prevUser) => {
+      if (!prevUser) return prevUser;
+      const updatedUser: AppUser = {
+        ...prevUser,
+        role: nextRole,
+        ...(nextDisplayName ? { displayName: nextDisplayName } : {}),
+        ...(createdAt ? { createdAt } : {}),
+      };
+      if (updatedUser.isCustom) {
+        try {
+          localStorage.setItem('dmtc_session', JSON.stringify(updatedUser));
+        } catch {
+          // ignore storage errors
+        }
+      }
+      return updatedUser;
+    });
+  };
+
   const handleSelectTab = (tab: ActiveTab) => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
@@ -569,7 +606,7 @@ export default function App() {
               label="إصدار سند جديد"
               collapsed={isCollapsed}
             />
-            {user.role !== 'pending' && (
+            {user.role !== 'pending' && user.role !== 'rejected' && (
               <NavItem
                 active={activeTab === 'dashboard'}
                 onClick={() => handleSelectTab('dashboard')}
@@ -578,7 +615,7 @@ export default function App() {
                 collapsed={isCollapsed}
               />
             )}
-            {user.role !== 'pending' && (
+            {user.role !== 'pending' && user.role !== 'rejected' && (
               <NavItem
                 active={activeTab === 'search'}
                 onClick={() => handleSelectTab('search')}
@@ -709,7 +746,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ user, loading }}>
       <div
-        className="min-h-screen bg-[var(--bg)] flex flex-col md:flex-row p-[var(--space-4)] gap-[var(--space-4)] lg:gap-[var(--space-6)] font-sans text-[var(--text)] transition-colors duration-200"
+        className="min-h-screen bg-[var(--bg)] flex flex-col md:flex-row p-[var(--space-2)] gap-[var(--space-2)] font-sans text-[var(--text)] transition-colors duration-200"
         dir="rtl"
       >
         {/* Welcome Message Modal */}
@@ -764,7 +801,7 @@ export default function App() {
 
         {/* Desktop Sidebar (Collapsible on md+) */}
         <aside
-          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-[1.75rem] border border-[var(--border)] shadow-sm overflow-hidden relative shrink-0 transition-all duration-300 md:sticky md:top-0 md:h-screen ${
+          className={`hidden md:flex flex-col bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs overflow-hidden relative shrink-0 transition-all duration-300 md:sticky md:top-[var(--space-2)] md:h-[calc(100vh-16px)] ${
             sidebarCollapsed ? 'md:w-[84px]' : 'md:w-72'
           }`}
         >
@@ -796,9 +833,9 @@ export default function App() {
         </AnimatePresence>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col gap-[var(--space-6)] min-w-0">
+        <div className="flex-1 flex flex-col gap-[var(--space-2)] min-w-0">
           {/* Top Bar (64px height, --space-6 horizontal padding, --space-3 gap) */}
-          <header className="min-h-[64px] sm:h-[64px] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs px-[var(--space-6)] py-[var(--space-2)] sm:py-0 flex flex-wrap items-center justify-between gap-[var(--space-3)] relative">
+          <header className="min-h-[64px] sm:h-[64px] bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs px-[var(--space-4)] sm:px-[var(--space-6)] py-[var(--space-2)] sm:py-0 flex flex-wrap items-center justify-between gap-[var(--space-3)] relative">
             <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)] rounded-t-2xl" />
 
             {/* Live Notification Toast Overlay */}
@@ -1026,7 +1063,7 @@ export default function App() {
           </header>
 
           {/* Main Workspace */}
-          <main className="flex-1">
+          <main className="flex-1 p-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -1036,23 +1073,19 @@ export default function App() {
                 transition={{ duration: 0.18, ease: 'easeOut' }}
               >
                 {activeTab === 'entry' &&
-                  (user.role === 'pending' ? (
-                    <div className="bg-[var(--surface)] rounded-3xl p-[var(--space-4)] lg:p-[var(--space-12)] text-center border border-[var(--border)] shadow-xs">
-                      <AlertCircle size={48} className="mx-auto text-[var(--warning)] mb-[var(--space-4)]" />
-                      <h2 className="text-xl font-extrabold text-[var(--text)] mb-[var(--space-2)]">
-                        في انتظار الموافقة
-                      </h2>
-                      <p className="text-[var(--text-secondary)] font-medium max-w-sm mx-auto text-sm leading-relaxed">
-                        لقد قمت بتسجيل الدخول بنجاح. يرجى مراجعة مدير النظام (عبد الحميد سالمة) لتفعيل حسابك وتحديد صلاحيات العمل.
-                      </p>
-                    </div>
+                  (user.role === 'pending' || user.role === 'rejected' ? (
+                    <PendingApproval
+                      user={user}
+                      onStatusUpdate={handlePendingStatusUpdate}
+                      onLogout={logout}
+                    />
                   ) : (
                     <VoucherEntry />
                   ))}
-                {activeTab === 'dashboard' && user.role !== 'pending' && (
+                {activeTab === 'dashboard' && user.role !== 'pending' && user.role !== 'rejected' && (
                   <Dashboard onNavigateToEntry={() => handleSelectTab('entry')} />
                 )}
-                {activeTab === 'search' && user.role !== 'pending' && (
+                {activeTab === 'search' && user.role !== 'pending' && user.role !== 'rejected' && (
                   <VoucherSearch initialSearchTerm={initialVoucherSearch} />
                 )}
                 {activeTab === 'buses' && canManageBuses && <BusesManagement />}

@@ -268,14 +268,13 @@ export function BusesManagement() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-[var(--space-6)]">
+    <div className="w-full space-y-[var(--space-3)]">
       {/* Top Section: Add/Edit Form */}
       <motion.div 
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border transition-all flex flex-col relative overflow-hidden ${editingBus ? 'border-[var(--primary)] ring-4 ring-blue-500/10' : 'border-[var(--border)]'}`}
+        className={`bg-[var(--surface)] rounded-2xl p-[var(--space-4)] lg:p-[var(--space-6)] shadow-2xs border transition-all flex flex-col relative overflow-hidden ${editingBus ? 'border-[var(--primary)] ring-4 ring-blue-500/10' : 'border-[var(--border)]'}`}
       >
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-[var(--primary)]"></div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-[var(--space-6)] mb-[var(--space-6)]">
           <div className="flex items-center gap-[var(--space-4)]">
             <div className={`w-12 h-12 ${editingBus ? 'bg-[var(--btn-primary)]' : 'bg-[var(--navy)]'} rounded-2xl flex items-center justify-center text-white shadow-md`}>

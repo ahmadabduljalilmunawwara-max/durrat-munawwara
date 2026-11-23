@@ -752,15 +752,13 @@ export function VoucherEntry() {
       Boolean(busNumber && driverName && !isDuplicate && !usedBusNumbers.has(busNumber)));
 
   return (
-    <div className="max-w-[960px] w-full mx-auto space-y-[var(--space-6)] pb-[var(--space-4)]">
+    <div className="w-full">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="bg-[var(--surface)] rounded-[2rem] shadow-sm border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)] relative"
+        className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs p-[var(--space-4)] lg:p-[var(--space-6)] relative"
       >
-        {/* Top Brand Accent Line (Flat Primary Blue) */}
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-[var(--primary)] rounded-t-[2rem]" />
 
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[var(--space-5)] mb-[var(--space-6)] pb-[var(--space-6)] border-b border-[var(--border)]">

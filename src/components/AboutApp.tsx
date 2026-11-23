@@ -137,7 +137,7 @@ export function AboutApp({ onBack }: AboutAppProps) {
   return (
     <div
       ref={rootRef}
-      className="max-w-5xl mx-auto pb-[var(--space-12)] text-[var(--text)]"
+      className="w-full p-0 text-[var(--text)]"
       dir="rtl"
     >
       {/* Sticky Top Action Bar */}

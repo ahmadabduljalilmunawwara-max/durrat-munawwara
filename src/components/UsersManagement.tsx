@@ -323,9 +323,9 @@ export function UsersManagement() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-[var(--space-6)]">
+    <div className="w-full p-0 space-y-[var(--space-4)]">
       {/* User Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-[var(--space-6)]">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-[var(--space-4)]">
         <div className="bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs transition-all hover:shadow-sm">
           <div className="flex items-center gap-[var(--space-3)] mb-[var(--space-3)]">
             <div className="w-8 h-8 bg-[var(--navy)] text-white rounded-xl flex items-center justify-center">

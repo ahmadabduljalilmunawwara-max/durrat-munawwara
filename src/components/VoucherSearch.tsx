@@ -546,10 +546,10 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-[var(--space-6)]" dir="rtl">
+    <div className="w-full space-y-[var(--space-3)]" dir="rtl">
       
       {/* Top Header Card */}
-      <div className="bg-[var(--surface)] rounded-[2rem] shadow-sm border border-[var(--border)] p-[var(--space-4)] lg:p-[var(--space-8)]">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-2xs p-[var(--space-4)] lg:p-[var(--space-6)]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-6)] pb-[var(--space-6)] border-b border-[var(--border)]">
           <div className="flex items-center gap-[var(--space-4)]">
             <div className="w-14 h-14 bg-[var(--navy)] rounded-2xl flex items-center justify-center text-[var(--gold)] shadow-lg ring-4 ring-blue-50 dark:ring-blue-950/50">

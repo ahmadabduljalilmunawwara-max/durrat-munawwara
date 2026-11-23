@@ -190,10 +190,9 @@ export function AppSettings() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto pb-[var(--space-12)] space-y-[var(--space-6)]" dir="rtl">
+    <div className="w-full space-y-[var(--space-3)]" dir="rtl">
       {/* شريط العنوان والترويسة */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-8)] rounded-[1.75rem] border border-[var(--border)] shadow-2xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-[var(--primary)]"></div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-4)] lg:p-[var(--space-6)] rounded-2xl border border-[var(--border)] shadow-2xs relative overflow-hidden">
         <div className="flex items-center gap-[var(--space-4)]">
           <div className="w-11 h-11 bg-[var(--navy)] text-white rounded-2xl flex items-center justify-center shadow-sm">
             <Settings size={20} className="text-[var(--gold)]" />
@@ -205,7 +204,7 @@ export function AppSettings() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-[var(--space-6)]">
+      <div className="w-full space-y-[var(--space-4)]">
         {/* قسم إعدادات التطبيق العامة */}
         <div className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] shadow-sm border border-[var(--border)] relative overflow-hidden">
           <div className="absolute top-0 right-0 left-0 h-1 bg-[var(--primary)]"></div>
