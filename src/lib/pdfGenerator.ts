@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import arabicReshaper from 'arabic-reshaper';
 import Bidi from 'bidi-js';
 import QRCode from 'qrcode';
+import { auth } from './firebase';
 
 import ibmPlexArabic400Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
 import ibmPlexArabic500Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-500-normal.woff2?url';
@@ -199,10 +200,10 @@ async function ensureEmbeddedIBMPlexFont(): Promise<string> {
 
           if (document.fonts) {
             await Promise.all([
-              document.fonts.load("400 14px 'IBM Plex Sans Arabic'"),
-              document.fonts.load("500 14px 'IBM Plex Sans Arabic'"),
-              document.fonts.load("600 14px 'IBM Plex Sans Arabic'"),
-              document.fonts.load("700 14px 'IBM Plex Sans Arabic'"),
+              document.fonts.load("400 14px 'IBM Plex Sans Arabic'", 'شركة درة المنورة 0123456789 ABC'),
+              document.fonts.load("500 14px 'IBM Plex Sans Arabic'", 'شركة درة المنورة 0123456789 ABC'),
+              document.fonts.load("600 14px 'IBM Plex Sans Arabic'", 'شركة درة المنورة 0123456789 ABC'),
+              document.fonts.load("700 14px 'IBM Plex Sans Arabic'", 'شركة درة المنورة 0123456789 ABC'),
             ]);
             await document.fonts.ready;
           }
@@ -220,57 +221,376 @@ async function ensureEmbeddedIBMPlexFont(): Promise<string> {
   return fontLoadPromise;
 }
 
+const DEFAULT_DMTC_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="55 15 290 365" width="725" height="912" fill="none">
+  <path d="M200 180C140 100 170 50 200 20C230 50 260 100 200 180Z" fill="#D97706"/>
+  <path d="M165 185C100 140 80 80 100 40C130 60 160 100 165 185Z" fill="#F59E0B"/>
+  <path d="M235 185C300 140 320 80 300 40C270 60 240 100 235 185Z" fill="#F59E0B"/>
+  <path d="M140 200C80 210 60 240 80 270C110 260 130 220 140 200Z" fill="#1D4ED8"/>
+  <path d="M260 200C320 210 340 240 320 270C290 260 270 220 260 200Z" fill="#1D4ED8"/>
+  <text x="200" y="322" text-anchor="middle" fill="#0F172A" font-size="52" font-weight="700" font-family="IBM Plex Sans Arabic, sans-serif">DMTC</text>
+  <text x="200" y="368" text-anchor="middle" fill="#1D4ED8" font-size="36" font-weight="700" font-family="IBM Plex Sans Arabic, sans-serif">درة المنورة</text>
+</svg>`;
+
+const DEFAULT_SLOGAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 170" width="840" height="340" fill="none">
+  <rect x="6" y="6" width="408" height="158" rx="22" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+  <rect x="394" y="24" width="8" height="122" rx="4" fill="#F59E0B"/>
+  <path d="M72 48C54 48 42 62 42 78C42 94 54 108 72 108C60 103 54 92 54 78C54 64 60 53 72 48Z" fill="#D97706"/>
+  <circle cx="80" cy="70" r="5" fill="#1D4ED8"/>
+  <text x="234" y="88" text-anchor="middle" fill="#0F172A" font-size="42" font-weight="700" font-family="IBM Plex Sans Arabic, sans-serif">خدمة الحاج شرف لنا</text>
+  <text x="234" y="130" text-anchor="middle" fill="#1D4ED8" font-size="22" font-weight="600" font-family="IBM Plex Sans Arabic, sans-serif">DURRAT AL-MUNAWWARA</text>
+</svg>`;
+
+let cachedFallbackLogoPng: string | null = null;
+let cachedFallbackSloganPng: string | null = null;
+
+async function rasterizeSvgToHighResPng(svgText: string, width = 800, height = 800): Promise<string> {
+  return new Promise((resolve) => {
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+          const png = canvas.toDataURL('image/png');
+          URL.revokeObjectURL(url);
+          resolve(png);
+          return;
+        }
+      } catch {
+        // ignore canvas fallback error
+      }
+      URL.revokeObjectURL(url);
+      resolve(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`);
+    };
+    img.src = url;
+  });
+}
+
+async function urlToBase64ImageDataUri(cleanUrl: string): Promise<string | null> {
+  if (!cleanUrl) return null;
+  if (cleanUrl.startsWith('data:image/')) return cleanUrl;
+
+  try {
+    const res = await fetch(cleanUrl, { mode: 'cors' });
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.type.startsWith('image/')) {
+        const dataUri = await new Promise<string | null>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+        if (dataUri) return dataUri;
+      }
+    }
+  } catch {
+    // fallback to Image + canvas
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    if (!cleanUrl.startsWith('data:') && !cleanUrl.startsWith('/') && !cleanUrl.startsWith('.')) {
+      img.crossOrigin = 'anonymous';
+    }
+    img.onload = () => {
+      if (!img.naturalWidth || !img.naturalHeight) {
+        resolve(null);
+        return;
+      }
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+          return;
+        }
+      } catch {
+        // tainted canvas
+      }
+      resolve(null);
+    };
+    img.onerror = () => resolve(null);
+    img.src = cleanUrl;
+  });
+}
+
+async function resolveHighResLogoDataUrl(rawLogoUrl?: string): Promise<string> {
+  const cleanUrl = (rawLogoUrl || '').trim();
+  const isInvalidPlaceholder = !cleanUrl || cleanUrl === '/logo.png' || cleanUrl === 'logo.png';
+
+  if (!isInvalidPlaceholder) {
+    const base64Input = await urlToBase64ImageDataUri(cleanUrl);
+    if (base64Input) {
+      const upscaled = await new Promise<string | null>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          if (!img.naturalWidth || !img.naturalHeight) {
+            resolve(null);
+            return;
+          }
+          try {
+            const targetW = Math.max(img.naturalWidth, 640);
+            const targetH = Math.round((img.naturalHeight / img.naturalWidth) * targetW);
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.drawImage(img, 0, 0, targetW, targetH);
+              resolve(canvas.toDataURL('image/png'));
+              return;
+            }
+          } catch {
+            // ignore
+          }
+          resolve(base64Input);
+        };
+        img.onerror = () => resolve(base64Input);
+        img.src = base64Input;
+      });
+      if (upscaled) return upscaled;
+    }
+  }
+
+  if (!cachedFallbackLogoPng) {
+    cachedFallbackLogoPng = await rasterizeSvgToHighResPng(DEFAULT_DMTC_LOGO_SVG, 725, 912);
+  }
+  return cachedFallbackLogoPng;
+}
+
+async function resolveImageAsDataUrl(rawUrl?: string): Promise<string> {
+  const cleanUrl = (rawUrl || '').trim();
+  if (cleanUrl) {
+    const dataUri = await urlToBase64ImageDataUri(cleanUrl);
+    if (dataUri) return dataUri;
+  }
+  if (!cachedFallbackSloganPng) {
+    cachedFallbackSloganPng = await rasterizeSvgToHighResPng(DEFAULT_SLOGAN_SVG, 840, 340);
+  }
+  return cachedFallbackSloganPng;
+}
+
+function resolveCurrentIssuerName(data: any): string {
+  const isInvalidName = (val: any) => {
+    const s = String(val || '').trim();
+    return !s || s === 'غير معروف' || s === 'مستخدم النظام';
+  };
+
+  if (!isInvalidName(data?.currentUserName)) {
+    return toEnglishDigits(String(data.currentUserName).trim());
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('dmtc_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!isInvalidName(parsed?.displayName)) return toEnglishDigits(String(parsed.displayName).trim());
+        if (!isInvalidName(parsed?.name)) return toEnglishDigits(String(parsed.name).trim());
+        if (!isInvalidName(parsed?.email)) return toEnglishDigits(String(parsed.email).trim());
+      }
+    } catch {
+      // ignore localStorage parse error
+    }
+  }
+
+  if (!isInvalidName(auth?.currentUser?.displayName)) {
+    return toEnglishDigits(String(auth.currentUser!.displayName).trim());
+  }
+  if (!isInvalidName(auth?.currentUser?.email)) {
+    return toEnglishDigits(String(auth.currentUser!.email).trim());
+  }
+
+  if (!isInvalidName(data?.delegateName)) {
+    return toEnglishDigits(String(data.delegateName).trim());
+  }
+  if (!isInvalidName(data?.userName)) {
+    return toEnglishDigits(String(data.userName).trim());
+  }
+
+  return 'مسؤول العمليات';
+}
+
+function formatVoucherNumberNoLeadingZeros(raw: any): string {
+  const digits = toEnglishDigits(raw !== undefined && raw !== null ? String(raw).trim() : '');
+  if (!digits) return '';
+  if (/^\d+$/.test(digits)) {
+    return String(Number(digits));
+  }
+  return digits.replace(/^0+(?=\d)/, '');
+}
+
+function formatPhoneForPrint(raw: any): string {
+  const cleaned = toEnglishDigits(raw !== undefined && raw !== null ? String(raw) : '').trim();
+  if (!cleaned) return '';
+  const digitsOnly = cleaned.replace(/[\s\-()]/g, '');
+  if (/^5\d{8}$/.test(digitsOnly)) {
+    return `0${digitsOnly}`;
+  }
+  return cleaned;
+}
+
 async function waitForContainerImages(container: HTMLElement): Promise<void> {
   const images = Array.from(container.querySelectorAll('img'));
   await Promise.all(
     images.map(
       (img) =>
         new Promise<void>((resolve) => {
+          const finish = () => {
+            if (typeof img.decode === 'function') {
+              img.decode().catch(() => undefined).finally(resolve);
+            } else {
+              resolve();
+            }
+          };
           if (img.complete) {
-            resolve();
+            finish();
             return;
           }
-          const done = () => resolve();
-          img.addEventListener('load', done, { once: true });
-          img.addEventListener('error', done, { once: true });
-          setTimeout(done, 4000);
+          img.addEventListener('load', finish, { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
+          setTimeout(resolve, 4000);
         })
     )
   );
 }
 
-export async function generateVoucherPDF(
+export interface VoucherPrintResult {
+  status: 'printed' | 'popup_blocked';
+  blobUrl?: string;
+  fileName: string;
+}
+
+function getStandaloneVoucherCss(fontFaceCss: string): string {
+  return `
+    ${fontFaceCss}
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF;
+      color: #0F172A;
+      font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+      direction: rtl;
+      letter-spacing: 0 !important;
+    }
+    body, div, span, p, td, th, table, tr, thead, tbody, section, strong {
+      font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+      letter-spacing: 0 !important;
+    }
+    .voucher-buses-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      border: 0.75pt solid #475569;
+      background-color: #FFFFFF;
+    }
+    .voucher-buses-table thead {
+      display: table-header-group;
+    }
+    .voucher-buses-table tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .blob-print-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      background: #0F172A;
+      color: #FFFFFF;
+      font-size: 13px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .blob-print-btn {
+      background: #1D4ED8;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    }
+    @media screen {
+      body {
+        background-color: #E2E8F0;
+      }
+      .voucher-page {
+        margin: 12px auto;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+      }
+    }
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+      }
+      .blob-print-toolbar {
+        display: none !important;
+      }
+      .voucher-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+    }
+  `;
+}
+
+async function buildVoucherDocumentParts(
   data: any,
-  options: { save?: boolean; print?: boolean; twoCopies?: boolean } = { save: true }
-) {
-  const isBase64OrRelative = (url: string) => !url || url.startsWith('data:') || url.startsWith('/') || url.startsWith('.');
-  const logoUrl = data.logoUrl || '/logo.png';
-  const sloganUrl = hasValue(data.sloganUrl) ? String(data.sloganUrl).trim() : '';
+  options: { twoCopies?: boolean } = {}
+): Promise<{
+  fullHtml: string;
+  pagesHtmlChunks: string[];
+  fontFaceCss: string;
+  printTitle: string;
+}> {
+  const [resolvedLogoUrl, resolvedSloganUrl, fontFaceCss] = await Promise.all([
+    resolveHighResLogoDataUrl(data.logoUrl),
+    resolveImageAsDataUrl(data.sloganUrl),
+    ensureEmbeddedIBMPlexFont(),
+  ]);
 
-  const logoCrossOrigin = isBase64OrRelative(logoUrl) ? '' : 'crossOrigin="anonymous"';
-  const sloganCrossOrigin = sloganUrl && !isBase64OrRelative(sloganUrl) ? 'crossOrigin="anonymous"' : '';
+  // Voucher number without leading zero padding (English digits)
+  const voucherNoStr = formatVoucherNumberNoLeadingZeros(data.voucherNumber);
 
-  const rawMargins = data.pdfMargins || { top: 15, bottom: 15, left: 35, right: 35 };
-  const margins = {
-    top: Math.max(Number(rawMargins.top) || 15, 22),
-    bottom: Math.max(Number(rawMargins.bottom) || 15, 22),
-    left: Math.max(Number(rawMargins.left) || 35, 30),
-    right: Math.max(Number(rawMargins.right) || 35, 30),
-  };
-
-  // Preserve voucher number without leading zero padding (English digits)
-  const voucherNoStr = toEnglishDigits(
-    data.voucherNumber !== undefined && data.voucherNumber !== null ? String(data.voucherNumber).trim() : ''
-  );
-
-  // Format dates strictly as dd/MM/yyyy (English digits)
+  // Format dates strictly as DD/MM/YYYY (English digits)
   const { display: gregorianStr, filePart: gregorianFilePart } = formatGregorianDDMMYYYY(
     data.customDate,
     data.timestamp
   );
   const hijriStr = formatHijriDDMMYYYY(data.hijriDate, data.customDate, data.timestamp);
 
-  // Use only filled bus rows (no empty placeholder padding)
+  // Collect filled bus rows
   const rawBuses =
     Array.isArray(data.buses) && data.buses.length > 0
       ? data.buses
@@ -289,7 +609,7 @@ export async function generateVoucherPDF(
     (b: any) => hasValue(b?.busNumber) || hasValue(b?.driverName) || hasValue(b?.driverPhone)
   );
 
-  const busesPerPage = 20;
+  const busesPerPage = 18;
   const totalPages = Math.max(1, Math.ceil(allBuses.length / busesPerPage));
 
   // Unify ticketsCount & pilgrimsCount into a single "عدد التذاكر" value
@@ -304,634 +624,575 @@ export async function generateVoucherPDF(
       ? rawPilgrims
       : '';
 
-  const busesQtyStr =
+  const busesQtyNumStr =
     hasValue(data.busesQuantity) && Number(toEnglishDigits(data.busesQuantity)) > 0
-      ? toEnglishDigits(data.busesQuantity)
+      ? toEnglishDigits(data.busesQuantity).trim()
       : allBuses.length > 0
       ? String(allBuses.length)
       : '';
+  const busesQtyWithLabel = busesQtyNumStr ? `${busesQtyNumStr} حافلة` : '';
 
-  const issuedBy = hasValue(data.userName) ? escapeHtml(toEnglishDigits(String(data.userName).trim())) : 'مستخدم النظام';
+  const issuedBy = escapeHtml(resolveCurrentIssuerName(data));
   const issuedAt = formatAuditDateTime(data.timestamp);
+  const formattedReceiverMobile = formatPhoneForPrint(data.receiverMobile);
 
-  // Corner QR code linking directly to voucher in Archive
+  // Corner QR code pointing to https://munawwarahaj.xyz/
   let qrDataUrl = '';
   try {
-    const baseOrigin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
-    const verifyUrl = voucherNoStr ? `${baseOrigin}/?voucher=${encodeURIComponent(voucherNoStr)}` : `${baseOrigin}/`;
+    const verifyUrl = 'https://munawwarahaj.xyz/';
     qrDataUrl = await QRCode.toDataURL(verifyUrl, {
-      width: 140,
+      width: 240,
       margin: 1,
       errorCorrectionLevel: 'M',
-      color: { dark: '#0f172a', light: '#ffffff' },
+      color: { dark: '#0F172A', light: '#FFFFFF' },
     });
   } catch (err) {
     console.warn('QR generation skipped:', err);
   }
 
-  const fontFaceCss = await ensureEmbeddedIBMPlexFont();
-
-  const renderFieldSpan = (val: any, minWidthPx: number, forceLtr = false) => {
+  const renderMetadataField = (
+    label: string,
+    val: any,
+    opts: { forceLtr?: boolean; colSpan2?: boolean } = {}
+  ) => {
     const clean = toEnglishDigits(val || '').trim();
     const isFilled = clean !== '';
     const safeVal = isFilled ? escapeHtml(clean) : '&nbsp;';
-    const dirStyle = forceLtr ? 'direction: ltr; unicode-bidi: isolate;' : '';
-    return `<span style="display: inline-block; min-width: ${minWidthPx}px; text-align: center; padding: 0 6px 2px; border-bottom: 1px solid ${
-      isFilled ? '#94a3b8' : '#475569'
-    }; font-weight: ${isFilled ? '700' : '400'}; color: #0f172a; line-height: 1.35; ${dirStyle}">${safeVal}</span>`;
+    const dirAttr = opts.forceLtr ? 'dir="ltr"' : '';
+    const dirStyle = opts.forceLtr
+      ? 'direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums;'
+      : 'font-variant-numeric: tabular-nums;';
+    const spanStyle = opts.colSpan2 ? 'grid-column: span 2;' : '';
+
+    return `
+      <div style="${spanStyle} display: flex; flex-direction: column; min-width: 0;">
+        <div style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; padding: 0;">
+          ${escapeHtml(label)}
+        </div>
+        <div ${dirAttr} style="font-size: 12pt; font-weight: 600; color: #0F172A; line-height: 1.6; min-height: 6mm; padding: 0.1mm 0; border-bottom: 1px solid #94A3B8; text-align: right; word-break: break-word; ${dirStyle}">
+          ${safeVal}
+        </div>
+      </div>
+    `;
   };
 
-  const renderSignatureLine = (minWidthPx = 190) =>
-    `<span style="display: inline-block; min-width: ${minWidthPx}px; border-bottom: 1px solid #475569; height: 18px; vertical-align: bottom;">&nbsp;</span>`;
+  const renderInlineSignatureField = (
+    label: string,
+    val: any,
+    forceLtr = false
+  ) => {
+    const clean = toEnglishDigits(val || '').trim();
+    const isFilled = clean !== '';
+    const safeVal = isFilled ? escapeHtml(clean) : '&nbsp;';
+    const dirAttr = forceLtr ? 'dir="ltr"' : '';
+    const dirStyle = forceLtr
+      ? 'direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap;'
+      : 'font-variant-numeric: tabular-nums; word-break: break-word;';
 
-  const useTwoCopies = Boolean(options.twoCopies ?? data.twoCopies);
+    return `
+      <div style="display: flex; align-items: baseline; gap: 1mm; min-width: 0;">
+        <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0; white-space: nowrap;">
+          ${escapeHtml(label)}:
+        </span>
+        <span ${dirAttr} style="flex: 1; min-width: 0; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6; min-height: 5.5mm; padding: 0; border-bottom: 1px solid #94A3B8; text-align: right; ${dirStyle}">
+          ${safeVal}
+        </span>
+      </div>
+    `;
+  };
+
+  const unusedRowHatchStyle =
+    `background-color: #EEF2F6; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M-2,2 l4,-4 M0,10 l10,-10 M8,12 l4,-4' stroke='%23CBD5E1' stroke-width='1'/%3E%3C/svg%3E"); -webkit-print-color-adjust: exact; print-color-adjust: exact;`;
+
+  const isBulkReport = Boolean(data?.isBulkReport);
+  const useTwoCopies = options.twoCopies === true;
   const copyLabels = useTwoCopies ? ['نسخة المكتب', 'نسخة الشركة'] : [''];
 
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'px',
-    format: 'a4',
-  });
-
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const html2canvas = (await import('html2canvas')).default;
-
-  let isFirstPdfPage = true;
+  const pagesHtmlChunks: string[] = [];
+  let pageCounter = 0;
 
   for (const copyLabel of copyLabels) {
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
       const startIdx = (pageNum - 1) * busesPerPage;
       const pageBuses = allBuses.slice(startIdx, startIdx + busesPerPage);
       const isLastPageOfCopy = pageNum === totalPages;
+      const breakStyle = pageCounter > 0 ? 'break-before: page; page-break-before: always;' : '';
+      pageCounter++;
 
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '850px';
-      container.setAttribute('dir', 'rtl');
-      container.setAttribute('lang', 'ar');
+      const rowsHtml = Array.from({ length: busesPerPage }, (_, rowIdx) => {
+        const bus = pageBuses[rowIdx];
+        const rowNum = startIdx + rowIdx + 1;
 
-      const html = `
-        <div dir="rtl" lang="ar" style="padding: ${margins.top}px ${margins.right}px ${margins.bottom}px ${margins.left}px; font-family: 'IBM Plex Sans Arabic', sans-serif; background-color: #ffffff; position: relative; min-height: 1202px; direction: rtl; box-sizing: border-box; color: #0f172a; display: flex; flex-direction: column;">
-          
-          <!-- Top Header -->
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px;">
-            <!-- Right: Slogan (or Vision text when custom image absent) -->
-            <div style="width: 31%; text-align: right; display: flex; align-items: center;">
+        if (bus) {
+          const driver = escapeHtml(toEnglishDigits(bus.driverName || '').trim());
+          const plate = escapeHtml(toEnglishDigits(bus.busNumber || '').trim());
+          const type = escapeHtml(toEnglishDigits(bus.busType || 'حافلة').trim());
+          const approval = escapeHtml(toEnglishDigits(bus.approvalNumber || '').trim());
+          const phone = escapeHtml(formatPhoneForPrint(bus.driverPhone));
+
+          return `
+            <tr style="height: 6.2mm; background-color: #FFFFFF; break-inside: avoid; page-break-inside: avoid;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums;">
+                <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
+              </td>
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; word-break: break-word;">
+                ${driver || '&nbsp;'}
+              </td>
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+                <span dir="ltr" style="unicode-bidi: isolate;">${plate || '&nbsp;'}</span>
+              </td>
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6;">
+                ${type}
+              </td>
               ${
-                sloganUrl
-                  ? `<img src="${sloganUrl}" onerror="this.style.display='none'" style="height: 74px; max-width: 100%; object-fit: contain; display: block;" ${sloganCrossOrigin} />`
-                  : `<div style="font-size: 13px; font-weight: 700; color: #1e3a8a; line-height: 1.5;">خدمة ضيوف الرحمن شرف لنا<br/><span style="font-size: 11px; color: #b45309; font-weight: 600;">موسم حج 1448 هـ</span></div>`
-              }
-            </div>
-
-            <!-- Center: Logo -->
-            <div style="width: 30%; text-align: center; display: flex; justify-content: center; align-items: center;">
-              <img src="${logoUrl}" onerror="this.style.display='none'" style="height: 92px; max-width: 100%; object-fit: contain; display: block;" ${logoCrossOrigin} />
-            </div>
-
-            <!-- Left: Company Name + QR Corner Verification -->
-            <div style="width: 39%; display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-              <div style="text-align: left; white-space: nowrap;">
-                <div style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 2px;">شركة درة المنورة للنقليات</div>
-                <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; text-align: left; font-size: 12.5px; font-weight: 700; color: #334155;">Durrat Al-Munawwara Transport Co.</div>
-              </div>
-              ${
-                qrDataUrl
-                  ? `<div style="display: flex; flex-direction: column; align-items: center; padding: 3px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; flex-shrink: 0;">
-                      <img src="${qrDataUrl}" style="width: 58px; height: 58px; display: block;" alt="QR" />
-                      <span style="font-size: 8.5px; font-weight: 600; color: #475569; margin-top: 1px; white-space: nowrap;">تحقق من السند</span>
-                    </div>`
+                isBulkReport
+                  ? `<td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+                      <span dir="ltr" style="unicode-bidi: isolate;">${approval || '&nbsp;'}</span>
+                    </td>`
                   : ''
               }
-            </div>
-          </div>
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+                <span dir="ltr" style="unicode-bidi: isolate;">${phone || '&nbsp;'}</span>
+              </td>
+            </tr>
+          `;
+        }
 
-          <!-- Voucher Number, Copy Label & Dates Row -->
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <!-- Right: Dates -->
-            <div style="width: 30%; font-size: 13px; font-weight: 700; line-height: 1.75; text-align: right;">
-              <div style="display: flex; align-items: baseline; gap: 6px;">
-                <span style="color: #334155; white-space: nowrap;">التاريخ الهجري:</span>
-                <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; display: inline-block; min-width: 96px; text-align: center; border-bottom: 1px solid #475569; padding: 0 4px 1px; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums;">${
-                  hijriStr || '&nbsp;'
-                }</span>
+        const isFirstEmptyRow = rowIdx === pageBuses.length && isLastPageOfCopy;
+        if (isFirstEmptyRow) {
+          return `
+            <tr style="height: 6.2mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
+              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+                <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
+              </td>
+              <td colspan="${isBulkReport ? 5 : 4}" style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">
+                — لا توجد حافلات بعد هذا السطر —
+              </td>
+            </tr>
+          `;
+        }
+
+        return `
+          <tr style="height: 6.2mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
+            <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+              <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
+            </td>
+            <td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>
+            <td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>
+            <td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>
+            ${isBulkReport ? '<td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>' : ''}
+            <td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>
+          </tr>
+        `;
+      }).join('');
+
+      pagesHtmlChunks.push(`
+        <section class="voucher-page" dir="rtl" lang="ar" style="${breakStyle} width: 210mm; min-height: 295mm; padding: 4mm 9mm; background-color: #FFFFFF; color: #0F172A; direction: rtl;">
+          <div style="width: 100%; min-height: 287mm; display: flex; flex-direction: column; gap: 1mm;">
+
+            <!-- 1) Header (Enlarged Company Logo + Slogan) -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3mm; padding-bottom: 0.6mm; border-bottom: 0.8mm solid #1D4ED8;">
+              <!-- Right: Company Arabic & English Name -->
+              <div style="text-align: right;">
+                <div style="font-size: 18pt; font-weight: 700; color: #0F172A; line-height: 1.6;">
+                  شركة درة المنورة للنقليات
+                </div>
+                <div dir="ltr" style="direction: ltr; unicode-bidi: embed; text-align: right; font-size: 11pt; font-weight: 400; color: #475569; line-height: 1.6;">
+                  Durrat Al-Munawwara Transport Co
+                </div>
               </div>
-              <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 2px;">
-                <span style="color: #334155; white-space: nowrap;">التاريخ الميلادي:</span>
-                <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; display: inline-block; min-width: 96px; text-align: center; border-bottom: 1px solid #475569; padding: 0 4px 1px; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums;">${
-                  gregorianStr || '&nbsp;'
-                }</span>
+
+              <!-- Center: Enlarged High-res Company Logo (28mm) -->
+              <div style="display: flex; align-items: center; justify-content: center;">
+                <img src="${resolvedLogoUrl}" alt="شعار درة المنورة" style="height: 28mm; width: auto; max-width: 76mm; object-fit: contain; display: block;" />
+              </div>
+
+              <!-- Left: Enlarged Slogan ("خدمة الحاج شرف لنا", 23mm) -->
+              <div style="display: flex; align-items: center; justify-content: flex-end;">
+                <img src="${resolvedSloganUrl}" alt="خدمة الحاج شرف لنا" style="height: 23mm; width: auto; max-width: 64mm; object-fit: contain; display: block;" />
               </div>
             </div>
 
-            <!-- Center: Document Title -->
-            <div style="flex: 1; text-align: center;">
-              <div style="display: inline-block; font-size: 21px; font-weight: 700; color: #0f172a; border-bottom: 2px solid #0f172a; padding-bottom: 4px;">
-                سند استلام حافلات
+            <!-- 2) Title Row -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3mm; padding: 0.2mm 0;">
+              <!-- Right: Hijri then Gregorian DD/MM/YYYY -->
+              <div style="text-align: right; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: baseline; gap: 1.5mm;">
+                  <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">التاريخ الهجري:</span>
+                  <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 12pt; font-weight: 600; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums;">${hijriStr || '—'}</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 1.5mm;">
+                  <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">التاريخ الميلادي:</span>
+                  <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 12pt; font-weight: 600; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums;">${gregorianStr || '—'}</span>
+                </div>
               </div>
-              ${
-                totalPages > 1
-                  ? `<div style="font-size: 11.5px; font-weight: 600; color: #475569; margin-top: 4px; font-variant-numeric: tabular-nums;">صفحة <span dir="ltr" style="unicode-bidi: isolate;">${pageNum}</span> من <span dir="ltr" style="unicode-bidi: isolate;">${totalPages}</span></div>`
-                  : ''
-              }
-            </div>
 
-            <!-- Left: Voucher Number & Copy Label -->
-            <div style="width: 30%; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-              <div style="font-size: 15px; font-weight: 700; color: #0f172a; border: 1px solid #334155; background-color: #f8fafc; padding: 4px 12px; border-radius: 6px; white-space: nowrap; font-variant-numeric: tabular-nums;">
-                رقم السند: <span dir="ltr" style="unicode-bidi: isolate; font-weight: 700;">${escapeHtml(voucherNoStr)}</span>
+              <!-- Center: Document Title 22pt with border-bottom (never text-decoration:underline) -->
+              <div style="text-align: center;">
+                <span style="display: inline-block; font-size: 22pt; font-weight: 700; color: #0F172A; line-height: 1.6; border-bottom: 2px solid #0F172A; padding-bottom: 0.3mm;">
+                  سند استلام حافلات
+                </span>
               </div>
-              ${
-                copyLabel
-                  ? `<div style="font-size: 11.5px; font-weight: 700; color: #1d4ed8; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 10px; border-radius: 4px; white-space: nowrap;">${copyLabel}</div>`
-                  : ''
-              }
-            </div>
-          </div>
 
-          <!-- Voucher Metadata & Form Fields -->
-          <div style="font-size: 13.5px; line-height: 1.7; margin-bottom: 10px; font-weight: 600; color: #0f172a; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: nowrap;">
-              <div style="white-space: nowrap;">استلمت أنا: ${renderFieldSpan(data.receiverName, 175)}</div>
-              <div style="white-space: nowrap;">رقم المكتب: ${renderFieldSpan(data.delegateNumber, 70, true)}</div>
-              <div style="white-space: nowrap;">التابع لمؤسسة: ${renderFieldSpan(data.organization, 165)}</div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: nowrap;">
-              <div style="white-space: nowrap;">عدد الحافلات: ${renderFieldSpan(busesQtyStr, 48, true)} حافلة</div>
-              <div style="white-space: nowrap;">عدد التذاكر: ${renderFieldSpan(unifiedTickets, 65, true)}</div>
-              <div style="white-space: nowrap;">بموجب اعتماد رقم: ${renderFieldSpan(data.approvalNumber, 130, true)}</div>
+              <!-- Left: Voucher Number Box -->
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 2mm;">
+                ${
+                  copyLabel
+                    ? `<span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">${escapeHtml(copyLabel)}</span>`
+                    : ''
+                }
+                <div style="border: 1px solid #475569; border-radius: 6px; padding: 1mm 2.5mm; background-color: #F8FAFC; font-size: 12pt; font-weight: 600; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums;">
+                  ${
+                    isBulkReport
+                      ? `<span>${escapeHtml(voucherNoStr || 'كشف مـجمع')}</span>`
+                      : `رقم السند: <span dir="ltr" style="unicode-bidi: isolate;">${escapeHtml(voucherNoStr || '—')}</span>`
+                  }
+                </div>
+              </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: nowrap;">
-              <div style="white-space: nowrap;">وقت الاستلام / الحركة: ${renderFieldSpan(data.eventTime, 110)}</div>
-              <div style="white-space: nowrap;">الاتجاه من: ${renderFieldSpan(data.directionFrom, 115)} إلى: ${renderFieldSpan(data.directionTo, 115)}</div>
+            <!-- 3) Voucher Data Card (3 equal columns) -->
+            <div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0.8mm 3.5mm;">
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 4mm; row-gap: 0.2mm;">
+                <!-- Row 1 -->
+                ${renderMetadataField('استلمت أنا', data.receiverName)}
+                ${renderMetadataField('رقم المكتب', data.delegateNumber, { forceLtr: true })}
+                ${renderMetadataField('التابع لمؤسسة', data.organization)}
+
+                <!-- Row 2 -->
+                ${renderMetadataField('بموجب اعتماد رقم', isBulkReport ? '' : data.approvalNumber, { forceLtr: true })}
+                ${renderMetadataField('عدد الحافلات', busesQtyWithLabel)}
+                ${renderMetadataField('عدد التذاكر', unifiedTickets, { forceLtr: true })}
+
+                <!-- Row 3 -->
+                ${renderMetadataField('الاتجاه من', data.directionFrom)}
+                ${renderMetadataField('إلى', data.directionTo)}
+                ${renderMetadataField('وقت الاستلام/الحركة', data.eventTime)}
+
+                <!-- Row 4 -->
+                ${renderMetadataField('مكان التحميل', data.loadingLocation)}
+                ${renderMetadataField('اسم الفندق', data.hotelName, { colSpan2: true })}
+              </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: nowrap;">
-              <div style="white-space: nowrap;">مكان التحميل: ${renderFieldSpan(data.loadingLocation, 175)}</div>
-              <div style="white-space: nowrap;">اسم الفندق: ${renderFieldSpan(data.hotelName, 210)}</div>
+            <!-- 4) Real Buses Table (table-layout: fixed, 18 equal rows) -->
+            <div style="width: 100%;">
+              <table class="voucher-buses-table">
+                ${
+                  isBulkReport
+                    ? `<colgroup>
+                        <col style="width: 10mm;" />
+                        <col style="width: 29%;" />
+                        <col style="width: 15%;" />
+                        <col style="width: 12%;" />
+                        <col style="width: 15%;" />
+                        <col style="width: auto;" />
+                      </colgroup>`
+                    : `<colgroup>
+                        <col style="width: 12mm;" />
+                        <col style="width: 34%;" />
+                        <col style="width: 18%;" />
+                        <col style="width: 14%;" />
+                        <col style="width: auto;" />
+                      </colgroup>`
+                }
+                <thead>
+                  <tr style="background-color: #E2E8F0; height: 6.4mm;">
+                    <th style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">م</th>
+                    <th style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">اسم السائق</th>
+                    <th style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">رقم اللوحة</th>
+                    <th style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">نوعها</th>
+                    ${
+                      isBulkReport
+                        ? '<th style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">رقم الاعتماد</th>'
+                        : ''
+                    }
+                    <th style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6;">رقم الهاتف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHtml}
+                </tbody>
+              </table>
             </div>
-          </div>
 
-          <!-- Buses Table -->
-          <table style="width: 100%; border-collapse: collapse; border: 1px solid #334155; margin-top: 2px;">
-            <thead>
-              <tr style="background-color: #f1f5f9;">
-                <th style="border: 1px solid #334155; width: 46px; padding: 6px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle; color: #0f172a;">م</th>
-                <th style="border: 1px solid #334155; width: 39%; padding: 6px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle; color: #0f172a;">اسم السائق</th>
-                <th style="border: 1px solid #334155; width: 17%; padding: 6px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle; color: #0f172a;">رقم اللوحة</th>
-                <th style="border: 1px solid #334155; width: 14%; padding: 6px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle; color: #0f172a;">نوعها</th>
-                <th style="border: 1px solid #334155; width: 24%; padding: 6px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle; color: #0f172a;">رقم الهاتف</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${pageBuses
-                .map((bus: any, i: number) => {
-                  const rowNum = startIdx + i + 1;
-                  const driver = escapeHtml(toEnglishDigits(bus.driverName || '').trim());
-                  const plate = escapeHtml(toEnglishDigits(bus.busNumber || '').trim());
-                  const type = escapeHtml(toEnglishDigits(bus.busType || 'حافلة').trim());
-                  const phone = escapeHtml(toEnglishDigits(bus.driverPhone || '').trim());
-                  return `
-                    <tr>
-                      <td style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle; font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums;"><span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span></td>
-                      <td style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle;">
-                        <div style="font-size: ${getFontSizeForText(driver, 13, 28)}px; font-weight: 600; line-height: 1.3; text-align: center; width: 100%;">
-                          ${driver || '&nbsp;'}
-                        </div>
-                      </td>
-                      <td style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle; font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums;"><span dir="ltr" style="unicode-bidi: isolate;">${plate || '&nbsp;'}</span></td>
-                      <td style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle; font-weight: 600; font-size: 12.5px;">${type}</td>
-                      <td style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle; font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums;"><span dir="ltr" style="unicode-bidi: isolate;">${phone || '&nbsp;'}</span></td>
-                    </tr>
-                  `;
-                })
-                .join('')}
-              ${
-                isLastPageOfCopy
-                  ? `<tr>
-                      <td colspan="5" style="border: 1px solid #334155; padding: 6px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: 600; color: #64748b; background-color: #f8fafc;">
-                        — لا توجد حافلات بعد هذا السطر —
-                      </td>
-                    </tr>`
-                  : ''
-              }
-            </tbody>
-          </table>
-
-          ${
-            !isLastPageOfCopy
-              ? `<div style="text-align: center; font-size: 12px; font-weight: 600; color: #475569; margin-top: 10px;">
-                  يتبع في الصفحة التالية... (<span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${pageNum} / ${totalPages}</span>)
-                </div>`
-              : ''
-          }
-
-          ${
-            isLastPageOfCopy && hasValue(data.notes)
-              ? `<div style="margin-top: 10px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; background-color: #f8fafc; font-size: 12px; line-height: 1.5;">
-                  <strong style="font-weight: 700; color: #0f172a;">ملاحظات:</strong>
-                  <span style="font-weight: 500; color: #334155; white-space: pre-wrap;">${escapeHtml(toEnglishDigits(String(data.notes).trim()))}</span>
-                </div>`
-              : ''
-          }
-
-          ${
-            isLastPageOfCopy
-              ? `<!-- Equal Side-by-Side Signature Boxes -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
-                  <!-- Company Delegate Box -->
-                  <div style="border: 1px solid #334155; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; background-color: #ffffff;">
-                    <div>
-                      <div style="font-size: 13.5px; font-weight: 700; text-align: center; color: #0f172a; background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1; padding: 4px 8px; margin: -10px -12px 10px -12px; border-radius: 5px 5px 0 0;">
-                        مندوب شركة درة المنورة
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
-                        <span style="white-space: nowrap;">الاسم:</span>
-                        <span style="flex: 1; border-bottom: 1px solid #475569; height: 18px;">&nbsp;</span>
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
-                        <span style="white-space: nowrap;">التوقيع:</span>
-                        <span style="flex: 1; border-bottom: 1px solid #475569; height: 18px;">&nbsp;</span>
-                      </div>
-                    </div>
-                    <div style="border: 1px dashed #64748b; border-radius: 6px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; color: #64748b; background-color: #f8fafc;">
-                      ختم الشركة
-                    </div>
+            <!-- 5) Signatures (2 compact equal side-by-side boxes, zero phone wrapping) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm;">
+              <!-- Company Box -->
+              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 20.5mm;">
+                <div style="background-color: #F1F5F9; padding: 0.3mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 12pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.6;">
+                  مندوب شركة درة المنورة
+                </div>
+                <div style="flex: 1; padding: 0.6mm 2.5mm; display: flex; align-items: center; justify-content: space-between; gap: 2.5mm;">
+                  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.4mm; min-width: 0;">
+                    ${renderInlineSignatureField('الاسم', issuedBy)}
+                    ${renderInlineSignatureField('التوقيع', '')}
                   </div>
-
-                  <!-- Receiver Box -->
-                  <div style="border: 1px solid #334155; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; background-color: #ffffff;">
-                    <div>
-                      <div style="font-size: 13.5px; font-weight: 700; text-align: center; color: #0f172a; background-color: #f1f5f9; border-bottom: 1px solid #cbd5e1; padding: 4px 8px; margin: -10px -12px 10px -12px; border-radius: 5px 5px 0 0;">
-                        المستلم (مندوب مجموعة الخدمة الميدانية)
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px;">
-                        <span style="white-space: nowrap;">الاسم:</span>
-                        <span style="flex: 1; border-bottom: 1px solid ${hasValue(data.receiverName) ? '#94a3b8' : '#475569'}; padding: 0 4px 1px; font-weight: 700; text-align: center;">${
-                          hasValue(data.receiverName) ? escapeHtml(toEnglishDigits(data.receiverName).trim()) : '&nbsp;'
-                        }</span>
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px;">
-                        <span style="white-space: nowrap;">رقم الموبايل:</span>
-                        <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; flex: 1; border-bottom: 1px solid ${
-                          hasValue(data.receiverMobile) ? '#94a3b8' : '#475569'
-                        }; padding: 0 4px 1px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;">${
-                          hasValue(data.receiverMobile) ? escapeHtml(toEnglishDigits(data.receiverMobile).trim()) : '&nbsp;'
-                        }</span>
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px;">
-                        <span style="white-space: nowrap;">رقم الهوية:</span>
-                        <span dir="ltr" style="direction: ltr; unicode-bidi: isolate; flex: 1; border-bottom: 1px solid ${
-                          hasValue(data.receiverId) ? '#94a3b8' : '#475569'
-                        }; padding: 0 4px 1px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;">${
-                          hasValue(data.receiverId) ? escapeHtml(toEnglishDigits(data.receiverId).trim()) : '&nbsp;'
-                        }</span>
-                      </div>
-                      <div style="font-size: 12.5px; font-weight: 600; display: flex; align-items: baseline; gap: 8px;">
-                        <span style="white-space: nowrap;">التوقيع:</span>
-                        ${renderSignatureLine(160)}
-                      </div>
-                    </div>
+                  <div style="width: 13.5mm; min-height: 13.5mm; border: 1.5px dashed #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0;">
+                    الختم
                   </div>
-                </div>`
-              : ''
-          }
+                </div>
+              </div>
 
-          <!-- Bottom Audit Line & Footer Info -->
-          <div style="margin-top: auto; padding-top: 12px; padding-bottom: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; font-weight: 600; color: #475569; margin-bottom: 6px; padding-bottom: 5px; border-bottom: 1px solid #cbd5e1;">
-              <div>صدر بواسطة: <span style="color: #0f172a; font-weight: 700;">${issuedBy}</span> • <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${issuedAt}</span></div>
-              <div style="font-variant-numeric: tabular-nums;">سند رقم <span dir="ltr" style="unicode-bidi: isolate;">${escapeHtml(voucherNoStr)}</span>${
-                copyLabel ? ` • ${copyLabel}` : ''
-              }${totalPages > 1 ? ` • صفحة <span dir="ltr" style="unicode-bidi: isolate;">${pageNum}</span> من <span dir="ltr" style="unicode-bidi: isolate;">${totalPages}</span>` : ''}</div>
+              <!-- Receiver Box (2 columns inside, extra width for phone column) -->
+              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 20.5mm;">
+                <div style="background-color: #F1F5F9; padding: 0.3mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 12pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.6;">
+                  المستلم (مندوب مجموعة الخدمة الميدانية)
+                </div>
+                <div style="flex: 1; padding: 0.6mm 2.5mm; display: grid; grid-template-columns: 1fr 1.15fr; column-gap: 2.5mm; row-gap: 0.4mm; align-content: center;">
+                  ${renderInlineSignatureField('الاسم', data.receiverName)}
+                  ${renderInlineSignatureField('رقم الموبايل', formattedReceiverMobile, true)}
+                  ${renderInlineSignatureField('رقم الهوية', data.receiverId, true)}
+                  ${renderInlineSignatureField('التوقيع', '')}
+                </div>
+              </div>
             </div>
-            <div style="text-align: center; font-size: 11px; font-weight: 700; line-height: 1.6; color: #334155;">
-              <div>المقر الرئيسي : العكيشية - ص . ب 20442 جدة 21455</div>
-              <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-weight: 700; color: #1e3a8a;">www.munawwara.com</div>
+
+            <!-- 6) Footer (bottom-pinned, 0.5pt top divider) -->
+            <div style="margin-top: auto; padding-top: 0.6mm; border-top: 0.5pt solid #CBD5E1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3mm;">
+              <!-- Right: Issued by & Page X of Y -->
+              <div style="text-align: right; display: flex; flex-direction: column;">
+                <div style="font-size: 11pt; font-weight: 400; color: #475569; line-height: 1.6;">
+                  صدر بواسطة: <span style="font-weight: 500; color: #0F172A;">${issuedBy}</span> • <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${issuedAt}</span>
+                </div>
+                <div style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+                  صفحة <span dir="ltr" style="unicode-bidi: isolate;">${pageNum}</span> من <span dir="ltr" style="unicode-bidi: isolate;">${totalPages}</span>
+                </div>
+              </div>
+
+              <!-- Center: Website & HQ -->
+              <div style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">
+                  www.munawwara.com
+                </div>
+                <div style="font-size: 11pt; font-weight: 400; color: #475569; line-height: 1.6;">
+                  المقر الرئيسي: العكيشية - ص.ب 20442 جدة 21455
+                </div>
+              </div>
+
+              <!-- Left: 12mm QR Code + تحقق من السند -->
+              <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
+                ${
+                  qrDataUrl
+                    ? `<div style="display: flex; flex-direction: column; align-items: center;">
+                        <img src="${qrDataUrl}" alt="QR" style="width: 12mm; height: 12mm; display: block;" />
+                        <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">تحقق من السند</span>
+                      </div>`
+                    : ''
+                }
+              </div>
             </div>
+
           </div>
-        </div>
-      `;
+        </section>
+      `);
+    }
+  }
 
-      container.innerHTML = html;
-      document.body.appendChild(container);
-      await waitForContainerImages(container);
+  const delegatePart = toEnglishDigits(data?.delegateNumber || '').trim();
+  const printTitle = isBulkReport
+    ? delegatePart
+      ? `كشف-مكتب-${delegatePart}-${gregorianFilePart}`
+      : `كشف-مكتب-${gregorianFilePart}`
+    : voucherNoStr
+    ? `سند-${voucherNoStr}-${gregorianFilePart}`
+    : `سند-${gregorianFilePart}`;
 
+  const fullHtml = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeHtml(printTitle)}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>${getStandaloneVoucherCss(fontFaceCss)}</style>
+  </head>
+  <body dir="rtl" lang="ar">
+    <div class="blob-print-toolbar">
+      <span>${escapeHtml(printTitle)} — اختر: الوجهة = حفظ كملف PDF، والهوامش = بلا، والرؤوس والتذييلات = معطّلة</span>
+      <button type="button" class="blob-print-btn" onclick="window.focus(); window.print();">طباعة / حفظ PDF</button>
+    </div>
+    ${pagesHtmlChunks.join('\n')}
+  </body>
+</html>`;
+
+  return {
+    fullHtml,
+    pagesHtmlChunks,
+    fontFaceCss,
+    printTitle,
+  };
+}
+
+export async function generateVoucherPDF(
+  data: any,
+  options: { save?: boolean; print?: boolean; twoCopies?: boolean; targetWindow?: Window | null } = { save: true }
+): Promise<VoucherPrintResult> {
+  const w = options.targetWindow !== undefined ? options.targetWindow : window.open('', '_blank');
+
+  if (w) {
+    try {
+      w.document.open();
+      w.document.write(
+        '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>جاري تحضير السند...</title></head><body style="font-family: sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; color:#0F172A;">جاري تحضير السند للطباعة...</body></html>'
+      );
+      w.document.close();
+    } catch {
+      // ignore if window already navigated or restricted
+    }
+  }
+
+  let fullHtml = '';
+  let printTitle = 'سند';
+  try {
+    const parts = await buildVoucherDocumentParts(data, {
+      twoCopies: options.twoCopies,
+    });
+    fullHtml = parts.fullHtml;
+    printTitle = parts.printTitle;
+  } catch (err) {
+    if (w && !w.closed) {
       try {
-        const canvas = await html2canvas(container, {
-          scale: 3,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          onclone: (doc) => {
-            const style = doc.createElement('style');
-            style.innerHTML = `
-              ${fontFaceCss}
-              body, div, span, p, td, th, table, tr, thead, tbody, strong {
-                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-                text-rendering: optimizeLegibility;
-                letter-spacing: 0px !important;
-              }
-            `;
-            doc.head.appendChild(style);
-          },
-        });
+        w.close();
+      } catch {
+        // ignore close error
+      }
+    }
+    console.error('Failed to prepare voucher HTML for printing:', err);
+    throw err;
+  }
 
-        const imgData = canvas.toDataURL('image/png');
+  if (!w) {
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    return {
+      status: 'popup_blocked',
+      blobUrl,
+      fileName: printTitle,
+    };
+  }
 
-        let imgWidth = pageWidth;
-        let imgHeight = (canvas.height * pageWidth) / canvas.width;
-        let x = 0;
-        const y = 0;
+  try {
+    w.document.open();
+    w.document.write(fullHtml);
+    w.document.close();
+    w.document.title = printTitle;
 
-        if (imgHeight > pageHeight) {
-          imgHeight = pageHeight;
-          imgWidth = (canvas.width * pageHeight) / canvas.height;
-          x = (pageWidth - imgWidth) / 2;
-        }
+    if (w.document.fonts && w.document.fonts.ready) {
+      await w.document.fonts.ready;
+    }
+    await waitForContainerImages(w.document.body);
+    await new Promise<void>((resolve) => {
+      if (typeof w.requestAnimationFrame === 'function') {
+        w.requestAnimationFrame(() => resolve());
+      } else {
+        setTimeout(resolve, 50);
+      }
+    });
 
-        if (!isFirstPdfPage) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-        isFirstPdfPage = false;
-      } finally {
-        if (document.body.contains(container)) {
-          document.body.removeChild(container);
-        }
+    w.focus();
+    w.print();
+    return {
+      status: 'printed',
+      fileName: printTitle,
+    };
+  } catch (err) {
+    console.error('Standalone voucher print error:', err);
+    throw err;
+  }
+}
+
+export async function exportVoucherLegacyPDF(
+  data: any,
+  options: { save?: boolean; twoCopies?: boolean } = { save: true }
+): Promise<string> {
+  const { pagesHtmlChunks, fontFaceCss, printTitle } = await buildVoucherDocumentParts(data, {
+    twoCopies: options.twoCopies,
+  });
+
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true,
+  });
+
+  const html2canvas = (await import('html2canvas')).default;
+  const pageWidthMm = 210;
+  const pageHeightMm = 297;
+
+  for (let idx = 0; idx < pagesHtmlChunks.length; idx++) {
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-99999px';
+    container.style.top = '0';
+    container.style.width = '210mm';
+    container.style.backgroundColor = '#FFFFFF';
+    container.setAttribute('dir', 'rtl');
+    container.setAttribute('lang', 'ar');
+    container.innerHTML = `<style>${getStandaloneVoucherCss(fontFaceCss)}</style>${pagesHtmlChunks[idx]}`;
+
+    document.body.appendChild(container);
+    try {
+      if (typeof document !== 'undefined' && document.fonts) {
+        await document.fonts.ready;
+      }
+      await waitForContainerImages(container);
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+
+      const rect = container.getBoundingClientRect();
+      const captureWidth = Math.round(rect.width) || 794;
+      const captureHeight = Math.round(rect.height) || 1123;
+
+      const canvas = await html2canvas(container, {
+        scale: 2.5,
+        width: captureWidth,
+        height: captureHeight,
+        windowWidth: captureWidth,
+        windowHeight: captureHeight,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#FFFFFF',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      if (idx > 0) pdf.addPage('a4', 'portrait');
+      const imgHeightMm = (canvas.height * pageWidthMm) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pageWidthMm, Math.min(pageHeightMm, imgHeightMm), undefined, 'FAST');
+    } finally {
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
       }
     }
   }
 
-  let pdfBase64 = '';
-  if (options.save || options.print) {
-    pdfBase64 = pdf.output('datauristring');
+  if (options.save !== false) {
+    pdf.save(`${printTitle}.pdf`);
   }
 
-  if (options.save) {
-    pdf.save(`سند-${voucherNoStr}-${gregorianFilePart}.pdf`);
-  }
-
-  if (options.print) {
-    const blob = pdf.output('blob');
-    const url = URL.createObjectURL(blob);
-
-    // Attempt to open in a new tab for printing
-    const printWindow = window.open(url, '_blank');
-
-    if (!printWindow) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.target = '_blank';
-      link.click();
-    }
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 60000);
-  }
-
-  return pdfBase64;
+  return pdf.output('datauristring');
 }
 
 /**
  * دالة لطباعة كشف مجمع للمكتب (كل الحافلات)
- * تحافظ على نفس التنسيق والشكل وتدعم تعدد الصفحات
+ * مطابقة تماماً لتصميم وشكل السند الفردي وتدعم تعدد الصفحات عبر نافذة الطباعة الأصلية
  */
-export async function generateBulkOfficePDF(data: any, options: { save?: boolean, print?: boolean } = { save: true }) {
-  const isBase64OrRelative = (url: string) => !url || url.startsWith('data:') || url.startsWith('/') || url.startsWith('.');
-  const logoUrl = data.logoUrl || '/logo.png';
-  const sloganUrl = data.sloganUrl || '/input_file_0.png';
-
-  const logoCrossOrigin = isBase64OrRelative(logoUrl) ? '' : 'crossOrigin="anonymous"';
-  const sloganCrossOrigin = isBase64OrRelative(sloganUrl) ? '' : 'crossOrigin="anonymous"';
-
-  const margins = { top: 15, bottom: 15, left: 25, right: 25 }; 
-  const allBuses = data.buses || [];
-  const busesPerPage = 16; // Reduced to fit signatures, notes, and footer comfortably
-  const totalPages = Math.ceil(allBuses.length / busesPerPage) || 1;
-
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'px',
-    format: 'a4'
-  });
-
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const html2canvas = (await import('html2canvas')).default;
-
-  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-    const startIdx = (pageNum - 1) * busesPerPage;
-    const pageBuses = allBuses.slice(startIdx, startIdx + busesPerPage);
-    
-    const container = document.createElement('div');
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    container.style.top = '0';
-    container.style.width = '850px'; 
-    
-    const html = `
-      <div style="padding: ${margins.top}px ${margins.left}px ${margins.bottom}px ${margins.right}px; font-family: 'Calibri', 'Arial', sans-serif; background-color: white; position: relative; min-height: 1120px; direction: rtl; box-sizing: border-box; color: #000; display: flex; flex-direction: column;">
-        
-        <!-- Header (Slightly Smaller to save space) -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <!-- Right: Slogan -->
-          <div style="width: 33%; text-align: right;">
-             <img src="${sloganUrl}" style="height: 100px; max-width: 100%; object-fit: contain; display: inline-block; vertical-align: middle;" ${sloganCrossOrigin} />
-          </div>
-          <!-- Center: Logo -->
-          <div style="width: 34%; text-align: center;">
-            <img src="${logoUrl}" style="height: 145px; object-fit: contain; display: inline-block;" ${logoCrossOrigin} />
-          </div>
-          <!-- Left: Company Name -->
-          <div style="text-align: left; width: 33%; white-space: nowrap;">
-            <div style="font-size: 26px; font-weight: 800; margin-bottom: 2px; white-space: nowrap;">${clean_and_reshape_text('شركة درة المنورة للنقليات')}</div>
-            <div style="font-size: 16px; font-weight: 800; font-family: 'Times New Roman', serif; white-space: nowrap;">Durrat Al-Munawwara Transport Co.</div>
-          </div>
-        </div>
-
-        <!-- Center Title -->
-        <div style="text-align: center; margin-bottom: 15px;">
-          <span style="font-size: 32px; font-weight: 900; color: #000; border-bottom: 3px solid #000; padding-bottom: 4px; display: inline-block;">
-            ${clean_and_reshape_text('سند استلام حافلات')}
-          </span>
-        </div>
-
-        <!-- Row after header -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
-          <div style="width: 30%; font-size: 16px; font-weight: 900; line-height: 1.4; text-align: right;">
-            <div style="display: flex; gap: 8px;">
-              <span>${clean_and_reshape_text('التاريــخ : ')}</span>
-              <span style="min-width: 80px; text-align: center; border-bottom: 1px dotted #000;">${data.hijriDate || '      -  -  '}</span>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <span>${clean_and_reshape_text('الـمـوافق : ')}</span>
-              <span style="min-width: 80px; text-align: center; border-bottom: 1px dotted #000;">${format(new Date(data.customDate || data.timestamp), 'yyyy/MM/dd')}</span>
-            </div>
-          </div>
-          <div style="flex: 1;"></div>
-          <div style="width: 20%;"></div>
-        </div>
-
-        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 10px; font-weight: 900;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; gap: 10px;">
-             <div style="white-space: nowrap;">${clean_and_reshape_text('المكتب / المندوب : ')} <span style="font-weight: 600; padding: 0 10px; display: inline-block; min-width: 150px; text-align: center;">${hasValue(data.delegateNumber) ? clean_and_reshape_text(data.delegateNumber) : ''}</span></div>
-             <div style="white-space: nowrap;">${clean_and_reshape_text('التابع لمؤسسة : ')} <span style="font-weight: 600; padding: 0 10px; display: inline-block; min-width: 250px; text-align: center;">${hasValue(data.organization) ? clean_and_reshape_text(data.organization) : ''}</span></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; gap: 10px;">
-            <div style="white-space: nowrap;">
-              ${clean_and_reshape_text('إجمالي الحافلات : ')} <span style="padding: 0 10px; min-width: 30px; display: inline-block; text-align: center;">${allBuses.length}</span>
-            </div>
-             <div style="white-space: nowrap; flex: 1; text-align: left;">
-              ${clean_and_reshape_text('الإتجاه من')} <span style="font-weight: 600; padding: 0 10px; display: inline-block; min-width: 120px; text-align: center;">${hasValue(data.directionFrom) ? clean_and_reshape_text(data.directionFrom) : ''}</span> 
-              ${clean_and_reshape_text('إلى')} <span style="font-weight: 600; padding: 0 10px; display: inline-block; min-width: 120px; text-align: center;">${hasValue(data.directionTo) ? clean_and_reshape_text(data.directionTo) : ''}</span>
-            </div>
-          </div>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; margin-top: 5px;">
-          <thead>
-            <tr style="background-color: #e2e8f0; height: 34px;">
-              <th style="border: 1px solid #000; width: 35px; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('م')}</th>
-              <th style="border: 1px solid #000; width: 30%; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('اسم السائق')}</th>
-              <th style="border: 1px solid #000; width: 12%; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('رقم اللوحة')}</th>
-              <th style="border: 1px solid #000; width: 13%; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('نوعها')}</th>
-              <th style="border: 1px solid #000; width: 20%; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('رقم الاعتماد')}</th>
-              <th style="border: 1px solid #000; width: 20%; font-size: 14.5px; font-weight: 700; text-align: center; vertical-align: middle;">${clean_and_reshape_text('رقم الهاتف')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${pageBuses.map((bus: any, i: number) => `
-              <tr style="height: 34px;">
-                <td style="border: 1px solid #000; text-align: center; font-weight: 700; font-size: 13px; vertical-align: middle;">${startIdx + i + 1}</td>
-                <td style="border: 1px solid #000; text-align: center; padding: 2px 5px; vertical-align: middle;">
-                  <div style="font-size: ${getFontSizeForText(bus.driverName, 14.5, 25)}px; font-weight: 700; line-height: 1.3; text-align: center; width: 100%; white-space: nowrap;">
-                    ${clean_and_reshape_text(bus.driverName)}
-                  </div>
-                </td>
-                <td style="border: 1px solid #000; text-align: center; font-weight: 700; font-size: 14.5px; vertical-align: middle;">${bus.busNumber}</td>
-                <td style="border: 1px solid #000; text-align: center; font-weight: 700; font-size: 13px; vertical-align: middle;">${clean_and_reshape_text(bus.busType || 'حافلة')}</td>
-                <td style="border: 1px solid #000; text-align: center; font-weight: 700; font-size: 13px; vertical-align: middle;">${bus.approvalNumber || ''}</td>
-                <td style="border: 1px solid #000; text-align: center; font-weight: 700; font-size: 13px; vertical-align: middle;">${bus.driverPhone || ''}</td>
-              </tr>
-            `).join('')}
-            ${Array(Math.max(0, busesPerPage - pageBuses.length)).fill(0).map((_, i) => {
-              const index = startIdx + pageBuses.length + i + 1;
-              return `
-                <tr style="height: 34px;">
-                  <td style="border: 1px solid #000; text-align: center; font-size: 13px; font-weight: 700;">${index}</td>
-                  <td style="border: 1px solid #000;"></td>
-                  <td style="border: 1px solid #000;"></td>
-                  <td style="border: 1px solid #000;"></td>
-                  <td style="border: 1px solid #000;"></td>
-                  <td style="border: 1px solid #000;"></td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-
-        <!-- حقل الملاحظات أسفل الجدول -->
-        ${pageNum === totalPages ? `
-        <div style="margin-top: 10px; border: 1.5px solid #000; padding: 10px; border-radius: 4px; font-size: 14.5px; text-align: right; background-color: #f8fafc; min-height: 50px; box-sizing: border-box;">
-          <strong style="font-weight: 900;">${clean_and_reshape_text('الملاحظات : ')}</strong>
-          <span style="font-weight: 700; white-space: pre-wrap; margin-right: 5px;">${hasValue(data.notes) ? clean_and_reshape_text(data.notes) : ''}</span>
-        </div>
-        ` : ''}
-
-        <!-- Signatures and footer area -->
-        <div style="margin-top: auto; padding-top: 20px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: bold;">
-            <div style="width: 45%; text-align: center;">
-              <div style="font-size: 15px; margin-bottom: 15px; text-decoration: underline;">${clean_and_reshape_text('مندوب شركة درة المنورة')}</div>
-              <div style="text-align: right; font-size: 13px; margin-bottom: 10px;">${clean_and_reshape_text('الأسم : .............................................')}</div>
-              <div style="text-align: right; font-size: 13px;">${clean_and_reshape_text('التوقيع : ...........................................')}</div>
-            </div>
-            <div style="width: 50%; text-align: center;">
-              <div style="font-size: 15px; margin-bottom: 15px; text-decoration: underline;">${clean_and_reshape_text('المستلم ( مندوب مجموعة الخدمة الميدانية )')}</div>
-              <div style="text-align: right; font-size: 13px; margin-bottom: 10px;">${clean_and_reshape_text('الأسم : .............................................')}</div>
-              <div style="text-align: right; font-size: 13px;">${clean_and_reshape_text('التوقيع : ...........................................')}</div>
-            </div>
-          </div>
-
-          <div style="border-top: 2px solid #000; padding-top: 10px; text-align: center; font-size: 11px; font-weight: bold; line-height: 1.5; color: #333;">
-            ${clean_and_reshape_text('المقر الرئيسي : العكيشية - ص . ب 20442 جدة 21455')}
-            <br/>
-            www.munawwara.com
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(container);
-    container.innerHTML = html;
-
-    try {
-      const canvas = await html2canvas(container, {
-        scale: 2.5,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        onclone: (doc) => {
-          const style = doc.createElement('style');
-          style.innerHTML = `
-            body, div, span, p, td, th, table, tr, thead, tbody { 
-              font-family: 'Calibri', 'Arial', sans-serif !important;
-              -webkit-font-smoothing: antialiased; 
-              -moz-osx-font-smoothing: grayscale; 
-              text-rendering: optimizeLegibility; 
-              letter-spacing: 0px !important; 
-            }
-          `;
-          doc.head.appendChild(style);
-        }
-      });
-      const imgData = canvas.toDataURL('image/png');
-      
-      let imgWidth = pageWidth;
-      let imgHeight = (canvas.height * pageWidth) / canvas.width;
-      let x = 0;
-      let y = 0;
-
-      if (imgHeight > pageHeight) {
-        imgHeight = pageHeight;
-        imgWidth = (canvas.width * pageHeight) / canvas.height;
-        x = (pageWidth - imgWidth) / 2;
-      }
-
-      if (pageNum > 1) pdf.addPage();
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-    } finally {
-      if (document.body.contains(container)) document.body.removeChild(container);
+export async function generateBulkOfficePDF(
+  data: any,
+  options: { save?: boolean; print?: boolean; twoCopies?: boolean; targetWindow?: Window | null } = { save: true }
+): Promise<VoucherPrintResult> {
+  return generateVoucherPDF(
+    {
+      ...data,
+      isBulkReport: true,
+    },
+    {
+      ...options,
+      twoCopies: options.twoCopies ?? false,
     }
-  }
-
-  if (options.save) {
-    pdf.save(`كشف_مكتب_${data.delegateNumber}_${format(new Date(), 'yyyyMMdd')}.pdf`);
-  }
-
-  if (options.print) {
-    const blob = pdf.output('blob');
-    const url = URL.createObjectURL(blob);
-    
-    const printWindow = window.open(url, '_blank');
-    if (!printWindow) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.target = '_blank';
-      link.click();
-    }
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 60000);
-  }
+  );
 }
 
 export interface StatementReportConfig {

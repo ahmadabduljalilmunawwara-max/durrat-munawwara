@@ -21,8 +21,10 @@ import {
   Save,
   HelpCircle,
   X,
+  ExternalLink,
+  FileDown,
 } from 'lucide-react';
-import { generateVoucherPDF } from '../lib/pdfGenerator';
+import { generateVoucherPDF, exportVoucherLegacyPDF } from '../lib/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
 
 const toEnglishDigits = (value: string): string =>
@@ -185,11 +187,18 @@ export function VoucherEntry() {
   const [nextVoucherNum, setNextVoucherNum] = useState<number>(1001);
   const [logoUrl, setLogoUrl] = useState<string>('/logo.png');
   const [sloganUrl, setSloganUrl] = useState<string>('');
-  const [printTwoCopies, setPrintTwoCopies] = useState<boolean>(true);
+  const [printTwoCopies, setPrintTwoCopies] = useState<boolean>(false);
   const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isLegacyExporting, setIsLegacyExporting] = useState(false);
+  const [lastIssuedVoucher, setLastIssuedVoucher] = useState<any | null>(null);
+  const [printAlert, setPrintAlert] = useState<{
+    type: 'popup_blocked' | 'error';
+    msg: string;
+    blobUrl?: string;
+  } | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; msg: string }>({ type: null, msg: '' });
   const [usedBusNumbers, setUsedBusNumbers] = useState<Set<string>>(new Set());
   const [buses, setBuses] = useState<Record<string, { driverName: string; busType: string; driverPhone?: string }>>({});
@@ -242,9 +251,6 @@ export function VoucherEntry() {
           if (data.nextVoucherNumber) setNextVoucherNum(data.nextVoucherNumber);
           if (data.logoUrl) setLogoUrl(data.logoUrl);
           if (data.sloganUrl) setSloganUrl(data.sloganUrl);
-          if (data.printCopies !== undefined) {
-            setPrintTwoCopies(Number(data.printCopies) >= 2);
-          }
           if (data.pdfMargins) setPdfMargins(data.pdfMargins);
         } else {
           setNextVoucherNum(1000);
@@ -407,12 +413,16 @@ export function VoucherEntry() {
 
     setIsSubmitting(true);
     setStatus({ type: null, msg: '' });
+    setPrintAlert(null);
 
     if (isVoucherDuplicate) {
       setStatus({ type: 'error', msg: `رقم السند ${finalVoucherNumber} مسجل مسبقاً في النظام.` });
       setIsSubmitting(false);
       return;
     }
+
+    // Open print window synchronously while user click gesture is active
+    const preOpenedWindow = window.open('', '_blank');
 
     try {
       const now = new Date();
@@ -424,6 +434,9 @@ export function VoucherEntry() {
         const snap = await getDocs(q);
         const hasActiveDuplicate = snap.docs.some((d) => d.data().archived !== true);
         if (hasActiveDuplicate) {
+          if (preOpenedWindow && !preOpenedWindow.closed) {
+            preOpenedWindow.close();
+          }
           setStatus({
             type: 'error',
             msg: `الحافلة رقم ${bus.busNumber} مسجلة بالفعل في النظام في سند سابق (غير مؤرشف).`,
@@ -464,7 +477,7 @@ export function VoucherEntry() {
         receiverId: receiverId || '',
         deviceName: window.navigator.userAgent.substring(0, 50),
         userId: sessionUser?.uid || 'anonymous',
-        userName: delegateName || 'غير معروف',
+        userName: delegateName || sessionUser?.displayName || sessionUser?.name || sessionUser?.email || 'مسؤول العمليات',
       };
 
       await runTransaction(db, async (transaction) => {
@@ -489,16 +502,41 @@ export function VoucherEntry() {
         const fullData = {
           ...voucherData,
           voucherNumber: actualVoucherNumber,
+          currentUserName: voucherData.userName,
           logoUrl,
           sloganUrl,
           pdfMargins,
         };
 
+        setLastIssuedVoucher(fullData);
         setIsPrinting(true);
         try {
-          await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
+          const printRes = await generateVoucherPDF(fullData, {
+            save: true,
+            print: true,
+            twoCopies: printTwoCopies,
+            targetWindow: preOpenedWindow,
+          });
+          if (printRes.status === 'popup_blocked') {
+            setPrintAlert({
+              type: 'popup_blocked',
+              msg: 'اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة',
+              blobUrl: printRes.blobUrl,
+            });
+          }
         } catch (printErr) {
           console.error('Print Error:', printErr);
+          if (preOpenedWindow && !preOpenedWindow.closed) {
+            try {
+              preOpenedWindow.close();
+            } catch {
+              // ignore
+            }
+          }
+          setPrintAlert({
+            type: 'error',
+            msg: 'تعذّر فتح نافذة الطباعة. يمكنك استخدام التصدير البديل لحفظ السند كملف PDF.',
+          });
         } finally {
           setIsPrinting(false);
         }
@@ -534,6 +572,67 @@ export function VoucherEntry() {
       console.error(error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleLegacyExport = async () => {
+    const activeBuses =
+      selectedBuses.length > 0
+        ? selectedBuses
+        : busNumber && driverName
+        ? [{ busNumber, driverName, busType: 'حافلة', driverPhone }]
+        : [];
+
+    const targetData =
+      activeBuses.length > 0
+        ? {
+            approvalNumber: approvalNumber || '',
+            delegateNumber: delegateNumber || '',
+            organization: organization || '',
+            busesQuantity: activeBuses.length.toString(),
+            ticketsCount: ticketsCount || '0',
+            pilgrimsCount: pilgrimsCount || '0',
+            directionFrom: directionFrom || '',
+            directionTo: directionTo || '',
+            loadingLocation: loadingLocation || '',
+            hotelName: hotelName || '',
+            eventTime: eventTime || '',
+            voucherNumber: finalVoucherNumber,
+            buses: activeBuses,
+            timestamp: new Date().toISOString(),
+            hijriDate: hijriDate || '',
+            customDate,
+            notes: notes || '',
+            receiverName: receiverName || '',
+            receiverMobile: receiverMobile || '',
+            receiverId: receiverId || '',
+            currentUserName:
+              delegateName || sessionUser?.displayName || sessionUser?.name || sessionUser?.email || 'مسؤول العمليات',
+            logoUrl,
+            sloganUrl,
+            pdfMargins,
+          }
+        : lastIssuedVoucher;
+
+    if (!targetData) {
+      setPrintAlert({
+        type: 'error',
+        msg: 'أضف حافلة واحدة على الأقل أو أصدر سنداً أولاً لاستخدام التصدير البديل.',
+      });
+      return;
+    }
+
+    setIsLegacyExporting(true);
+    try {
+      await exportVoucherLegacyPDF(targetData, { save: true, twoCopies: printTwoCopies });
+    } catch (err) {
+      console.error('Legacy PDF Export Error:', err);
+      setPrintAlert({
+        type: 'error',
+        msg: 'حدث خطأ أثناء التصدير البديل لملف PDF.',
+      });
+    } finally {
+      setIsLegacyExporting(false);
     }
   };
 
@@ -1380,13 +1479,52 @@ export function VoucherEntry() {
 
       {/* Sticky Bottom Actions Bar */}
       <div className="sticky bottom-3 z-30 bg-[var(--surface)]/95 backdrop-blur-md border border-[var(--border)] rounded-2xl p-[var(--space-4)] shadow-xl">
+        {printAlert && (
+          <div className="mb-[var(--space-3)] p-[var(--space-3)] rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 flex flex-wrap items-center justify-between gap-[var(--space-2)] text-xs">
+            <div className="flex items-center gap-[var(--space-2)] font-bold text-[var(--gold-text)]">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{printAlert.msg}</span>
+            </div>
+            <div className="flex items-center gap-[var(--space-2)]">
+              {printAlert.blobUrl && (
+                <a
+                  href={printAlert.blobUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-[var(--space-3)] py-[var(--space-1)] rounded-lg bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-bold transition-colors"
+                >
+                  <ExternalLink size={13} />
+                  <span>فتح السند في تبويب جديد</span>
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={handleLegacyExport}
+                disabled={isLegacyExporting}
+                className="inline-flex items-center gap-1 px-[var(--space-3)] py-[var(--space-1)] rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--primary)] font-bold cursor-pointer"
+              >
+                <FileDown size={13} />
+                <span>تصدير بديل</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintAlert(null)}
+                aria-label="إغلاق التنبيه"
+                className="p-1 text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-[var(--space-3)]">
-          {/* Primary Action: إرسال وطباعة (Flat Color) */}
+          {/* Primary Action: طباعة / حفظ PDF */}
           <button
             type="button"
             disabled={!canSubmit}
             onClick={() => handleRegister()}
-            title="إرسال وطباعة (Ctrl + Enter)"
+            title="طباعة / حفظ PDF (Ctrl + Enter)"
             className="flex-1 py-[var(--space-3)] px-[var(--space-6)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-xl font-extrabold text-base shadow-md transition-colors disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-[var(--text-muted)] disabled:shadow-none flex items-center justify-center gap-[var(--space-3)] cursor-pointer disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
@@ -1394,7 +1532,7 @@ export function VoucherEntry() {
             ) : (
               <Printer size={20} className="text-[var(--gold)]" />
             )}
-            <span>إرسال وطباعة</span>
+            <span>إرسال وطباعة / حفظ PDF</span>
           </button>
 
           {/* Secondary Action: حفظ كمسودة */}
@@ -1418,6 +1556,20 @@ export function VoucherEntry() {
           >
             <Trash2 size={18} />
             <span>مسح الحقول</span>
+          </button>
+        </div>
+        <div className="mt-[var(--space-2)] flex flex-wrap items-center justify-between gap-[var(--space-2)]">
+          <p className="text-[11px] font-semibold text-[var(--text-muted)] leading-relaxed">
+            اختر: الوجهة = حفظ كملف PDF، والهوامش = بلا، والرؤوس والتذييلات = معطّلة
+          </p>
+          <button
+            type="button"
+            onClick={handleLegacyExport}
+            disabled={isLegacyExporting || (!canSubmit && !lastIssuedVoucher)}
+            className="inline-flex items-center gap-1.5 px-[var(--space-3)] py-[var(--space-1)] rounded-lg bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+          >
+            {isLegacyExporting ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
+            <span>تصدير بديل</span>
           </button>
         </div>
         <div className="mt-[var(--space-2)] flex flex-wrap items-center justify-between gap-[var(--space-2)]">

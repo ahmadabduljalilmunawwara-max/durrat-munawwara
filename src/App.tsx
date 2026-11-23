@@ -9,7 +9,6 @@ import { auth, googleProvider, db, handleFirestoreError, OperationType } from '.
 import { doc, getDoc, setDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, where } from 'firebase/firestore';
 import { format } from 'date-fns';
 import {
-  Bus,
   BusFront,
   ClipboardList,
   LayoutDashboard,
@@ -44,22 +43,15 @@ import { AppSettings } from './components/AppSettings';
 import { LoginScreen } from './components/LoginScreen';
 import { AboutApp } from './components/AboutApp';
 import { CompanyLogo } from './components/CompanyLogo';
+import { WelcomeModal } from './components/WelcomeModal';
 
 // ============================================================================
-// إعدادات رسالة الترحيب وإعلان الإدارة (قابلة للتعديل بسهولة)
+// إعدادات الإصدار والمظهر
 // ============================================================================
 const APP_VERSION = '2.6.0';
+const CURRENT_VERSION_TAG = `v${APP_VERSION}`;
+const LAST_SEEN_VERSION_KEY = 'lastSeenVersion';
 const THEME_STORAGE_KEY = 'dmtc_login_theme';
-
-const WELCOME_RELEASE_NOTES: string[] = [
-  'دعم كامل لإدارة موسم حج 1448هـ وفصله عن المواسم السابقة.',
-  'إضافة رقم هوية المستلم واعتماد مسمى رقم المكتب في السندات.',
-];
-
-// اتركه فارغاً '' لإخفاء شريط الإعلان الإداري، أو أضف نص الإعلان ليظهر بشريط ذهبي أعلى الزر
-const ADMIN_ANNOUNCEMENT: string = '';
-
-const getWelcomeStorageKey = (uid: string) => `dmtc_welcome_seen_v${APP_VERSION}_${uid}`;
 
 export type UserRole = 'general_manager' | 'supervisor' | 'data_entry' | 'pending';
 
@@ -176,8 +168,8 @@ export default function App() {
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
   const [lastNotification, setLastNotification] = useState<{ msg: string; id: string } | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [dontShowWelcomeAgain, setDontShowWelcomeAgain] = useState(false);
   const [isEmailUnverified, setIsEmailUnverified] = useState(false);
+  const welcomeShownUidRef = useRef<string | null>(null);
 
   // Shell UI states
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -198,7 +190,6 @@ export default function App() {
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const startWorkBtnRef = useRef<HTMLButtonElement>(null);
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -435,55 +426,40 @@ export default function App() {
     }
   }, [activeTab]);
 
-  // Show welcome modal once per user per app version (persisted in localStorage)
+  // Show welcome modal once per APP_VERSION using localStorage (key: lastSeenVersion)
   useEffect(() => {
-    if (!user || loading || isEmailUnverified) {
+    if (!user) {
+      welcomeShownUidRef.current = null;
+      setShowWelcome(false);
+      return;
+    }
+    if (loading || isEmailUnverified) {
       setShowWelcome(false);
       return;
     }
 
-    try {
-      const storageKey = getWelcomeStorageKey(user.uid);
-      if (!localStorage.getItem(storageKey)) {
-        setDontShowWelcomeAgain(false);
+    if (welcomeShownUidRef.current !== user.uid) {
+      welcomeShownUidRef.current = user.uid;
+      let lastSeen: string | null = null;
+      try {
+        lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
+      } catch {
+        lastSeen = null;
+      }
+      if (lastSeen !== CURRENT_VERSION_TAG) {
         setShowWelcome(true);
       }
-    } catch {
-      setShowWelcome(true);
     }
   }, [user, loading, isEmailUnverified]);
 
   const closeWelcome = () => {
-    if (user) {
-      try {
-        localStorage.setItem(getWelcomeStorageKey(user.uid), 'true');
-      } catch {
-        // ignore storage errors
-      }
+    try {
+      localStorage.setItem(LAST_SEEN_VERSION_KEY, CURRENT_VERSION_TAG);
+    } catch {
+      // ignore storage errors
     }
     setShowWelcome(false);
   };
-
-  // Focus "ابدأ العمل" button and support Escape key when welcome modal opens
-  useEffect(() => {
-    if (!showWelcome) return;
-
-    const focusTimer = window.setTimeout(() => {
-      startWorkBtnRef.current?.focus();
-    }, 60);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeWelcome();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.clearTimeout(focusTimer);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showWelcome, user]);
 
   const handleCustomLogin = (userData: any) => {
     const session = { ...userData, isCustom: true };
@@ -737,108 +713,12 @@ export default function App() {
         dir="rtl"
       >
         {/* Welcome Message Modal */}
-        <AnimatePresence>
-          {showWelcome && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={closeWelcome}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-[var(--space-4)]"
-            >
-              <motion.div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="welcome-modal-title"
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-4)] lg:p-[var(--space-8)] max-w-lg w-full shadow-2xl border border-[var(--border)] text-center relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--primary)]" />
-
-                <button
-                  type="button"
-                  onClick={closeWelcome}
-                  aria-label="إغلاق"
-                  className="absolute top-[var(--space-5)] left-[var(--space-5)] w-9 h-9 rounded-xl bg-[var(--surface-subtle)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-secondary)] flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 rounded-2xl flex items-center justify-center text-[var(--primary)] mx-auto mb-[var(--space-5)]">
-                  <Bus size={30} />
-                </div>
-
-                <h2
-                  id="welcome-modal-title"
-                  className="text-2xl font-extrabold text-[var(--text)] mb-[var(--space-2)]"
-                >
-                  {user.displayName?.trim() && user.displayName.trim() !== 'Google User'
-                    ? `أهلاً ${user.displayName.trim()}`
-                    : 'أهلاً بك'}
-                </h2>
-
-                <p className="text-[var(--text-secondary)] font-semibold text-base mb-[var(--space-5)]">
-                  نظام درة المنورة جاهز لموسم حج 1448هـ.
-                </p>
-
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border)] rounded-2xl p-[var(--space-4)] lg:p-[var(--space-5)] text-right mb-[var(--space-5)]">
-                  <p className="font-display text-sm font-extrabold text-[var(--primary)] mb-[var(--space-3)]">
-                    الجديد في الإصدار {APP_VERSION}
-                  </p>
-                  <ul className="space-y-[var(--space-2)] text-sm text-[var(--text)] font-medium leading-relaxed">
-                    {WELCOME_RELEASE_NOTES.map((note, idx) => (
-                      <li key={idx} className="flex items-start gap-[var(--space-2)]">
-                        <span aria-hidden="true" className="text-[var(--gold-text)] font-black leading-6 shrink-0">•</span>
-                        <span>{note}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {ADMIN_ANNOUNCEMENT.trim() && (
-                  <div className="mb-[var(--space-4)] p-[var(--space-3)] rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300/90 dark:border-amber-700 text-[var(--text)] text-right">
-                    <p className="text-xs font-extrabold text-[var(--gold-text)] mb-[var(--space-1)]">إعلان إداري</p>
-                    <p className="text-sm font-bold leading-relaxed">{ADMIN_ANNOUNCEMENT.trim()}</p>
-                  </div>
-                )}
-
-                <label className="inline-flex items-center justify-center gap-[var(--space-2)] text-xs sm:text-sm font-semibold text-[var(--text-secondary)] cursor-pointer select-none mb-[var(--space-5)]">
-                  <input
-                    type="checkbox"
-                    checked={dontShowWelcomeAgain}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setDontShowWelcomeAgain(checked);
-                      if (checked && user) {
-                        try {
-                          localStorage.setItem(getWelcomeStorageKey(user.uid), 'true');
-                        } catch {
-                          // ignore storage errors
-                        }
-                      }
-                    }}
-                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)] accent-[var(--primary)] cursor-pointer"
-                  />
-                  <span>لا تُظهر هذه الرسالة مجدداً لهذا الإصدار</span>
-                </label>
-
-                <button
-                  ref={startWorkBtnRef}
-                  type="button"
-                  onClick={closeWelcome}
-                  className="w-full py-[var(--space-3)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-xl font-bold text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/30 transition-all shadow-md cursor-pointer"
-                >
-                  ابدأ العمل
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <WelcomeModal
+          isOpen={showWelcome}
+          userName={userDisplayName}
+          version={CURRENT_VERSION_TAG}
+          onClose={closeWelcome}
+        />
 
         {/* Email Verification Modal */}
         <AnimatePresence>

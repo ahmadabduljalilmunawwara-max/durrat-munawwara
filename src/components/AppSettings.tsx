@@ -13,7 +13,7 @@ export function AppSettings() {
   const [logoUrl, setLogoUrl] = useState('');
   const [sloganUrl, setSloganUrl] = useState('');
   const [welcomeMessage, setWelcomeMessage] = useState('');
-  const [printCopies, setPrintCopies] = useState<number>(2);
+  const [printCopies, setPrintCopies] = useState<number>(1);
   const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, msg: string }>({ type: null, msg: '' });
@@ -26,7 +26,7 @@ export function AppSettings() {
         setLogoUrl(data.logoUrl || '');
         setSloganUrl(data.sloganUrl || '');
         setWelcomeMessage(data.welcomeMessage || '');
-        setPrintCopies(data.printCopies || 2);
+        setPrintCopies(data.printCopies || 1);
         if (data.pdfMargins) setPdfMargins(data.pdfMargins);
       }
     }, (err) => handleFirestoreError(err, OperationType.GET, 'settings/app'));

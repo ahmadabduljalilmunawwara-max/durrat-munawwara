@@ -5,9 +5,10 @@ import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'da
 import { 
   Search, History, Bus, FileText, Calendar, Printer, Loader2, Trash2, X, 
   ChevronLeft, ChevronRight, Edit2, Save, ClipboardList, Download, 
-  Layers, Filter, CalendarDays, CheckCircle2, Building2, UserCheck, Sparkles, RefreshCw
+  Layers, Filter, CalendarDays, CheckCircle2, Building2, UserCheck, Sparkles, RefreshCw,
+  AlertCircle, ExternalLink, FileDown
 } from 'lucide-react';
-import { generateVoucherPDF, generateBulkOfficePDF, generateStatementReportPDF } from '../lib/pdfGenerator';
+import { generateVoucherPDF, exportVoucherLegacyPDF, generateBulkOfficePDF, generateStatementReportPDF } from '../lib/pdfGenerator';
 import { handleFirestoreError, OperationType } from '../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -36,6 +37,14 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isPrinting, setIsPrinting] = useState<string | null>(null);
+  const [isLegacyExporting, setIsLegacyExporting] = useState<string | null>(null);
+  const [printAlert, setPrintAlert] = useState<{
+    voucherId: string;
+    type: 'popup_blocked' | 'error';
+    msg: string;
+    blobUrl?: string;
+    voucherData?: any;
+  } | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [busPages, setBusPages] = useState<Record<string, number>>({});
   const [voucherToDelete, setVoucherToDelete] = useState<any | null>(null);
@@ -91,9 +100,6 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
         setLogoUrl(data.logoUrl || '');
         setSloganUrl(data.sloganUrl || '');
         if (data.pdfMargins) setPdfMargins(data.pdfMargins);
-        if (data.printCopies !== undefined) {
-          setPrintTwoCopies(Number(data.printCopies) >= 2);
-        }
       }
     });
     return unsub;
@@ -284,48 +290,98 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   // Printing single voucher
   const rePrint = async (v: any) => {
     setIsPrinting(v.id);
-    const fullData = { ...v, logoUrl, sloganUrl, pdfMargins };
+    setPrintAlert(null);
+    const fullData = { ...v, currentUserName, logoUrl, sloganUrl, pdfMargins };
     try {
-      await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
+      const printRes = await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
+      if (printRes.status === 'popup_blocked') {
+        setPrintAlert({
+          voucherId: v.id,
+          type: 'popup_blocked',
+          msg: 'اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة',
+          blobUrl: printRes.blobUrl,
+          voucherData: fullData,
+        });
+      }
     } catch (err) {
       console.error('Print error:', err);
+      setPrintAlert({
+        voucherId: v.id,
+        type: 'error',
+        msg: 'تعذّر فتح نافذة الطباعة. يمكنك استخدام التصدير البديل أدناه.',
+        voucherData: fullData,
+      });
     } finally {
       setIsPrinting(null);
     }
   };
 
-  // Printing Bulk Office Report
+  const handleLegacyExport = async (v: any) => {
+    setIsLegacyExporting(v.id);
+    const fullData = { ...v, currentUserName, logoUrl, sloganUrl, pdfMargins };
+    try {
+      await exportVoucherLegacyPDF(fullData, { save: true, twoCopies: printTwoCopies });
+    } catch (err) {
+      console.error('Legacy PDF export error:', err);
+      setPrintAlert({
+        voucherId: v.id,
+        type: 'error',
+        msg: 'حدث خطأ أثناء التصدير البديل لملف PDF.',
+        voucherData: fullData,
+      });
+    } finally {
+      setIsLegacyExporting(null);
+    }
+  };
+
+  // Printing Bulk Office Report (matches single voucher layout & pagination)
   const printOfficeReport = async () => {
     if (filteredVouchers.length === 0) return;
-    
+
     const allBuses: any[] = [];
+    let totalTickets = 0;
+    let totalPilgrims = 0;
+
     filteredVouchers.forEach(v => {
-      if (v.buses && Array.isArray(v.buses)) {
+      totalTickets += Number(v.ticketsCount) || 0;
+      totalPilgrims += Number(v.pilgrimsCount) || 0;
+
+      if (v.buses && Array.isArray(v.buses) && v.buses.length > 0) {
         const busesWithApproval = v.buses.map((b: any) => ({
           ...b,
-          approvalNumber: v.approvalNumber
+          approvalNumber: b.approvalNumber || v.approvalNumber || ''
         }));
         allBuses.push(...busesWithApproval);
-      } else {
+      } else if (v.busNumber || v.driverName || v.driverPhone) {
         allBuses.push({
-          busNumber: v.busNumber,
-          driverName: v.driverName,
-          busType: v.busType,
-          driverPhone: v.driverPhone,
-          approvalNumber: v.approvalNumber
+          busNumber: v.busNumber || '',
+          driverName: v.driverName || '',
+          busType: v.busType || 'حافلة',
+          driverPhone: v.driverPhone || '',
+          approvalNumber: v.approvalNumber || ''
         });
       }
     });
 
     if (allBuses.length === 0) {
-      alert('لا توجد حافلات لطباعتها');
+      setPrintAlert({
+        voucherId: '__bulk_office__',
+        type: 'error',
+        msg: 'لا توجد حافلات مسجلة ضمن النتائج الحالية لطباعة الكشف.',
+      });
       return;
     }
 
     const template = filteredVouchers[0];
+    const targetWindow = window.open('', '_blank');
     const reportData = {
       ...template,
       buses: allBuses,
+      busesQuantity: String(allBuses.length),
+      ticketsCount: totalTickets > 0 ? String(totalTickets) : (totalPilgrims > 0 ? String(totalPilgrims) : template.ticketsCount),
+      pilgrimsCount: totalPilgrims > 0 ? String(totalPilgrims) : template.pilgrimsCount,
+      approvalNumber: '',
+      currentUserName,
       logoUrl,
       sloganUrl,
       pdfMargins,
@@ -333,8 +389,35 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
       isBulkReport: true
     };
 
-    const { generateBulkOfficePDF } = await import('../lib/pdfGenerator');
-    generateBulkOfficePDF(reportData, { save: true, print: true });
+    setIsPrinting('__bulk_office__');
+    setPrintAlert(null);
+    try {
+      const printRes = await generateBulkOfficePDF(reportData, {
+        save: true,
+        print: true,
+        twoCopies: printTwoCopies,
+        targetWindow,
+      });
+      if (printRes.status === 'popup_blocked') {
+        setPrintAlert({
+          voucherId: '__bulk_office__',
+          type: 'popup_blocked',
+          msg: 'اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة',
+          blobUrl: printRes.blobUrl,
+          voucherData: reportData,
+        });
+      }
+    } catch (err) {
+      console.error('Bulk office print error:', err);
+      setPrintAlert({
+        voucherId: '__bulk_office__',
+        type: 'error',
+        msg: 'تعذّر فتح نافذة طباعة كشف المكتب.',
+        voucherData: reportData,
+      });
+    } finally {
+      setIsPrinting(null);
+    }
   };
 
   // Generate Formal Statement PDF (Monthly / Seasonal / Custom)
@@ -500,15 +583,36 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
             {filteredVouchers.length > 0 && (
               <button
                 onClick={printOfficeReport}
-                className="flex items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-2xl font-bold text-sm hover:bg-blue-50/40 dark:hover:bg-blue-950/30 transition-all border border-[var(--border)]"
+                disabled={isPrinting === '__bulk_office__'}
+                className="flex items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-2xl font-bold text-sm hover:bg-blue-50/40 dark:hover:bg-blue-950/30 transition-all border border-[var(--border)] disabled:opacity-60 cursor-pointer"
                 title="طباعة كشف مجمع للحافلات المستعرضة"
               >
-                <Printer size={16} />
+                {isPrinting === '__bulk_office__' ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
                 <span>كشف المكتب السريع</span>
               </button>
             )}
           </div>
         </div>
+
+        {printAlert?.voucherId === '__bulk_office__' && (
+          <div className="mt-[var(--space-4)] p-[var(--space-3)] rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 flex flex-wrap items-center justify-between gap-[var(--space-3)] text-xs">
+            <div className="flex items-center gap-2 font-bold text-[var(--gold-text)]">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{printAlert.msg}</span>
+            </div>
+            {printAlert.blobUrl && (
+              <a
+                href={printAlert.blobUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--btn-primary)] text-white font-bold hover:bg-[var(--btn-primary-hover)] transition-colors"
+              >
+                <ExternalLink size={14} />
+                <span>فتح الكشف في تبويب جديد</span>
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Season Selector Tabs */}
         <div className="mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-2)]">
@@ -923,40 +1027,80 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                   </div>
 
                   {/* Actions Column */}
-                  <div className="flex items-center lg:flex-col justify-end gap-[var(--space-2)] shrink-0 border-t lg:border-t-0 pt-[var(--space-4)] lg:pt-0 border-[var(--border)]">
-                    <button
-                      onClick={() => rePrint(v)}
-                      disabled={isPrinting !== null}
-                      className={`px-[var(--space-4)] py-[var(--space-3)] rounded-xl font-bold text-xs transition-all flex items-center gap-[var(--space-2)] ${
-                        isPrinting === v.id
-                          ? 'bg-[var(--btn-primary)] text-white shadow-md'
-                          : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] shadow-sm'
-                      }`}
-                    >
-                      {isPrinting === v.id ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <Printer size={16} />
-                      )}
-                      <span>طباعة السند</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleEditVoucher(v)}
-                      className="p-[var(--space-3)] rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-all"
-                      title="تعديل السند"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-
-                    {isAllowedToDelete && (
+                  <div className="flex flex-col items-end gap-[var(--space-2)] shrink-0 border-t lg:border-t-0 pt-[var(--space-4)] lg:pt-0 border-[var(--border)]">
+                    <div className="flex flex-wrap items-center lg:flex-col justify-end gap-[var(--space-2)] w-full lg:w-auto">
                       <button
-                        onClick={() => handleConfirmDelete(v)}
-                        className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/40 text-[var(--danger)] hover:bg-red-100 dark:hover:bg-red-950/60 transition-all"
-                        title="حذف السند"
+                        onClick={() => rePrint(v)}
+                        disabled={isPrinting !== null}
+                        className={`px-[var(--space-4)] py-[var(--space-3)] rounded-xl font-bold text-xs transition-all flex items-center gap-[var(--space-2)] cursor-pointer ${
+                          isPrinting === v.id
+                            ? 'bg-[var(--btn-primary)] text-white shadow-md'
+                            : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] shadow-sm'
+                        }`}
                       >
-                        <Trash2 size={16} />
+                        {isPrinting === v.id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Printer size={16} />
+                        )}
+                        <span>طباعة / حفظ PDF</span>
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleLegacyExport(v)}
+                        disabled={isLegacyExporting !== null}
+                        className="px-[var(--space-3)] py-[var(--space-1)] rounded-lg bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--primary)] hover:border-[var(--primary)] text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-45"
+                      >
+                        {isLegacyExporting === v.id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <FileDown size={12} />
+                        )}
+                        <span>تصدير بديل</span>
+                      </button>
+
+                      <div className="flex items-center gap-[var(--space-2)]">
+                        <button
+                          onClick={() => handleEditVoucher(v)}
+                          className="p-[var(--space-3)] rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[var(--primary)] hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-all cursor-pointer"
+                          title="تعديل السند"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+
+                        {isAllowedToDelete && (
+                          <button
+                            onClick={() => handleConfirmDelete(v)}
+                            className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/40 text-[var(--danger)] hover:bg-red-100 dark:hover:bg-red-950/60 transition-all cursor-pointer"
+                            title="حذف السند"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[10px] font-semibold text-[var(--text-muted)] max-w-[200px] text-left lg:text-center leading-relaxed">
+                      اختر: الوجهة = حفظ كملف PDF، والهوامش = بلا، والرؤوس والتذييلات = معطّلة
+                    </p>
+                    {printAlert?.voucherId === v.id && (
+                      <div className="max-w-[240px] p-[var(--space-2)] rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-[11px] space-y-1.5">
+                        <div className="flex items-start gap-1.5 font-bold text-[var(--gold-text)]">
+                          <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                          <span>{printAlert.msg}</span>
+                        </div>
+                        {printAlert.blobUrl && (
+                          <a
+                            href={printAlert.blobUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--btn-primary)] text-white font-bold text-[11px] hover:bg-[var(--btn-primary-hover)] transition-colors"
+                          >
+                            <ExternalLink size={12} />
+                            <span>فتح السند في تبويب جديد</span>
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
