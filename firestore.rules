@@ -12,32 +12,61 @@ service cloud.firestore {
     }
 
     function isGoogleAdmin() {
-      // Direct email check for the super admin
-      return isSignedIn() && request.auth.token.email == 'ahmad.abduljalilmunawwara@gmail.com';
+      return isSignedIn()
+        && request.auth.token.email == 'ahmad.abduljalilmunawwara@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function isAppAdmin() {
+      return isGoogleAdmin() || (
+        isSignedIn()
+        && exists(/databases/$(database)/documents/app_users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role in ['general_manager', 'admin']
+      );
+    }
+
+    function hasValidReceiptName(data) {
+      return !('receiptName' in data)
+        || (data.receiptName is string && data.receiptName.size() <= 40);
+    }
+
+    function receiptNameUnchanged() {
+      return !('receiptName' in request.resource.data.diff(resource.data).affectedKeys());
+    }
+
+    function hasValidVoucherIssuerFields(data) {
+      return (!('issuedByName' in data) || (data.issuedByName is string && data.issuedByName.size() <= 40))
+        && (!('issuedByUid' in data) || (data.issuedByUid is string && data.issuedByUid.size() <= 128));
     }
 
     // 1. Buses
     match /buses/{busId} {
-      allow read: if true;
-      allow create, update, delete: if true;
+      allow read, create, update, delete: if isSignedIn();
     }
 
     // 2. Vouchers
     match /vouchers/{voucherId} {
-      allow read: if true;
-      allow create, update, delete: if true;
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && hasValidVoucherIssuerFields(request.resource.data);
+      allow delete: if isSignedIn();
     }
 
     // 3. Settings (App settings, logo, print margins, next voucher number)
     match /settings/{docId} {
-      allow read: if true;
-      allow write, create, update, delete: if true;
+      allow get: if docId == 'app' || isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
-    // 4. App Users (Custom Credentials and Roles)
+    // 4. App Users (Custom Credentials, Google profiles, and Roles)
     match /app_users/{username} {
-      allow read, get, list: if true;
-      allow create, write, update, delete: if true;
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if hasValidReceiptName(request.resource.data)
+        && (!('receiptName' in request.resource.data) || isAppAdmin());
+      allow update: if hasValidReceiptName(request.resource.data)
+        && (receiptNameUnchanged() || isAppAdmin());
+      allow delete: if isAppAdmin() || isSignedIn();
     }
   }
 }

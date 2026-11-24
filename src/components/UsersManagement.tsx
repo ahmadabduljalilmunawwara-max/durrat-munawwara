@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { UserPlus, Trash2, Shield, User, Key, Search, Save, Loader2, UserCheck, Crown, UserCog, UserCircle, Users, AlertTriangle } from 'lucide-react';
+import { UserPlus, Trash2, Shield, User, Key, Search, Save, Loader2, UserCheck, Crown, UserCog, UserCircle, Users, AlertTriangle, Pencil, X } from 'lucide-react';
 import { UserRole, AuthContext } from '../App';
 import { format } from 'date-fns';
 import { updateDoc, serverTimestamp } from 'firebase/firestore';
+import { MAX_RECEIPT_NAME_LENGTH, sanitizeReceiptName } from '../lib/issuerName';
 
 export function UsersManagement() {
   const { user: currentUser } = useContext(AuthContext);
@@ -17,8 +18,55 @@ export function UsersManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [receiptModalUser, setReceiptModalUser] = useState<any | null>(null);
+  const [receiptNameInput, setReceiptNameInput] = useState('');
+  const [isSavingReceiptName, setIsSavingReceiptName] = useState(false);
 
   const isGM = currentUser?.role === 'general_manager';
+
+  const openReceiptNameModal = (targetUser: any) => {
+    if (!isGM) return;
+    setReceiptModalUser(targetUser);
+    setReceiptNameInput(sanitizeReceiptName(targetUser?.receiptName || ''));
+  };
+
+  const closeReceiptNameModal = () => {
+    if (isSavingReceiptName) return;
+    setReceiptModalUser(null);
+    setReceiptNameInput('');
+  };
+
+  const handleSaveReceiptName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isGM || !receiptModalUser) return;
+    const cleaned = sanitizeReceiptName(receiptNameInput);
+    setIsSavingReceiptName(true);
+    try {
+      const userRef = doc(db, 'app_users', receiptModalUser.id);
+      await updateDoc(userRef, {
+        receiptName: cleaned,
+        updatedAt: serverTimestamp(),
+      });
+      setReceiptModalUser(null);
+      setReceiptNameInput('');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `app_users/${receiptModalUser.id}`);
+    } finally {
+      setIsSavingReceiptName(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!receiptModalUser) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSavingReceiptName) {
+        setReceiptModalUser(null);
+        setReceiptNameInput('');
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [receiptModalUser, isSavingReceiptName]);
 
   const handleRoleUpdate = async (username: string, newRole: UserRole) => {
     setIsSaving(true);
@@ -143,7 +191,8 @@ export function UsersManagement() {
   const filteredUsers = users.filter(u => 
     (u.username || '').includes(filter.toLowerCase()) || 
     (u.email || '').includes(filter.toLowerCase()) ||
-    (u.displayName || '').includes(filter)
+    (u.displayName || '').includes(filter) ||
+    (u.receiptName || '').includes(filter)
   );
 
   const pendingUsers = filteredUsers.filter(u => u.role === 'pending');
@@ -262,6 +311,31 @@ export function UsersManagement() {
                 </span>
               )}
             </div>
+          </div>
+          <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-1)] text-xs">
+            <span className="font-semibold text-[var(--text-secondary)]">
+              يظهر في السند:{' '}
+              {sanitizeReceiptName(u.receiptName) ? (
+                <span className="font-extrabold text-[var(--text)]">
+                  {sanitizeReceiptName(u.receiptName)}
+                </span>
+              ) : (
+                <span className="font-bold text-amber-600 dark:text-amber-400">
+                  لم يُحدد بعد
+                </span>
+              )}
+            </span>
+            {isGM && (
+              <button
+                type="button"
+                onClick={() => openReceiptNameModal(u)}
+                title="تعديل الاسم الظاهر في السند"
+                aria-label="تعديل الاسم الظاهر في السند"
+                className="p-[var(--space-1)] rounded-lg text-[var(--text-muted)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+              >
+                <Pencil size={13} />
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-[var(--space-2)] flex-wrap">
             <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{u.username || u.email}</span>
@@ -511,6 +585,97 @@ export function UsersManagement() {
         </div>
       </div>
       </div>
+
+      {/* Edit Receipt Name Modal (General Manager Only) */}
+      {isGM && receiptModalUser && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-[var(--space-4)]"
+          dir="rtl"
+          onClick={closeReceiptNameModal}
+        >
+          <div
+            className="w-full max-w-md bg-[var(--surface)] rounded-[1.75rem] border border-[var(--border)] shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-[var(--space-6)] py-[var(--space-4)] border-b border-[var(--border)] bg-[var(--surface-subtle)] flex items-center justify-between gap-[var(--space-3)]">
+              <div className="flex items-center gap-[var(--space-3)] min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800 text-[var(--primary)] flex items-center justify-center shrink-0">
+                  <Pencil size={16} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-black text-[var(--text)] truncate">
+                    الاسم الظاهر في السند
+                  </h4>
+                  <p className="text-[11px] font-bold text-[var(--text-muted)] truncate">
+                    {receiptModalUser.displayName || receiptModalUser.username || receiptModalUser.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeReceiptNameModal}
+                disabled={isSavingReceiptName}
+                aria-label="إغلاق"
+                className="w-8 h-8 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] flex items-center justify-center cursor-pointer disabled:opacity-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveReceiptName} className="p-[var(--space-6)] space-y-[var(--space-4)]">
+              <div>
+                <div className="flex items-center justify-between mb-[var(--space-2)]">
+                  <label
+                    htmlFor="receipt-name-input"
+                    className="block text-xs font-bold text-[var(--text-secondary)]"
+                  >
+                    الاسم الظاهر في السند
+                  </label>
+                  <span className="text-[11px] font-bold text-[var(--text-muted)] tabular-nums" dir="ltr">
+                    {receiptNameInput.trim().length}/{MAX_RECEIPT_NAME_LENGTH}
+                  </span>
+                </div>
+                <input
+                  id="receipt-name-input"
+                  type="text"
+                  autoFocus
+                  maxLength={MAX_RECEIPT_NAME_LENGTH}
+                  value={receiptNameInput}
+                  onChange={(e) => setReceiptNameInput(e.target.value.slice(0, MAX_RECEIPT_NAME_LENGTH))}
+                  placeholder="مثال: أحمد عبدالجليل"
+                  className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface-subtle)] border border-[var(--border)] rounded-xl focus:bg-[var(--surface)] focus:ring-4 focus:ring-blue-500/10 focus:border-[var(--primary)] outline-none transition-all font-bold text-sm text-[var(--text)]"
+                />
+                <p className="mt-[var(--space-2)] text-[11px] font-semibold text-[var(--text-muted)] leading-relaxed">
+                  هذا الاسم سيُطبع في السندات التي يصدرها هذا المستخدم
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-[var(--space-3)] pt-[var(--space-2)]">
+                <button
+                  type="button"
+                  onClick={closeReceiptNameModal}
+                  disabled={isSavingReceiptName}
+                  className="px-[var(--space-5)] py-[var(--space-2)] rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--border)] border border-[var(--border)] text-xs font-bold text-[var(--text-secondary)] transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingReceiptName}
+                  className="px-[var(--space-5)] py-[var(--space-2)] rounded-xl bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white text-xs font-bold flex items-center gap-[var(--space-2)] transition-colors shadow-sm cursor-pointer disabled:opacity-60"
+                >
+                  {isSavingReceiptName ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Save size={14} className="text-[var(--gold)]" />
+                  )}
+                  <span>حفظ</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

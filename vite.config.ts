@@ -1,14 +1,52 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+
+function disableHmrClientSocketPlugin(): Plugin {
+  let isHmrDisabled = false;
+  return {
+    name: 'disable-hmr-client-socket',
+    configResolved(config) {
+      isHmrDisabled = config.server.hmr === false || config.server.ws === false;
+    },
+    transform(code, id) {
+      if (!isHmrDisabled) return null;
+      const normalizedId = id.replace(/\\/g, '/');
+      if (!normalizedId.endsWith('vite/dist/client/client.mjs')) return null;
+
+      let transformed = code.replace(
+        'console.debug("[vite] connecting...");',
+        'console.debug("[vite] HMR disabled.");'
+      );
+
+      const startMarker = 'const transport = normalizeModuleRunnerTransport(';
+      const endMarker = 'let willUnload = false;';
+      const startIdx = transformed.indexOf(startMarker);
+      const endIdx = transformed.indexOf(endMarker);
+
+      if (startIdx !== -1 && endIdx > startIdx) {
+        transformed =
+          transformed.slice(0, startIdx) +
+          `const transport = normalizeModuleRunnerTransport({\n  async connect() {},\n  async disconnect() {},\n  async send() {},\n});\n` +
+          transformed.slice(endIdx);
+      }
+
+      return {
+        code: transformed,
+        map: null,
+      };
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     base: '/',
     plugins: [
+      disableHmrClientSocketPlugin(),
       react(),
       tailwindcss(),
       VitePWA({
@@ -33,8 +71,7 @@ export default defineConfig(({ mode }) => {
           maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         },
         devOptions: {
-          enabled: true,
-          type: 'module',
+          enabled: false,
         },
       }),
     ],

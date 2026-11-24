@@ -57,9 +57,10 @@ const THEME_STORAGE_KEY = 'dmtc_login_theme';
 
 export type UserRole = 'general_manager' | 'supervisor' | 'data_entry' | 'pending' | 'rejected';
 
-interface AppUser {
+export interface AppUser {
   uid: string;
   displayName: string | null;
+  receiptName?: string;
   email?: string | null;
   photoURL?: string | null;
   role: UserRole;
@@ -256,14 +257,58 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (u) => {
+    let profileUnsub: (() => void) | null = null;
+
+    const cleanupProfileListener = () => {
+      if (profileUnsub) {
+        profileUnsub();
+        profileUnsub = null;
+      }
+    };
+
+    const authUnsub = onAuthStateChanged(auth, async (u) => {
+      cleanupProfileListener();
+
       if (u) {
         if (u.isAnonymous) {
           setIsEmailUnverified(false);
           const savedSession = localStorage.getItem('dmtc_session');
           if (savedSession) {
             try {
-              setUser(JSON.parse(savedSession));
+              const parsedSession: AppUser = JSON.parse(savedSession);
+              setUser(parsedSession);
+
+              if (parsedSession?.username) {
+                const customUserRef = doc(db, 'app_users', parsedSession.username);
+                profileUnsub = onSnapshot(
+                  customUserRef,
+                  (profileSnap) => {
+                    if (profileSnap.exists()) {
+                      const data = profileSnap.data();
+                      const nextReceiptName =
+                        typeof data.receiptName === 'string' ? data.receiptName.trim() : '';
+                      setUser((prevUser) => {
+                        if (!prevUser) return null;
+                        const updated: AppUser = {
+                          ...prevUser,
+                          displayName: data.displayName || prevUser.displayName,
+                          role: data.role || prevUser.role,
+                          receiptName: nextReceiptName,
+                        };
+                        try {
+                          localStorage.setItem('dmtc_session', JSON.stringify(updated));
+                        } catch {
+                          // ignore storage errors
+                        }
+                        return updated;
+                      });
+                    }
+                  },
+                  (error) => {
+                    handleFirestoreError(error, OperationType.GET, 'app_users/' + parsedSession.username);
+                  }
+                );
+              }
             } catch (e) {
               console.error('Failed to parse session', e);
               localStorage.removeItem('dmtc_session');
@@ -283,12 +328,14 @@ export default function App() {
 
           let role: UserRole = 'pending';
           let displayName = u.displayName || 'Google User';
+          let receiptName = '';
           let createdAt: string | undefined = u.metadata?.creationTime || undefined;
 
           if (snap.exists()) {
             const data = snap.data();
             role = data.role || 'pending';
             displayName = data.displayName || displayName;
+            receiptName = typeof data.receiptName === 'string' ? data.receiptName.trim() : '';
             if (typeof data.createdAt === 'string') {
               createdAt = data.createdAt;
             } else if (data.createdAt && typeof data.createdAt.toDate === 'function') {
@@ -312,6 +359,7 @@ export default function App() {
           const googleUser: AppUser = {
             uid: u.uid,
             displayName: displayName,
+            receiptName: receiptName,
             email: u.email,
             photoURL: u.photoURL,
             role: role,
@@ -320,17 +368,20 @@ export default function App() {
           };
           setUser(googleUser);
 
-          onSnapshot(
+          profileUnsub = onSnapshot(
             userRef,
             (profileSnap) => {
               if (profileSnap.exists()) {
                 const data = profileSnap.data();
+                const nextReceiptName =
+                  typeof data.receiptName === 'string' ? data.receiptName.trim() : '';
                 setUser((prevUser) => {
                   if (!prevUser) return null;
                   return {
                     ...prevUser,
                     displayName: data.displayName || prevUser.displayName,
                     role: data.role || prevUser.role,
+                    receiptName: nextReceiptName,
                   };
                 });
               }
@@ -352,6 +403,11 @@ export default function App() {
       }
       setLoading(false);
     });
+
+    return () => {
+      cleanupProfileListener();
+      authUnsub();
+    };
   }, []);
 
   const markNotificationsAsRead = () => {

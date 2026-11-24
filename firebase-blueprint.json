@@ -47,7 +47,9 @@
         "receiverId": { "type": "string" },
         "deviceName": { "type": "string" },
         "userId": { "type": "string" },
-        "userName": { "type": "string" }
+        "userName": { "type": "string" },
+        "issuedByName": { "type": "string", "maxLength": 40, "description": "Frozen snapshot of issuer display name on the receipt at issuance time." },
+        "issuedByUid": { "type": "string", "description": "UID of the user who issued the voucher." }
       },
       "required": ["voucherNumber", "timestamp", "dateKey", "userName"]
     },
@@ -61,13 +63,14 @@
     },
     "AppUser": {
       "title": "App User",
-      "description": "Custom credentials for app access.",
+      "description": "Custom credentials and profile metadata for app access.",
       "type": "object",
       "properties": {
         "username": { "type": "string" },
         "password": { "type": "string" },
         "displayName": { "type": "string" },
-        "role": { "type": "string", "enum": ["admin", "user"] },
+        "receiptName": { "type": "string", "maxLength": 40, "description": "Arabic display name printed on vouchers issued by this user." },
+        "role": { "type": "string", "enum": ["general_manager", "supervisor", "data_entry", "pending", "rejected", "admin", "user"] },
         "authUid": { "type": "string", "description": "The anonymous UID assigned by Firebase." },
         "updatedAt": { "type": "string", "format": "date-time" }
       },

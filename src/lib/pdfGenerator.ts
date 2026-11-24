@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import arabicReshaper from 'arabic-reshaper';
 import Bidi from 'bidi-js';
 import QRCode from 'qrcode';
-import { auth } from './firebase';
+import { getFittedReceiptFontSizePt, resolveVoucherIssuerForPrint } from './issuerName';
 
 import ibmPlexArabic400Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
 import ibmPlexArabic500Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-500-normal.woff2?url';
@@ -387,46 +387,7 @@ async function resolveImageAsDataUrl(rawUrl?: string): Promise<string> {
   return cachedFallbackSloganPng;
 }
 
-function resolveCurrentIssuerName(data: any): string {
-  const isInvalidName = (val: any) => {
-    const s = String(val || '').trim();
-    return !s || s === 'غير معروف' || s === 'مستخدم النظام';
-  };
-
-  if (!isInvalidName(data?.currentUserName)) {
-    return toEnglishDigits(String(data.currentUserName).trim());
-  }
-
-  if (typeof window !== 'undefined') {
-    try {
-      const saved = localStorage.getItem('dmtc_session');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (!isInvalidName(parsed?.displayName)) return toEnglishDigits(String(parsed.displayName).trim());
-        if (!isInvalidName(parsed?.name)) return toEnglishDigits(String(parsed.name).trim());
-        if (!isInvalidName(parsed?.email)) return toEnglishDigits(String(parsed.email).trim());
-      }
-    } catch {
-      // ignore localStorage parse error
-    }
-  }
-
-  if (!isInvalidName(auth?.currentUser?.displayName)) {
-    return toEnglishDigits(String(auth.currentUser!.displayName).trim());
-  }
-  if (!isInvalidName(auth?.currentUser?.email)) {
-    return toEnglishDigits(String(auth.currentUser!.email).trim());
-  }
-
-  if (!isInvalidName(data?.delegateName)) {
-    return toEnglishDigits(String(data.delegateName).trim());
-  }
-  if (!isInvalidName(data?.userName)) {
-    return toEnglishDigits(String(data.userName).trim());
-  }
-
-  return 'مسؤول العمليات';
-}
+// Issuer name resolution is handled strictly via resolveVoucherIssuerForPrint (never from auth/localStorage or hardcoded roles)
 
 function formatVoucherNumberNoLeadingZeros(raw: any): string {
   const digits = toEnglishDigits(raw !== undefined && raw !== null ? String(raw).trim() : '');
@@ -632,7 +593,20 @@ async function buildVoucherDocumentParts(
       : '';
   const busesQtyWithLabel = busesQtyNumStr ? `${busesQtyNumStr} حافلة` : '';
 
-  const issuedBy = escapeHtml(resolveCurrentIssuerName(data));
+  const issuedByRaw = toEnglishDigits(resolveVoucherIssuerForPrint(data)).trim();
+  const issuedBy = issuedByRaw ? escapeHtml(issuedByRaw) : '';
+  const issuedBySignatureFontPt = getFittedReceiptFontSizePt(issuedByRaw, {
+    maxPt: 11,
+    minPt: 10,
+    thresholdChars: 18,
+    maxChars: 34,
+  });
+  const issuedByFooterFontPt = getFittedReceiptFontSizePt(issuedByRaw, {
+    maxPt: 11,
+    minPt: 10,
+    thresholdChars: 20,
+    maxChars: 38,
+  });
   const issuedAt = formatAuditDateTime(data.timestamp);
   const formattedReceiverMobile = formatPhoneForPrint(data.receiverMobile);
 
@@ -679,14 +653,20 @@ async function buildVoucherDocumentParts(
   const renderInlineSignatureField = (
     label: string,
     val: any,
-    forceLtr = false
+    optionsOrForceLtr: boolean | { forceLtr?: boolean; nowrapFontSizePt?: number } = false
   ) => {
+    const opts = typeof optionsOrForceLtr === 'boolean' ? { forceLtr: optionsOrForceLtr } : optionsOrForceLtr;
+    const forceLtr = Boolean(opts.forceLtr);
+    const nowrapFontSizePt = opts.nowrapFontSizePt;
     const clean = toEnglishDigits(val || '').trim();
     const isFilled = clean !== '';
     const safeVal = isFilled ? escapeHtml(clean) : '&nbsp;';
     const dirAttr = forceLtr ? 'dir="ltr"' : '';
+    const fontSizePt = nowrapFontSizePt ?? 11;
     const dirStyle = forceLtr
       ? 'direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap;'
+      : nowrapFontSizePt !== undefined
+      ? 'font-variant-numeric: tabular-nums; white-space: nowrap;'
       : 'font-variant-numeric: tabular-nums; word-break: break-word;';
 
     return `
@@ -694,7 +674,7 @@ async function buildVoucherDocumentParts(
         <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0; white-space: nowrap;">
           ${escapeHtml(label)}:
         </span>
-        <span ${dirAttr} style="flex: 1; min-width: 0; font-size: 11pt; font-weight: 600; color: #0F172A; line-height: 1.6; min-height: 5.5mm; padding: 0; border-bottom: 1px solid #94A3B8; text-align: right; ${dirStyle}">
+        <span ${dirAttr} style="flex: 1; min-width: 0; font-size: ${fontSizePt}pt; font-weight: 600; color: #0F172A; line-height: 1.6; min-height: 5.5mm; padding: 0; border-bottom: 1px solid #94A3B8; text-align: right; ${dirStyle}">
           ${safeVal}
         </span>
       </div>
@@ -923,12 +903,12 @@ async function buildVoucherDocumentParts(
                 <div style="background-color: #F1F5F9; padding: 0.3mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 12pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.6;">
                   مندوب شركة درة المنورة
                 </div>
-                <div style="flex: 1; padding: 0.6mm 2.5mm; display: flex; align-items: center; justify-content: space-between; gap: 2.5mm;">
+                <div style="flex: 1; padding: 0.6mm 2.5mm; display: flex; align-items: center; justify-content: space-between; gap: 2mm;">
                   <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.4mm; min-width: 0;">
-                    ${renderInlineSignatureField('الاسم', issuedBy)}
+                    ${renderInlineSignatureField('الاسم', issuedByRaw, { nowrapFontSizePt: issuedBySignatureFontPt })}
                     ${renderInlineSignatureField('التوقيع', '')}
                   </div>
-                  <div style="width: 13.5mm; min-height: 13.5mm; border: 1.5px dashed #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0;">
+                  <div style="width: 13mm; min-height: 13mm; border: 1.5px dashed #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0;">
                     الختم
                   </div>
                 </div>
@@ -949,11 +929,11 @@ async function buildVoucherDocumentParts(
             </div>
 
             <!-- 6) Footer (bottom-pinned, 0.5pt top divider) -->
-            <div style="margin-top: auto; padding-top: 0.6mm; border-top: 0.5pt solid #CBD5E1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3mm;">
+            <div style="margin-top: auto; padding-top: 0.6mm; border-top: 0.5pt solid #CBD5E1; display: grid; grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 0.75fr); align-items: center; gap: 3mm;">
               <!-- Right: Issued by & Page X of Y -->
-              <div style="text-align: right; display: flex; flex-direction: column;">
-                <div style="font-size: 11pt; font-weight: 400; color: #475569; line-height: 1.6;">
-                  صدر بواسطة: <span style="font-weight: 500; color: #0F172A;">${issuedBy}</span> • <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${issuedAt}</span>
+              <div style="text-align: right; display: flex; flex-direction: column; min-width: 0;">
+                <div style="font-size: ${issuedByFooterFontPt}pt; font-weight: 400; color: #475569; line-height: 1.6; white-space: nowrap;">
+                  صدر بواسطة: ${issuedBy ? `<span style="font-weight: 500; color: #0F172A;">${issuedBy}</span> ` : ''}• <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${issuedAt}</span>
                 </div>
                 <div style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
                   صفحة <span dir="ltr" style="unicode-bidi: isolate;">${pageNum}</span> من <span dir="ltr" style="unicode-bidi: isolate;">${totalPages}</span>

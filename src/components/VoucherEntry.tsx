@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { generateVoucherPDF, exportVoucherLegacyPDF } from '../lib/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../App';
+import { getUserReceiptName, resolveNewVoucherIssuerName } from '../lib/issuerName';
 
 const toEnglishDigits = (value: string): string =>
   value
@@ -57,6 +59,8 @@ const computeHijriDDMMYYYY = (gregorianDateStr: string): string => {
 };
 
 export function VoucherEntry() {
+  const { user: authUser } = useAuth();
+
   const getSessionUser = () => {
     const saved = localStorage.getItem('dmtc_session');
     if (saved) {
@@ -71,7 +75,12 @@ export function VoucherEntry() {
   };
 
   const sessionUser = getSessionUser();
-  const draftStorageKey = `dmtc_voucher_draft_${sessionUser?.uid || 'guest'}`;
+  const activeUser = authUser || sessionUser;
+  const activeUserUid = activeUser?.uid || 'anonymous';
+  const currentReceiptName = getUserReceiptName(activeUser);
+  const resolvedIssuerName = resolveNewVoucherIssuerName(activeUser);
+  const isGeneralManager = activeUser?.role === 'general_manager';
+  const draftStorageKey = `dmtc_voucher_draft_${activeUser?.uid || 'guest'}`;
 
   const [approvalNumber, setApprovalNumber] = useState('');
   const [delegateNumber, setDelegateNumber] = useState('');
@@ -90,7 +99,6 @@ export function VoucherEntry() {
   const [receiverName, setReceiverName] = useState('');
   const [receiverMobile, setReceiverMobile] = useState('');
   const [receiverId, setReceiverId] = useState('');
-  const [delegateName] = useState(sessionUser?.displayName || '');
   const [customDate, setCustomDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [hijriDate, setHijriDate] = useState(() => computeHijriDDMMYYYY(format(new Date(), 'yyyy-MM-dd')));
   const [showMobileShortcuts, setShowMobileShortcuts] = useState(false);
@@ -476,8 +484,10 @@ export function VoucherEntry() {
         receiverMobile: receiverMobile || '',
         receiverId: receiverId || '',
         deviceName: window.navigator.userAgent.substring(0, 50),
-        userId: sessionUser?.uid || 'anonymous',
-        userName: delegateName || sessionUser?.displayName || sessionUser?.name || sessionUser?.email || 'مسؤول العمليات',
+        userId: activeUserUid,
+        userName: resolvedIssuerName,
+        issuedByName: resolvedIssuerName,
+        issuedByUid: activeUserUid,
       };
 
       await runTransaction(db, async (transaction) => {
@@ -502,7 +512,6 @@ export function VoucherEntry() {
         const fullData = {
           ...voucherData,
           voucherNumber: actualVoucherNumber,
-          currentUserName: voucherData.userName,
           logoUrl,
           sloganUrl,
           pdfMargins,
@@ -606,8 +615,10 @@ export function VoucherEntry() {
             receiverName: receiverName || '',
             receiverMobile: receiverMobile || '',
             receiverId: receiverId || '',
-            currentUserName:
-              delegateName || sessionUser?.displayName || sessionUser?.name || sessionUser?.email || 'مسؤول العمليات',
+            userId: activeUserUid,
+            userName: resolvedIssuerName,
+            issuedByName: resolvedIssuerName,
+            issuedByUid: activeUserUid,
             logoUrl,
             sloganUrl,
             pdfMargins,
@@ -735,8 +746,9 @@ export function VoucherEntry() {
     hijriDate,
     finalVoucherNumber,
     isVoucherDuplicate,
-    delegateName,
-    sessionUser,
+    activeUser,
+    resolvedIssuerName,
+    activeUserUid,
     logoUrl,
     sloganUrl,
     pdfMargins,
@@ -818,6 +830,30 @@ export function VoucherEntry() {
             )}
           </div>
         </div>
+
+        {/* Receipt Issuer Name Status Line */}
+        {currentReceiptName ? (
+          <div className="mb-[var(--space-5)] flex items-center gap-[var(--space-2)] text-xs font-bold text-[var(--text-secondary)]">
+            <UserIcon size={14} className="text-[var(--primary)] shrink-0" />
+            <span>سيصدر السند باسم:</span>
+            <span className="font-extrabold text-[var(--primary)]">{currentReceiptName}</span>
+          </div>
+        ) : !isGeneralManager ? (
+          <div className="mb-[var(--space-5)] px-[var(--space-4)] py-[var(--space-2)] rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 flex items-center gap-[var(--space-2)] text-xs font-bold text-amber-700 dark:text-amber-300">
+            <AlertCircle size={15} className="shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>لم يُحدد اسمك في السند، راجع المدير العام</span>
+          </div>
+        ) : (
+          <div className="mb-[var(--space-5)] flex items-center gap-[var(--space-2)] text-xs font-bold text-[var(--text-secondary)]">
+            <UserIcon size={14} className="text-[var(--primary)] shrink-0" />
+            <span>سيصدر السند باسم:</span>
+            {resolvedIssuerName ? (
+              <span className="font-extrabold text-[var(--primary)]">{resolvedIssuerName}</span>
+            ) : (
+              <span className="font-bold text-amber-600 dark:text-amber-400">لم يُحدد بعد</span>
+            )}
+          </div>
+        )}
 
         {/* Mobile/Tablet (<1024px) Shortcuts Popover toggled by "?" */}
         <AnimatePresence>

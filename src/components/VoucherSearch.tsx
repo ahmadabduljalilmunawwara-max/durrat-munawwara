@@ -11,13 +11,22 @@ import {
 import { generateVoucherPDF, exportVoucherLegacyPDF, generateBulkOfficePDF, generateStatementReportPDF } from '../lib/pdfGenerator';
 import { handleFirestoreError, OperationType } from '../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../App';
+import {
+  buildUsersLookupMap,
+  resolveNewVoucherIssuerName,
+  resolveVoucherIssuerForPrint,
+  resolveVoucherIssuerForUI,
+} from '../lib/issuerName';
 
 type SeasonFilter = '1448' | '1447' | 'all';
 type PeriodFilter = 'all' | 'today' | 'week' | 'month' | 'custom_month' | 'custom_range';
 
 export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: string }) {
+  const { user: authUser } = useAuth();
   // Raw Data and Real-time Stream
   const [allVouchers, setAllVouchers] = useState<any[]>([]);
+  const [usersLookupMap, setUsersLookupMap] = useState<Record<string, any>>({});
   const [isLoadingAll, setIsLoadingAll] = useState(true);
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   
@@ -86,11 +95,18 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   }
 
   const currentUser = auth.currentUser;
-  const currentUserName = sessionUser?.displayName || currentUser?.displayName || sessionUser?.name || 'مدير العمليات';
+  const activeUser = authUser || {
+    uid: sessionUser?.uid,
+    username: sessionUser?.username,
+    displayName: sessionUser?.displayName || sessionUser?.name || currentUser?.displayName,
+    receiptName: sessionUser?.receiptName,
+    role: sessionUser?.role,
+  };
+  const currentIssuerName = resolveNewVoucherIssuerName(activeUser);
 
   useEffect(() => {
-    setReportSigner(currentUserName);
-  }, [currentUserName]);
+    setReportSigner(currentIssuerName);
+  }, [currentIssuerName]);
 
   // Load Settings
   useEffect(() => {
@@ -114,6 +130,21 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
       });
       setAllBusesMaster(bMap);
     }, (err) => handleFirestoreError(err, OperationType.LIST, 'buses'));
+    return unsub;
+  }, []);
+
+  // Load app_users lookup for legacy vouchers lacking issuedByName
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, 'app_users'),
+      (snap) => {
+        const usersList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setUsersLookupMap(buildUsersLookupMap(usersList));
+      },
+      (err) => {
+        console.error('Error listening to app_users:', err);
+      }
+    );
     return unsub;
   }, []);
 
@@ -212,6 +243,7 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
         const loading = String(v.loadingLocation || '').toLowerCase();
         const from = String(v.directionFrom || '').toLowerCase();
         const to = String(v.directionTo || '').toLowerCase();
+        const issuer = resolveVoucherIssuerForUI(v, usersLookupMap).toLowerCase();
 
         // Check in nested buses
         let matchInBuses = false;
@@ -235,14 +267,15 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
           hotel.includes(term) ||
           loading.includes(term) ||
           from.includes(term) ||
-          to.includes(term);
+          to.includes(term) ||
+          issuer.includes(term);
 
         if (!directMatch && !matchInBuses) return false;
       }
 
       return true;
     });
-  }, [allVouchers, selectedSeason, selectedPeriod, customMonth, customStartDate, customEndDate, selectedOrg, searchTerm]);
+  }, [allVouchers, usersLookupMap, selectedSeason, selectedPeriod, customMonth, customStartDate, customEndDate, selectedOrg, searchTerm]);
 
   // Aggregate Metrics for Filtered Data
   const metrics = useMemo(() => {
@@ -287,11 +320,12 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                           sessionUser.role === 'general_manager' || 
                           sessionUser.role === 'supervisor';
 
-  // Printing single voucher
+  // Printing single voucher (uses frozen issuedByName snapshot or linked legacy user, never current user)
   const rePrint = async (v: any) => {
     setIsPrinting(v.id);
     setPrintAlert(null);
-    const fullData = { ...v, currentUserName, logoUrl, sloganUrl, pdfMargins };
+    const resolvedIssuerName = resolveVoucherIssuerForPrint(v, usersLookupMap);
+    const fullData = { ...v, resolvedIssuerName, logoUrl, sloganUrl, pdfMargins };
     try {
       const printRes = await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
       if (printRes.status === 'popup_blocked') {
@@ -318,7 +352,8 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
 
   const handleLegacyExport = async (v: any) => {
     setIsLegacyExporting(v.id);
-    const fullData = { ...v, currentUserName, logoUrl, sloganUrl, pdfMargins };
+    const resolvedIssuerName = resolveVoucherIssuerForPrint(v, usersLookupMap);
+    const fullData = { ...v, resolvedIssuerName, logoUrl, sloganUrl, pdfMargins };
     try {
       await exportVoucherLegacyPDF(fullData, { save: true, twoCopies: printTwoCopies });
     } catch (err) {
@@ -381,7 +416,7 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
       ticketsCount: totalTickets > 0 ? String(totalTickets) : (totalPilgrims > 0 ? String(totalPilgrims) : template.ticketsCount),
       pilgrimsCount: totalPilgrims > 0 ? String(totalPilgrims) : template.pilgrimsCount,
       approvalNumber: '',
-      currentUserName,
+      issuedByName: currentIssuerName,
       logoUrl,
       sloganUrl,
       pdfMargins,
@@ -476,7 +511,7 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
         vouchers: targetVouchers,
         logoUrl,
         sloganUrl,
-        generatedBy: reportSigner.trim() || currentUserName,
+        generatedBy: reportSigner.trim() || currentIssuerName,
         season: reportSeason
       }, {
         save: downloadOnly,
@@ -865,6 +900,7 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
               const busesCount = Array.isArray(v.buses) && v.buses.length > 0
                 ? v.buses.length
                 : (Number(v.busesQuantity) || (v.busNumber ? 1 : 0));
+              const issuerName = resolveVoucherIssuerForUI(v, usersLookupMap);
 
               return (
                 <div key={v.id} className="p-[var(--space-4)] lg:p-[var(--space-8)] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-6)] hover:bg-[var(--surface-subtle)]/70 transition-colors group">
@@ -975,6 +1011,12 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
 
                     {/* Meta tags & Route */}
                     <div className="flex flex-wrap items-center gap-[var(--space-2)] text-xs font-bold">
+                      {issuerName && (
+                        <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg">
+                          أصدره: {issuerName}
+                        </span>
+                      )}
+
                       {v.receiverName && (
                         <span className="bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-lg">
                           المستلم: {v.receiverName}

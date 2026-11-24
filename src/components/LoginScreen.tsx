@@ -427,6 +427,7 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
           const sessionData = {
             uid: `custom_${normalizedInput}`,
             displayName: userData.displayName,
+            receiptName: typeof userData.receiptName === 'string' ? userData.receiptName.trim() : '',
             role: userData.role || 'data_entry',
             username: userData.username,
             isCustom: true,

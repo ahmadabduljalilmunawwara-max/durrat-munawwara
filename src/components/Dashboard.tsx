@@ -48,6 +48,7 @@ import {
 import * as XLSX from "xlsx";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../App";
+import { buildUsersLookupMap, resolveVoucherIssuerForUI } from "../lib/issuerName";
 
 export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => void } = {}) {
   const { user: sessionUser } = useAuth();
@@ -106,6 +107,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
 
   // Interactive Distributed Buses Tracker
   const [activeVouchers, setActiveVouchers] = useState<any[]>([]);
+  const [usersLookupMap, setUsersLookupMap] = useState<Record<string, any>>({});
   const [distributedBusesToday, setDistributedBusesToday] = useState<any[]>([]);
   const [distributedBusesOverall, setDistributedBusesOverall] = useState<any[]>(
     [],
@@ -182,9 +184,21 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
       setTotalBuses(snap.size);
     });
 
+    const unsubUsers = onSnapshot(
+      collection(db, "app_users"),
+      (snap) => {
+        const usersList = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setUsersLookupMap(buildUsersLookupMap(usersList));
+      },
+      (err) => {
+        console.error("Error listening to app_users:", err);
+      },
+    );
+
     return () => {
       unsub();
       unsubBuses();
+      unsubUsers();
     };
   }, []);
 
@@ -264,7 +278,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
         busType: specificBus?.busType || data.busType || "غير محدد",
         voucherNumber: data.voucherNumber || "---",
         voucherId: data.id,
-        delegateName: data.delegateName || data.userName || "غير معروف",
+        delegateName: resolveVoucherIssuerForUI(data, usersLookupMap) || data.receiverName || "",
         hajjSeason: data.hajjSeason || "1447",
         pilgrimsCount:
           Number(specificBus?.pilgrimsCount) || Number(data.pilgrimsCount) || 0,
@@ -295,7 +309,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
 
     setDistributedBusesToday(Array.from(todayMap.values()));
     setDistributedBusesOverall(Array.from(targetMap.values()));
-  }, [seasonFilteredVouchers, distributedBusesStartDate, distributedBusesEndDate]);
+  }, [seasonFilteredVouchers, distributedBusesStartDate, distributedBusesEndDate, usersLookupMap]);
 
   // Archive listener Effect for custom date archiving
   useEffect(() => {
@@ -426,14 +440,13 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
           (v.driverName || "").toLowerCase().includes(term) ||
           (v.busNumber || "").toLowerCase().includes(term) ||
           (v.approvalNumber || "").toLowerCase().includes(term) ||
-          (v.userName || "").toLowerCase().includes(term) ||
-          (v.delegateName || "").toLowerCase().includes(term)
+          resolveVoucherIssuerForUI(v, usersLookupMap).toLowerCase().includes(term)
         );
       });
     }
 
     return list;
-  }, [seasonFilteredVouchers, filterMode, tableSearchTerm]);
+  }, [seasonFilteredVouchers, filterMode, tableSearchTerm, usersLookupMap]);
 
   const handleExportExcel = async () => {
     setIsExporting(true);
@@ -464,7 +477,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
               "اسم السائق": b.driverName || v.driverName || "غير محدد",
               "عدد الحجاج": b.pilgrimsCount !== undefined ? b.pilgrimsCount : (v.pilgrimsCount || 0),
               "رقم الاعتماد": v.approvalNumber || "غير محدد",
-              الموظف: v.userName || v.delegateName || "غير معروف",
+              "أصدره": resolveVoucherIssuerForUI(v, usersLookupMap),
               "التاريخ والوقت": formattedDate,
             });
           });
@@ -478,7 +491,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
             "اسم السائق": v.driverName || "غير محدد",
             "عدد الحجاج": v.pilgrimsCount || 0,
             "رقم الاعتماد": v.approvalNumber || "غير محدد",
-            الموظف: v.userName || v.delegateName || "غير معروف",
+            "أصدره": resolveVoucherIssuerForUI(v, usersLookupMap),
             "التاريخ والوقت": formattedDate,
           });
         }
@@ -535,7 +548,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
               "اسم السائق": b.driverName || v.driverName || "غير محدد",
               "عدد الحجاج": b.pilgrimsCount !== undefined ? b.pilgrimsCount : (v.pilgrimsCount || 0),
               "رقم الاعتماد": v.approvalNumber || "غير محدد",
-              الموظف: v.userName || v.delegateName || "غير معروف",
+              "أصدره": resolveVoucherIssuerForUI(v, usersLookupMap),
               "التاريخ والوقت": formattedDate,
             });
           });
@@ -549,7 +562,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
             "اسم السائق": v.driverName || "غير محدد",
             "عدد الحجاج": v.pilgrimsCount || 0,
             "رقم الاعتماد": v.approvalNumber || "غير محدد",
-            الموظف: v.userName || v.delegateName || "غير معروف",
+            "أصدره": resolveVoucherIssuerForUI(v, usersLookupMap),
             "التاريخ والوقت": formattedDate,
           });
         }
@@ -1372,6 +1385,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                       timestampDate && !isNaN(timestampDate.getTime())
                         ? format(timestampDate, "HH:mm · yyyy/MM/dd")
                         : v.customDate || v.dateKey || "---";
+                    const issuerName = resolveVoucherIssuerForUI(v, usersLookupMap);
 
                     return (
                       <div
@@ -1388,9 +1402,16 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                               <span className="truncate">{formatOfficeLabel(v)}</span>
                             </span>
                           </div>
-                          <div className="flex items-center gap-[var(--space-2)] text-xs text-[var(--text-secondary)] font-semibold">
-                            <Bus size={14} className="text-[var(--text-muted)] shrink-0" />
-                            <span className="truncate tabular-nums">{formatBusesLabel(v)}</span>
+                          <div className="flex items-center flex-wrap gap-x-[var(--space-3)] gap-y-[var(--space-1)] text-xs text-[var(--text-secondary)] font-semibold">
+                            <span className="inline-flex items-center gap-[var(--space-2)] min-w-0">
+                              <Bus size={14} className="text-[var(--text-muted)] shrink-0" />
+                              <span className="truncate tabular-nums">{formatBusesLabel(v)}</span>
+                            </span>
+                            {issuerName && (
+                              <span className="text-[11px] font-bold text-[var(--text-muted)] truncate">
+                                أصدره: <span className="text-[var(--text-secondary)]">{issuerName}</span>
+                              </span>
+                            )}
                           </div>
                         </div>
 
@@ -1512,7 +1533,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                     <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)]">بيانات الحافلة</th>
                     <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)]">السائق</th>
                     <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)] text-center">كود الاعتماد</th>
-                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)]">المسؤول</th>
+                    <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)]">أصدره</th>
                     <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)] text-center">التوقيت</th>
                     {canManage && (
                       <th className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-4)] text-left">الإجراءات</th>
@@ -1586,7 +1607,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                           </td>
                           <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">
                             <span className="text-[var(--text)] font-bold text-xs">
-                              {v.userName || v.delegateName || "غير معروف"}
+                              {resolveVoucherIssuerForUI(v, usersLookupMap)}
                             </span>
                           </td>
                           <td className="px-[var(--space-4)] lg:px-[var(--space-8)] py-[var(--space-5)]">
@@ -1814,7 +1835,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                           <tr>
                             <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">رقم السند</th>
                             <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">أرقام الحافلات</th>
-                            <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">مسؤول الإدخال</th>
+                            <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">أصدره</th>
                             <th className="px-[var(--space-6)] py-[var(--space-4)] text-right">التاريخ الفعلي</th>
                           </tr>
                         </thead>
@@ -1833,7 +1854,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                                   {busNums || "---"}
                                 </td>
                                 <td className="px-[var(--space-6)] py-[var(--space-4)] text-[var(--text-secondary)]">
-                                  {v.userName || v.delegateName || "---"}
+                                  {resolveVoucherIssuerForUI(v, usersLookupMap)}
                                 </td>
                                 <td className="px-[var(--space-6)] py-[var(--space-4)] text-[var(--text-secondary)] tabular-nums">
                                   {v.customDate || v.dateKey}
