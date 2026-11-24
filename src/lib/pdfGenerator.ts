@@ -4,6 +4,7 @@ import arabicReshaper from 'arabic-reshaper';
 import Bidi from 'bidi-js';
 import QRCode from 'qrcode';
 import { getFittedReceiptFontSizePt, resolveVoucherIssuerForPrint } from './issuerName';
+import { beginBusyActivity } from './activityTracker';
 
 import ibmPlexArabic400Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
 import ibmPlexArabic500Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-500-normal.woff2?url';
@@ -597,15 +598,22 @@ async function buildVoucherDocumentParts(
   const issuedBy = issuedByRaw ? escapeHtml(issuedByRaw) : '';
   const issuedBySignatureFontPt = getFittedReceiptFontSizePt(issuedByRaw, {
     maxPt: 11,
-    minPt: 10,
-    thresholdChars: 18,
-    maxChars: 34,
+    minPt: 8.5,
+    thresholdChars: 16,
+    maxChars: 40,
+  });
+  const receiverRaw = toEnglishDigits(data.receiverName || '').trim();
+  const receiverSignatureFontPt = getFittedReceiptFontSizePt(receiverRaw, {
+    maxPt: 11,
+    minPt: 9.5,
+    thresholdChars: 24,
+    maxChars: 42,
   });
   const issuedByFooterFontPt = getFittedReceiptFontSizePt(issuedByRaw, {
-    maxPt: 11,
-    minPt: 10,
-    thresholdChars: 20,
-    maxChars: 38,
+    maxPt: 10.5,
+    minPt: 8.5,
+    thresholdChars: 14,
+    maxChars: 40,
   });
   const issuedAt = formatAuditDateTime(data.timestamp);
   const formattedReceiverMobile = formatPhoneForPrint(data.receiverMobile);
@@ -653,28 +661,32 @@ async function buildVoucherDocumentParts(
   const renderInlineSignatureField = (
     label: string,
     val: any,
-    optionsOrForceLtr: boolean | { forceLtr?: boolean; nowrapFontSizePt?: number } = false
+    optionsOrForceLtr: boolean | { forceLtr?: boolean; nowrapFontSizePt?: number; compact?: boolean } = false
   ) => {
     const opts = typeof optionsOrForceLtr === 'boolean' ? { forceLtr: optionsOrForceLtr } : optionsOrForceLtr;
     const forceLtr = Boolean(opts.forceLtr);
     const nowrapFontSizePt = opts.nowrapFontSizePt;
+    const compact = Boolean(opts.compact);
     const clean = toEnglishDigits(val || '').trim();
     const isFilled = clean !== '';
     const safeVal = isFilled ? escapeHtml(clean) : '&nbsp;';
     const dirAttr = forceLtr ? 'dir="ltr"' : '';
-    const fontSizePt = nowrapFontSizePt ?? 11;
+    const fontSizePt = nowrapFontSizePt ?? (compact ? 10 : 11);
+    const labelFontSizePt = compact ? 10 : 11;
+    const lineHeight = compact ? 1.25 : 1.6;
+    const minHeight = compact ? '4.4mm' : '5.5mm';
     const dirStyle = forceLtr
       ? 'direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap;'
-      : nowrapFontSizePt !== undefined
+      : nowrapFontSizePt !== undefined || compact
       ? 'font-variant-numeric: tabular-nums; white-space: nowrap;'
       : 'font-variant-numeric: tabular-nums; word-break: break-word;';
 
     return `
       <div style="display: flex; align-items: baseline; gap: 1mm; min-width: 0;">
-        <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0; white-space: nowrap;">
+        <span style="font-size: ${labelFontSizePt}pt; font-weight: 500; color: #475569; line-height: ${lineHeight}; flex-shrink: 0; white-space: nowrap;">
           ${escapeHtml(label)}:
         </span>
-        <span ${dirAttr} style="flex: 1; min-width: 0; font-size: ${fontSizePt}pt; font-weight: 600; color: #0F172A; line-height: 1.6; min-height: 5.5mm; padding: 0; border-bottom: 1px solid #94A3B8; text-align: right; ${dirStyle}">
+        <span ${dirAttr} style="flex: 1; min-width: 0; font-size: ${fontSizePt}pt; font-weight: 600; color: #0F172A; line-height: ${lineHeight}; min-height: ${minHeight}; padding: 0; border-bottom: 1px solid #94A3B8; text-align: right; ${dirStyle}">
           ${safeVal}
         </span>
       </div>
@@ -767,8 +779,8 @@ async function buildVoucherDocumentParts(
       }).join('');
 
       pagesHtmlChunks.push(`
-        <section class="voucher-page" dir="rtl" lang="ar" style="${breakStyle} width: 210mm; min-height: 295mm; padding: 4mm 9mm; background-color: #FFFFFF; color: #0F172A; direction: rtl;">
-          <div style="width: 100%; min-height: 287mm; display: flex; flex-direction: column; gap: 1mm;">
+        <section class="voucher-page" dir="rtl" lang="ar" style="${breakStyle} width: 210mm; min-height: 295mm; max-height: 296mm; padding: 1mm 9mm; background-color: #FFFFFF; color: #0F172A; direction: rtl; display: flex; flex-direction: column;">
+          <div style="width: 100%; flex: 1; display: flex; flex-direction: column; gap: 0.4mm;">
 
             <!-- 1) Header (Enlarged Company Logo + Slogan) -->
             <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3mm; padding-bottom: 0.6mm; border-bottom: 0.8mm solid #1D4ED8;">
@@ -896,67 +908,77 @@ async function buildVoucherDocumentParts(
               </table>
             </div>
 
-            <!-- 5) Signatures (2 compact equal side-by-side boxes, zero phone wrapping) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm;">
+            <!-- 5) Signatures (2 equal boxes expanding to fill space, >=14mm signature clearance, 28mm stamp circle, total page <=296mm) -->
+            <div style="flex: 1 0 auto; min-height: 36mm; display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm; align-items: stretch;">
               <!-- Company Box -->
-              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 20.5mm;">
-                <div style="background-color: #F1F5F9; padding: 0.3mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 12pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.6;">
+              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 36mm;">
+                <div style="background-color: #F1F5F9; padding: 0.2mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 11pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.35;">
                   مندوب شركة درة المنورة
                 </div>
-                <div style="flex: 1; padding: 0.6mm 2.5mm; display: flex; align-items: center; justify-content: space-between; gap: 2mm;">
-                  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.4mm; min-width: 0;">
-                    ${renderInlineSignatureField('الاسم', issuedByRaw, { nowrapFontSizePt: issuedBySignatureFontPt })}
-                    ${renderInlineSignatureField('التوقيع', '')}
+                <div style="flex: 1; padding: 0.8mm 2.5mm 1mm; display: flex; align-items: stretch; justify-content: space-between; gap: 2mm;">
+                  <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-width: 0;">
+                    <div>
+                      ${renderInlineSignatureField('الاسم', issuedByRaw, { nowrapFontSizePt: issuedBySignatureFontPt, compact: true })}
+                    </div>
+                    <div style="margin-top: auto; padding-top: 14mm;">
+                      ${renderInlineSignatureField('التوقيع', '', { compact: true })}
+                    </div>
                   </div>
-                  <div style="width: 13mm; min-height: 13mm; border: 1.5px dashed #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; flex-shrink: 0;">
+                  <div style="width: 28mm; height: 28mm; min-width: 28mm; min-height: 28mm; border: 1.5px dashed #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; align-self: center; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.4; flex-shrink: 0;">
                     الختم
                   </div>
                 </div>
               </div>
 
-              <!-- Receiver Box (2 columns inside, extra width for phone column) -->
-              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 20.5mm;">
-                <div style="background-color: #F1F5F9; padding: 0.3mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 12pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.6;">
+              <!-- Receiver Box (single-line fields, signature pinned to bottom with >=14mm blank space above) -->
+              <div style="border: 1px solid #475569; border-radius: 8px; display: flex; flex-direction: column; background-color: #FFFFFF; min-height: 36mm;">
+                <div style="background-color: #F1F5F9; padding: 0.2mm 2.5mm; border-bottom: 1px solid #CBD5E1; border-top-left-radius: 7px; border-top-right-radius: 7px; font-size: 11pt; font-weight: 600; color: #0F172A; text-align: center; line-height: 1.35;">
                   المستلم (مندوب مجموعة الخدمة الميدانية)
                 </div>
-                <div style="flex: 1; padding: 0.6mm 2.5mm; display: grid; grid-template-columns: 1fr 1.15fr; column-gap: 2.5mm; row-gap: 0.4mm; align-content: center;">
-                  ${renderInlineSignatureField('الاسم', data.receiverName)}
-                  ${renderInlineSignatureField('رقم الموبايل', formattedReceiverMobile, true)}
-                  ${renderInlineSignatureField('رقم الهوية', data.receiverId, true)}
-                  ${renderInlineSignatureField('التوقيع', '')}
+                <div style="flex: 1; padding: 0.8mm 2.5mm 1mm; display: flex; flex-direction: column; justify-content: space-between; gap: 0.3mm;">
+                  <div style="display: flex; flex-direction: column; gap: 0.3mm; min-width: 0;">
+                    ${renderInlineSignatureField('الاسم', data.receiverName, { nowrapFontSizePt: Math.min(receiverSignatureFontPt, 10.5), compact: true })}
+                    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; column-gap: 2mm; min-width: 0;">
+                      ${renderInlineSignatureField('رقم الموبايل', formattedReceiverMobile, { forceLtr: true, compact: true })}
+                      ${renderInlineSignatureField('رقم الهوية', data.receiverId, { forceLtr: true, compact: true })}
+                    </div>
+                  </div>
+                  <div style="margin-top: auto; padding-top: 14mm;">
+                    ${renderInlineSignatureField('التوقيع', '', { compact: true })}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 6) Footer (bottom-pinned, 0.5pt top divider) -->
-            <div style="margin-top: auto; padding-top: 0.6mm; border-top: 0.5pt solid #CBD5E1; display: grid; grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 0.75fr); align-items: center; gap: 3mm;">
+            <!-- 6) Footer (bottom-pinned, 0.5pt full-width top divider, 3mm top padding, 18mm QR) -->
+            <div style="width: 100%; margin-top: auto; padding-top: 3mm; border-top: 0.5pt solid #CBD5E1; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 2mm;">
               <!-- Right: Issued by & Page X of Y -->
               <div style="text-align: right; display: flex; flex-direction: column; min-width: 0;">
-                <div style="font-size: ${issuedByFooterFontPt}pt; font-weight: 400; color: #475569; line-height: 1.6; white-space: nowrap;">
+                <div style="font-size: ${issuedByFooterFontPt}pt; font-weight: 400; color: #475569; line-height: 1.45; white-space: nowrap;">
                   صدر بواسطة: ${issuedBy ? `<span style="font-weight: 500; color: #0F172A;">${issuedBy}</span> ` : ''}• <span dir="ltr" style="unicode-bidi: isolate; font-variant-numeric: tabular-nums;">${issuedAt}</span>
                 </div>
-                <div style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+                <div style="font-size: 10.5pt; font-weight: 500; color: #475569; line-height: 1.45; font-variant-numeric: tabular-nums;">
                   صفحة <span dir="ltr" style="unicode-bidi: isolate;">${pageNum}</span> من <span dir="ltr" style="unicode-bidi: isolate;">${totalPages}</span>
                 </div>
               </div>
 
               <!-- Center: Website & HQ -->
               <div style="text-align: center; display: flex; flex-direction: column; align-items: center;">
-                <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">
+                <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 10pt; font-weight: 500; color: #475569; line-height: 1.45;">
                   www.munawwara.com
                 </div>
-                <div style="font-size: 11pt; font-weight: 400; color: #475569; line-height: 1.6;">
+                <div style="font-size: 10pt; font-weight: 400; color: #475569; line-height: 1.45;">
                   المقر الرئيسي: العكيشية - ص.ب 20442 جدة 21455
                 </div>
               </div>
 
-              <!-- Left: 12mm QR Code + تحقق من السند -->
+              <!-- Left: 18mm QR Code + 10pt تحقق من السند -->
               <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center;">
                 ${
                   qrDataUrl
                     ? `<div style="display: flex; flex-direction: column; align-items: center;">
-                        <img src="${qrDataUrl}" alt="QR" style="width: 12mm; height: 12mm; display: block;" />
-                        <span style="font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">تحقق من السند</span>
+                        <img src="${qrDataUrl}" alt="QR" style="width: 18mm; height: 18mm; display: block;" />
+                        <span style="font-size: 10pt; font-weight: 500; color: #475569; line-height: 1.25; margin-top: 0.4mm; white-space: nowrap;">تحقق من السند</span>
                       </div>`
                     : ''
                 }
@@ -1010,77 +1032,82 @@ export async function generateVoucherPDF(
   data: any,
   options: { save?: boolean; print?: boolean; twoCopies?: boolean; targetWindow?: Window | null } = { save: true }
 ): Promise<VoucherPrintResult> {
-  const w = options.targetWindow !== undefined ? options.targetWindow : window.open('', '_blank');
+  const endBusy = beginBusyActivity();
+  try {
+    const w = options.targetWindow !== undefined ? options.targetWindow : window.open('', '_blank');
 
-  if (w) {
+    if (w) {
+      try {
+        w.document.open();
+        w.document.write(
+          '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>جاري تحضير السند...</title></head><body style="font-family: sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; color:#0F172A;">جاري تحضير السند للطباعة...</body></html>'
+        );
+        w.document.close();
+      } catch {
+        // ignore if window already navigated or restricted
+      }
+    }
+
+    let fullHtml = '';
+    let printTitle = 'سند';
+    try {
+      const parts = await buildVoucherDocumentParts(data, {
+        twoCopies: options.twoCopies,
+      });
+      fullHtml = parts.fullHtml;
+      printTitle = parts.printTitle;
+    } catch (err) {
+      if (w && !w.closed) {
+        try {
+          w.close();
+        } catch {
+          // ignore close error
+        }
+      }
+      console.error('Failed to prepare voucher HTML for printing:', err);
+      throw err;
+    }
+
+    if (!w) {
+      const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      return {
+        status: 'popup_blocked',
+        blobUrl,
+        fileName: printTitle,
+      };
+    }
+
     try {
       w.document.open();
-      w.document.write(
-        '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>جاري تحضير السند...</title></head><body style="font-family: sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; color:#0F172A;">جاري تحضير السند للطباعة...</body></html>'
-      );
+      w.document.write(fullHtml);
       w.document.close();
-    } catch {
-      // ignore if window already navigated or restricted
-    }
-  }
+      w.document.title = printTitle;
 
-  let fullHtml = '';
-  let printTitle = 'سند';
-  try {
-    const parts = await buildVoucherDocumentParts(data, {
-      twoCopies: options.twoCopies,
-    });
-    fullHtml = parts.fullHtml;
-    printTitle = parts.printTitle;
-  } catch (err) {
-    if (w && !w.closed) {
-      try {
-        w.close();
-      } catch {
-        // ignore close error
+      if (w.document.fonts && w.document.fonts.ready) {
+        await w.document.fonts.ready;
       }
+      await waitForContainerImages(w.document.body);
+      await new Promise<void>((resolve) => {
+        if (typeof w.requestAnimationFrame === 'function') {
+          w.requestAnimationFrame(() => resolve());
+        } else {
+          setTimeout(resolve, 50);
+        }
+      });
+
+      w.focus();
+      w.print();
+      return {
+        status: 'printed',
+        fileName: printTitle,
+      };
+    } catch (err) {
+      console.error('Standalone voucher print error:', err);
+      throw err;
     }
-    console.error('Failed to prepare voucher HTML for printing:', err);
-    throw err;
-  }
-
-  if (!w) {
-    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-    const blobUrl = URL.createObjectURL(blob);
-    return {
-      status: 'popup_blocked',
-      blobUrl,
-      fileName: printTitle,
-    };
-  }
-
-  try {
-    w.document.open();
-    w.document.write(fullHtml);
-    w.document.close();
-    w.document.title = printTitle;
-
-    if (w.document.fonts && w.document.fonts.ready) {
-      await w.document.fonts.ready;
-    }
-    await waitForContainerImages(w.document.body);
-    await new Promise<void>((resolve) => {
-      if (typeof w.requestAnimationFrame === 'function') {
-        w.requestAnimationFrame(() => resolve());
-      } else {
-        setTimeout(resolve, 50);
-      }
-    });
-
-    w.focus();
-    w.print();
-    return {
-      status: 'printed',
-      fileName: printTitle,
-    };
-  } catch (err) {
-    console.error('Standalone voucher print error:', err);
-    throw err;
+  } finally {
+    endBusy();
   }
 }
 
@@ -1088,71 +1115,76 @@ export async function exportVoucherLegacyPDF(
   data: any,
   options: { save?: boolean; twoCopies?: boolean } = { save: true }
 ): Promise<string> {
-  const { pagesHtmlChunks, fontFaceCss, printTitle } = await buildVoucherDocumentParts(data, {
-    twoCopies: options.twoCopies,
-  });
+  const endBusy = beginBusyActivity();
+  try {
+    const { pagesHtmlChunks, fontFaceCss, printTitle } = await buildVoucherDocumentParts(data, {
+      twoCopies: options.twoCopies,
+    });
 
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-    compress: true,
-  });
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
 
-  const html2canvas = (await import('html2canvas')).default;
-  const pageWidthMm = 210;
-  const pageHeightMm = 297;
+    const html2canvas = (await import('html2canvas')).default;
+    const pageWidthMm = 210;
+    const pageHeightMm = 297;
 
-  for (let idx = 0; idx < pagesHtmlChunks.length; idx++) {
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.left = '-99999px';
-    container.style.top = '0';
-    container.style.width = '210mm';
-    container.style.backgroundColor = '#FFFFFF';
-    container.setAttribute('dir', 'rtl');
-    container.setAttribute('lang', 'ar');
-    container.innerHTML = `<style>${getStandaloneVoucherCss(fontFaceCss)}</style>${pagesHtmlChunks[idx]}`;
+    for (let idx = 0; idx < pagesHtmlChunks.length; idx++) {
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '-99999px';
+      container.style.top = '0';
+      container.style.width = '210mm';
+      container.style.backgroundColor = '#FFFFFF';
+      container.setAttribute('dir', 'rtl');
+      container.setAttribute('lang', 'ar');
+      container.innerHTML = `<style>${getStandaloneVoucherCss(fontFaceCss)}</style>${pagesHtmlChunks[idx]}`;
 
-    document.body.appendChild(container);
-    try {
-      if (typeof document !== 'undefined' && document.fonts) {
-        await document.fonts.ready;
-      }
-      await waitForContainerImages(container);
-      await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+      document.body.appendChild(container);
+      try {
+        if (typeof document !== 'undefined' && document.fonts) {
+          await document.fonts.ready;
+        }
+        await waitForContainerImages(container);
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 
-      const rect = container.getBoundingClientRect();
-      const captureWidth = Math.round(rect.width) || 794;
-      const captureHeight = Math.round(rect.height) || 1123;
+        const rect = container.getBoundingClientRect();
+        const captureWidth = Math.round(rect.width) || 794;
+        const captureHeight = Math.round(rect.height) || 1123;
 
-      const canvas = await html2canvas(container, {
-        scale: 2.5,
-        width: captureWidth,
-        height: captureHeight,
-        windowWidth: captureWidth,
-        windowHeight: captureHeight,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#FFFFFF',
-      });
+        const canvas = await html2canvas(container, {
+          scale: 2.5,
+          width: captureWidth,
+          height: captureHeight,
+          windowWidth: captureWidth,
+          windowHeight: captureHeight,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#FFFFFF',
+        });
 
-      const imgData = canvas.toDataURL('image/png');
-      if (idx > 0) pdf.addPage('a4', 'portrait');
-      const imgHeightMm = (canvas.height * pageWidthMm) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidthMm, Math.min(pageHeightMm, imgHeightMm), undefined, 'FAST');
-    } finally {
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
+        const imgData = canvas.toDataURL('image/png');
+        if (idx > 0) pdf.addPage('a4', 'portrait');
+        const imgHeightMm = (canvas.height * pageWidthMm) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pageWidthMm, Math.min(pageHeightMm, imgHeightMm), undefined, 'FAST');
+      } finally {
+        if (document.body.contains(container)) {
+          document.body.removeChild(container);
+        }
       }
     }
-  }
 
-  if (options.save !== false) {
-    pdf.save(`${printTitle}.pdf`);
-  }
+    if (options.save !== false) {
+      pdf.save(`${printTitle}.pdf`);
+    }
 
-  return pdf.output('datauristring');
+    return pdf.output('datauristring');
+  } finally {
+    endBusy();
+  }
 }
 
 /**
@@ -1196,6 +1228,8 @@ export async function generateStatementReportPDF(
   config: StatementReportConfig,
   options: { save?: boolean; print?: boolean } = { save: true, print: true }
 ) {
+  const endBusy = beginBusyActivity();
+  try {
   const isBase64OrRelative = (url: string) => !url || url.startsWith('data:') || url.startsWith('/') || url.startsWith('.');
   const logoUrl = config.logoUrl || '/logo.png';
   const sloganUrl = config.sloganUrl || '/input_file_0.png';
@@ -1527,6 +1561,9 @@ export async function generateStatementReportPDF(
     setTimeout(() => {
       URL.revokeObjectURL(url);
     }, 60000);
+  }
+  } finally {
+    endBusy();
   }
 }
 

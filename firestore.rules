@@ -7,8 +7,28 @@ service cloud.firestore {
     }
 
     // Helper functions
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidBusDocId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128;
+    }
+
+    function isEnabledRole(role) {
+      return role in ['general_manager', 'supervisor', 'data_entry', 'admin', 'user'];
     }
 
     function isGoogleAdmin() {
@@ -17,12 +37,42 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
-    function isAppAdmin() {
-      return isGoogleAdmin() || (
-        isSignedIn()
+    function isEnabledGoogleUser() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.auth.token.email_verified == true
         && exists(/databases/$(database)/documents/app_users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role in ['general_manager', 'admin']
-      );
+        && isEnabledRole(get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role);
+    }
+
+    function isEnabledCustomUser() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        && exists(/databases/$(database)/documents/active_sessions/$(request.auth.uid))
+        && exists(/databases/$(database)/documents/app_users/$(get(/databases/$(database)/documents/active_sessions/$(request.auth.uid)).data.username))
+        && isEnabledRole(get(/databases/$(database)/documents/app_users/$(get(/databases/$(database)/documents/active_sessions/$(request.auth.uid)).data.username)).data.role);
+    }
+
+    function isEnabledUser() {
+      return isGoogleAdmin() || isEnabledGoogleUser() || isEnabledCustomUser();
+    }
+
+    function isAppAdmin() {
+      return isGoogleAdmin()
+        || (
+          isSignedIn()
+          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          && request.auth.token.email_verified == true
+          && exists(/databases/$(database)/documents/app_users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/app_users/$(request.auth.uid)).data.role in ['general_manager', 'admin']
+        )
+        || (
+          isSignedIn()
+          && request.auth.token.firebase.sign_in_provider == 'anonymous'
+          && exists(/databases/$(database)/documents/active_sessions/$(request.auth.uid))
+          && exists(/databases/$(database)/documents/app_users/$(get(/databases/$(database)/documents/active_sessions/$(request.auth.uid)).data.username))
+          && get(/databases/$(database)/documents/app_users/$(get(/databases/$(database)/documents/active_sessions/$(request.auth.uid)).data.username)).data.role in ['general_manager', 'admin']
+        );
     }
 
     function hasValidReceiptName(data) {
@@ -31,42 +81,144 @@ service cloud.firestore {
     }
 
     function receiptNameUnchanged() {
-      return !('receiptName' in request.resource.data.diff(resource.data).affectedKeys());
+      return !('receiptName' in incoming().diff(existing()).affectedKeys());
     }
 
     function hasValidVoucherIssuerFields(data) {
       return (!('issuedByName' in data) || (data.issuedByName is string && data.issuedByName.size() <= 40))
-        && (!('issuedByUid' in data) || (data.issuedByUid is string && data.issuedByUid.size() <= 128));
+        && (!('issuedByUid' in data) || (data.issuedByUid is string && data.issuedByUid.size() <= 128))
+        && (!('overrideReason' in data) || (data.overrideReason is string && data.overrideReason.size() >= 5 && data.overrideReason.size() <= 500))
+        && (!('duplicateOverrides' in data) || (data.duplicateOverrides is list && data.duplicateOverrides.size() <= 30));
+    }
+
+    function isValidCounter(data) {
+      return data.keys().hasAll(['last'])
+        && data.keys().hasOnly(['last'])
+        && data.last is int
+        && data.last >= 1;
+    }
+
+    function isValidBusAssignmentShape(data) {
+      return data.keys().hasAll(['voucherId', 'voucherNumber', 'officeNo', 'officeName', 'createdAt', 'status', 'releasedAt', 'releaseReason'])
+        && data.keys().hasOnly(['voucherId', 'voucherNumber', 'officeNo', 'officeName', 'createdAt', 'status', 'releasedAt', 'releaseReason'])
+        && data.voucherId is string && data.voucherId.size() >= 1 && data.voucherId.size() <= 128
+        && data.voucherNumber is int && data.voucherNumber >= 1
+        && data.officeNo is string && data.officeNo.size() <= 40
+        && data.officeName is string && data.officeName.size() <= 200
+        && data.status in ['active', 'released'];
+    }
+
+    function isValidBusAssignmentActiveState(data) {
+      return data.status == 'active'
+        && data.releasedAt == null
+        && data.releaseReason == null;
+    }
+
+    function isValidBusAssignmentReleasedState(data) {
+      return data.status == 'released'
+        && data.releasedAt == request.time
+        && data.releaseReason in ['archived', 'cancelled', 'edited'];
+    }
+
+    function isValidActiveSession(data, sessionId) {
+      return data.keys().hasAll(['username', 'uid', 'updatedAt'])
+        && data.keys().hasOnly(['username', 'uid', 'updatedAt'])
+        && data.uid == request.auth.uid
+        && data.uid == sessionId
+        && data.username is string
+        && data.username.size() >= 1
+        && data.username.size() <= 128
+        && exists(/databases/$(database)/documents/app_users/$(data.username))
+        && data.updatedAt == request.time;
     }
 
     // 1. Buses
     match /buses/{busId} {
-      allow read, create, update, delete: if isSignedIn();
+      allow get: if isEnabledUser();
+      allow list: if isSignedIn();
+      allow create, update, delete: if isEnabledUser();
     }
 
     // 2. Vouchers
     match /vouchers/{voucherId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn() && hasValidVoucherIssuerFields(request.resource.data);
-      allow delete: if isSignedIn();
-    }
-
-    // 3. Settings (App settings, logo, print margins, next voucher number)
-    match /settings/{docId} {
-      allow get: if docId == 'app' || isSignedIn();
+      allow get: if isEnabledUser();
       allow list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
+      allow create, update: if isEnabledUser() && hasValidVoucherIssuerFields(incoming());
+      allow delete: if isEnabledUser();
     }
 
-    // 4. App Users (Custom Credentials, Google profiles, and Roles)
+    // 3. Counters (Atomic voucher numbering)
+    match /counters/{counterId} {
+      allow get: if isEnabledUser() && isValidId(counterId);
+      allow list: if false;
+      allow create: if isEnabledUser() && isValidId(counterId) && isValidCounter(incoming());
+      allow update: if isEnabledUser()
+        && isValidId(counterId)
+        && isValidCounter(incoming())
+        && (
+          (incoming().last == existing().last + 1 && incoming().diff(existing()).affectedKeys().hasOnly(['last']))
+          || isAppAdmin()
+        );
+      allow delete: if false;
+    }
+
+    // 4. Bus Assignments (Prevent duplicate delivery across offices until archived/cancelled/edited)
+    match /busAssignments/{busNumber} {
+      allow get: if isEnabledUser() && isValidBusDocId(busNumber);
+      allow list: if isSignedIn() && resource.data.status in ['active', 'released', 'archived'];
+      allow create: if isEnabledUser()
+        && isValidBusDocId(busNumber)
+        && isValidBusAssignmentShape(incoming())
+        && incoming().createdAt == request.time
+        && (isValidBusAssignmentActiveState(incoming()) || isValidBusAssignmentReleasedState(incoming()))
+        && existsAfter(/databases/$(database)/documents/vouchers/$(incoming().voucherId));
+      allow update: if isEnabledUser()
+        && isValidBusDocId(busNumber)
+        && isValidBusAssignmentShape(incoming())
+        && (
+          (
+            isValidBusAssignmentReleasedState(incoming())
+            && incoming().voucherId == existing().voucherId
+            && incoming().createdAt == existing().createdAt
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'releasedAt', 'releaseReason'])
+          )
+          || (
+            isValidBusAssignmentActiveState(incoming())
+            && (incoming().createdAt == request.time || (existing().voucherId == incoming().voucherId && incoming().createdAt == existing().createdAt))
+            && (existing().status == 'released' || existing().voucherId == incoming().voucherId || isAppAdmin())
+            && incoming().diff(existing()).affectedKeys().hasOnly(['voucherId', 'voucherNumber', 'officeNo', 'officeName', 'createdAt', 'status', 'releasedAt', 'releaseReason'])
+            && existsAfter(/databases/$(database)/documents/vouchers/$(incoming().voucherId))
+          )
+        );
+      allow delete: if isAppAdmin();
+    }
+
+    // 5. Settings (App settings, logo, print margins, migration report)
+    match /settings/{docId} {
+      allow get: if docId == 'app' || isEnabledUser();
+      allow list: if isSignedIn();
+      allow create, update, delete: if isEnabledUser();
+    }
+
+    // 6. Active Sessions (Maps Firebase Auth UID -> app_users username for custom auth)
+    match /active_sessions/{sessionId} {
+      allow get: if isSignedIn() && request.auth.uid == sessionId;
+      allow list: if false;
+      allow create, update: if isSignedIn()
+        && request.auth.uid == sessionId
+        && isValidActiveSession(incoming(), sessionId);
+      allow delete: if isSignedIn() && (request.auth.uid == sessionId || isAppAdmin());
+    }
+
+    // 7. App Users (Custom Credentials, Google profiles, and Roles)
     match /app_users/{username} {
       allow get: if true;
       allow list: if isSignedIn();
-      allow create: if hasValidReceiptName(request.resource.data)
-        && (!('receiptName' in request.resource.data) || isAppAdmin());
-      allow update: if hasValidReceiptName(request.resource.data)
+      allow create: if hasValidReceiptName(incoming())
+        && (!('receiptName' in incoming()) || isAppAdmin());
+      allow update: if hasValidReceiptName(incoming())
         && (receiptNameUnchanged() || isAppAdmin());
-      allow delete: if isAppAdmin() || isSignedIn();
+      allow delete: if isAppAdmin() || isEnabledUser();
     }
   }
 }

@@ -49,9 +49,46 @@
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "issuedByName": { "type": "string", "maxLength": 40, "description": "Frozen snapshot of issuer display name on the receipt at issuance time." },
-        "issuedByUid": { "type": "string", "description": "UID of the user who issued the voucher." }
+        "issuedByUid": { "type": "string", "description": "UID of the user who issued the voucher." },
+        "overrideReason": { "type": "string", "maxLength": 500, "description": "General manager override reason when assigning a recently active bus." },
+        "duplicateOverrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "busNumber": { "type": "string" },
+              "previousVoucherNumber": { "type": "integer" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
       },
       "required": ["voucherNumber", "timestamp", "dateKey", "userName"]
+    },
+    "Counter": {
+      "title": "Counter",
+      "description": "Atomic sequential counters.",
+      "type": "object",
+      "properties": {
+        "last": { "type": "integer", "description": "Last allocated sequential number." }
+      },
+      "required": ["last"]
+    },
+    "BusAssignment": {
+      "title": "BusAssignment",
+      "description": "Tracks the active voucher assignment per bus to prevent duplicate delivery.",
+      "type": "object",
+      "properties": {
+        "voucherId": { "type": "string", "maxLength": 128 },
+        "voucherNumber": { "type": "integer" },
+        "officeNo": { "type": "string", "maxLength": 40 },
+        "officeName": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["active", "released"] },
+        "releasedAt": { "type": ["string", "null"], "format": "date-time" },
+        "releaseReason": { "type": ["string", "null"], "enum": ["archived", "cancelled", "edited", null] }
+      },
+      "required": ["voucherId", "voucherNumber", "officeNo", "officeName", "createdAt", "status"]
     },
     "Settings": {
       "title": "Settings",
@@ -75,6 +112,17 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["username", "password", "displayName", "role"]
+    },
+    "ActiveSession": {
+      "title": "Active Session",
+      "description": "Maps an anonymous Firebase Auth UID to a username in app_users for security rule verification.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "maxLength": 128 },
+        "uid": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "uid", "updatedAt"]
     }
   },
   "firestore": {
@@ -86,6 +134,14 @@
       "schema": "Voucher",
       "description": "Historical archive of transactions."
     },
+    "counters/{counterId}": {
+      "schema": "Counter",
+      "description": "Atomic sequential counters such as counters/vouchers."
+    },
+    "busAssignments/{busNumber}": {
+      "schema": "BusAssignment",
+      "description": "Latest active voucher assignment per bus."
+    },
     "settings/app": {
       "schema": "Settings",
       "description": "Global settings like next voucher ID."
@@ -93,6 +149,10 @@
     "app_users/{username}": {
       "schema": "AppUser",
       "description": "Custom user credentials."
+    },
+    "active_sessions/{sessionId}": {
+      "schema": "ActiveSession",
+      "description": "Active Firebase UID to custom app_users username mapping."
     }
   }
 }

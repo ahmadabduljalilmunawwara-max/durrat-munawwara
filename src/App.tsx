@@ -46,10 +46,22 @@ import { CompanyLogo } from './components/CompanyLogo';
 import { WelcomeModal } from './components/WelcomeModal';
 import { PendingApproval } from './components/PendingApproval';
 import { PWAUpdateBanner } from './components/PWAUpdateBanner';
+import {
+  flushVoucherDraftToSessionStorage,
+  IDLE_LOGOUT_REASON_KEY,
+  isAnyBusyActivity,
+  subscribeBusyActivity,
+} from './lib/activityTracker';
 
 // ============================================================================
-// إعدادات الإصدار والمظهر
+// إعدادات الخمول والإصدار والمظهر
 // ============================================================================
+const IDLE_TIMEOUT_MINUTES = 30;
+const IDLE_WARNING_SECONDS = 60;
+const IDLE_BROADCAST_CHANNEL = 'dmtc_idle_session_channel';
+const LAST_ACTIVITY_STORAGE_KEY = 'dmtc_last_activity_at';
+const IDLE_TIMEOUT_MESSAGE = 'انتهت الجلسة لعدم النشاط';
+
 const APP_VERSION = '2.6.0';
 const CURRENT_VERSION_TAG = `v${APP_VERSION}`;
 const LAST_SEEN_VERSION_KEY = 'lastSeenVersion';
@@ -195,9 +207,22 @@ export default function App() {
   );
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [idleWarningSeconds, setIdleWarningSeconds] = useState<number | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string>(() => {
+    try {
+      return sessionStorage.getItem(IDLE_LOGOUT_REASON_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
 
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const idleWarningSecondsRef = useRef<number | null>(null);
+  idleWarningSecondsRef.current = idleWarningSeconds;
+  const lastActivityRef = useRef<number>(Date.now());
+  const idleChannelRef = useRef<BroadcastChannel | null>(null);
+  const isLoggingOutIdleRef = useRef(false);
 
   // Sync Tailwind .dark class on <html> when logged in
   useEffect(() => {
@@ -276,6 +301,19 @@ export default function App() {
           if (savedSession) {
             try {
               const parsedSession: AppUser = JSON.parse(savedSession);
+
+              if (parsedSession?.username) {
+                try {
+                  await setDoc(doc(db, 'active_sessions', u.uid), {
+                    username: parsedSession.username.toLowerCase().trim(),
+                    uid: u.uid,
+                    updatedAt: serverTimestamp(),
+                  });
+                } catch (err) {
+                  console.warn('active_sessions sync warning:', err);
+                }
+              }
+
               setUser(parsedSession);
 
               if (parsedSession?.username) {
@@ -531,21 +569,224 @@ export default function App() {
     setShowWelcome(false);
   };
 
+  const clearSessionNotice = () => {
+    setSessionNotice('');
+    try {
+      sessionStorage.removeItem(IDLE_LOGOUT_REASON_KEY);
+    } catch {
+      // ignore storage errors
+    }
+  };
+
   const handleCustomLogin = (userData: any) => {
+    clearSessionNotice();
     const session = { ...userData, isCustom: true };
     setUser(session);
     localStorage.setItem('dmtc_session', JSON.stringify(session));
   };
 
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+  const loginWithGoogle = () => {
+    clearSessionNotice();
+    return signInWithPopup(auth, googleProvider);
+  };
 
   const logout = () => {
     auth.signOut();
     setUser(null);
+    setIdleWarningSeconds(null);
     setShowUserMenu(false);
     setMobileMenuOpen(false);
     localStorage.removeItem('dmtc_session');
   };
+
+  const performIdleLogout = (broadcastToOtherTabs: boolean) => {
+    if (isLoggingOutIdleRef.current) return;
+    isLoggingOutIdleRef.current = true;
+
+    // 1. Save active voucher draft synchronously to sessionStorage before clearing session
+    flushVoucherDraftToSessionStorage();
+
+    // 2. Notify other tabs if this tab initiated the timeout
+    if (broadcastToOtherTabs && idleChannelRef.current) {
+      try {
+        idleChannelRef.current.postMessage({ type: 'LOGOUT_IDLE', timestamp: Date.now() });
+      } catch {
+        // ignore channel errors
+      }
+    }
+
+    // 3. Persist logout notice and return to LoginScreen
+    try {
+      sessionStorage.setItem(IDLE_LOGOUT_REASON_KEY, IDLE_TIMEOUT_MESSAGE);
+    } catch {
+      // ignore storage errors
+    }
+    setSessionNotice(IDLE_TIMEOUT_MESSAGE);
+    logout();
+  };
+
+  const handleStayConnected = () => {
+    const now = Date.now();
+    lastActivityRef.current = now;
+    setIdleWarningSeconds(null);
+    try {
+      localStorage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(now));
+    } catch {
+      // ignore storage errors
+    }
+    if (idleChannelRef.current) {
+      try {
+        idleChannelRef.current.postMessage({ type: 'KEEP_ALIVE', timestamp: now });
+      } catch {
+        // ignore channel errors
+      }
+    }
+  };
+
+  // Idle timeout monitor + multi-tab synchronization via BroadcastChannel
+  useEffect(() => {
+    if (!user || loading) {
+      setIdleWarningSeconds(null);
+      return;
+    }
+
+    isLoggingOutIdleRef.current = false;
+    const timeoutMs = Math.max(1, IDLE_TIMEOUT_MINUTES) * 60 * 1000;
+    const warningMs = IDLE_WARNING_SECONDS * 1000;
+
+    const nowInit = Date.now();
+    lastActivityRef.current = nowInit;
+    try {
+      localStorage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(nowInit));
+    } catch {
+      // ignore storage errors
+    }
+
+    let channel: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        channel = new BroadcastChannel(IDLE_BROADCAST_CHANNEL);
+        idleChannelRef.current = channel;
+      } catch {
+        channel = null;
+      }
+    }
+
+    let lastBroadcastAt = nowInit;
+
+    const recordActivity = (forceBroadcast = false, explicitExtend = false) => {
+      // While warning modal is open, passive events do not auto-dismiss it; user clicks "البقاء متصلاً"
+      if (idleWarningSecondsRef.current !== null && !explicitExtend) {
+        return;
+      }
+
+      const now = Date.now();
+      if (!forceBroadcast && now - lastActivityRef.current < 1000) {
+        return;
+      }
+
+      lastActivityRef.current = now;
+      if (explicitExtend && idleWarningSecondsRef.current !== null) {
+        setIdleWarningSeconds(null);
+      }
+
+      try {
+        localStorage.setItem(LAST_ACTIVITY_STORAGE_KEY, String(now));
+      } catch {
+        // ignore storage errors
+      }
+
+      if (channel && (forceBroadcast || now - lastBroadcastAt >= 2000)) {
+        lastBroadcastAt = now;
+        try {
+          channel.postMessage({
+            type: explicitExtend ? 'KEEP_ALIVE' : 'ACTIVITY',
+            timestamp: now,
+          });
+        } catch {
+          // ignore channel errors
+        }
+      }
+    };
+
+    const handleUserActivityEvent = () => {
+      recordActivity(false, false);
+    };
+
+    if (channel) {
+      channel.onmessage = (event: MessageEvent) => {
+        const msg = event.data;
+        if (!msg || typeof msg !== 'object') return;
+        if (msg.type === 'ACTIVITY' || msg.type === 'KEEP_ALIVE') {
+          const ts = typeof msg.timestamp === 'number' ? msg.timestamp : Date.now();
+          if (ts > lastActivityRef.current) {
+            lastActivityRef.current = ts;
+          }
+          if (idleWarningSecondsRef.current !== null) {
+            setIdleWarningSeconds(null);
+          }
+        } else if (msg.type === 'LOGOUT_IDLE') {
+          performIdleLogout(false);
+        }
+      };
+    }
+
+    const activityEvents: Array<keyof WindowEventMap> = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'touchstart',
+      'scroll',
+    ];
+    activityEvents.forEach((evt) => {
+      window.addEventListener(evt, handleUserActivityEvent, { passive: true, capture: true });
+    });
+
+    const unsubBusy = subscribeBusyActivity((busyCount) => {
+      if (busyCount > 0) {
+        recordActivity(true, true);
+      } else {
+        recordActivity(true, false);
+      }
+    });
+
+    const intervalId = window.setInterval(() => {
+      if (isAnyBusyActivity()) {
+        recordActivity(false, true);
+        return;
+      }
+
+      const now = Date.now();
+      const elapsed = now - lastActivityRef.current;
+      const remainingMs = timeoutMs - elapsed;
+
+      if (remainingMs <= 0) {
+        window.clearInterval(intervalId);
+        performIdleLogout(true);
+        return;
+      }
+
+      if (remainingMs <= warningMs) {
+        setIdleWarningSeconds(Math.max(1, Math.ceil(remainingMs / 1000)));
+      } else if (idleWarningSecondsRef.current !== null) {
+        setIdleWarningSeconds(null);
+      }
+    }, 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      unsubBusy();
+      activityEvents.forEach((evt) => {
+        window.removeEventListener(evt, handleUserActivityEvent, true);
+      });
+      if (channel) {
+        channel.close();
+        if (idleChannelRef.current === channel) {
+          idleChannelRef.current = null;
+        }
+      }
+    };
+  }, [user?.uid, loading]);
 
   const handlePendingStatusUpdate = (
     nextRole: UserRole,
@@ -596,7 +837,12 @@ export default function App() {
   if (!user) {
     return (
       <>
-        <LoginScreen onLogin={handleCustomLogin} onGoogleLogin={loginWithGoogle} />
+        <LoginScreen
+          onLogin={handleCustomLogin}
+          onGoogleLogin={loginWithGoogle}
+          sessionMessage={sessionNotice}
+          onClearSessionMessage={clearSessionNotice}
+        />
         <PWAUpdateBanner />
       </>
     );
@@ -873,6 +1119,59 @@ export default function App() {
                     className="w-full py-[var(--space-3)] text-[var(--text-secondary)] font-bold hover:text-[var(--text)] transition-all cursor-pointer"
                   >
                     تسجيل الخروج
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Idle Timeout Warning Modal (60s countdown before auto logout) */}
+        <AnimatePresence>
+          {idleWarningSeconds !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-[var(--space-4)]"
+            >
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 16 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.92, opacity: 0, y: 16 }}
+                className="bg-[var(--surface)] rounded-[2rem] p-[var(--space-6)] lg:p-[var(--space-8)] max-w-md w-full shadow-2xl border border-amber-300 dark:border-amber-800 text-center relative overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="idle-warning-title"
+              >
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--gold)]" />
+                <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/60 rounded-2xl flex items-center justify-center text-[var(--gold-text)] mx-auto mb-[var(--space-5)] border border-amber-200 dark:border-amber-800/70">
+                  <AlertCircle size={32} />
+                </div>
+                <h2 id="idle-warning-title" className="text-lg font-black text-[var(--text)] mb-[var(--space-3)]">
+                  سيتم تسجيل خروجك خلال 60 ثانية لعدم النشاط
+                </h2>
+                <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-[var(--gold-text)] font-black text-2xl tabular-nums mb-[var(--space-4)]">
+                  <span>{idleWarningSeconds}</span>
+                  <span className="text-sm font-bold">ثانية</span>
+                </div>
+                <p className="text-xs font-bold text-[var(--text-secondary)] leading-relaxed mb-[var(--space-6)]">
+                  في حال عدم الاستجابة سيتم حفظ مسودة السند الجاري إدخاله مؤقتاً وتسجيل الخروج تلقائياً لحماية البيانات.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-[var(--space-3)]">
+                  <button
+                    type="button"
+                    onClick={handleStayConnected}
+                    className="flex-1 py-[var(--space-3)] px-[var(--space-5)] bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white rounded-xl font-black text-sm shadow-lg transition-all cursor-pointer"
+                  >
+                    البقاء متصلاً
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => performIdleLogout(true)}
+                    className="py-[var(--space-3)] px-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] rounded-xl font-bold text-sm transition-all cursor-pointer"
+                  >
+                    خروج الآن
                   </button>
                 </div>
               </motion.div>

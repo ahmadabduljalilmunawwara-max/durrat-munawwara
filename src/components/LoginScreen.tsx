@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
-import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import {
   User as LucideUser,
@@ -28,6 +28,8 @@ import { PWAInstallButton } from './PWAInstallButton';
 interface LoginScreenProps {
   onLogin: (user: any) => void;
   onGoogleLogin: () => void;
+  sessionMessage?: string;
+  onClearSessionMessage?: () => void;
 }
 
 const THEME_STORAGE_KEY = 'dmtc_login_theme';
@@ -145,7 +147,12 @@ function isNetworkOrOfflineError(err: any): boolean {
   );
 }
 
-export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
+export function LoginScreen({
+  onLogin,
+  onGoogleLogin,
+  sessionMessage,
+  onClearSessionMessage,
+}: LoginScreenProps) {
   // Theme state: saved choice in localStorage, otherwise follow device preference
   const [isDark, setIsDark] = useState<boolean>(() => {
     try {
@@ -443,6 +450,11 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
           const authResult = await signInAnonymously(auth);
 
           if (authResult.user) {
+            await setDoc(doc(db, 'active_sessions', authResult.user.uid), {
+              username: normalizedInput,
+              uid: authResult.user.uid,
+              updatedAt: serverTimestamp(),
+            });
             localStorage.setItem('dmtc_session', JSON.stringify(sessionData));
             onLogin(sessionData);
           }
@@ -504,6 +516,11 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
 
       const authResult = await signInAnonymously(auth);
       if (authResult.user) {
+        await setDoc(doc(db, 'active_sessions', authResult.user.uid), {
+          username: pendingUser.username,
+          uid: authResult.user.uid,
+          updatedAt: serverTimestamp(),
+        });
         localStorage.setItem('dmtc_session', JSON.stringify(pendingUser));
         onLogin(pendingUser);
       }
@@ -933,6 +950,32 @@ export function LoginScreen({ onLogin, onGoogleLogin }: LoginScreenProps) {
                         نظام إدارة حركة الحافلات والعمليات
                       </p>
                     </div>
+
+                    {sessionMessage && (
+                      <div
+                        role="alert"
+                        className={`mb-[var(--space-5)] p-[var(--space-3)] rounded-2xl border flex items-center justify-between gap-[var(--space-3)] text-sm font-black ${
+                          isDark
+                            ? 'bg-amber-950/60 border-amber-700 text-amber-200'
+                            : 'bg-amber-50 border-amber-300 text-amber-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-[var(--space-2)] min-w-0">
+                          <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>{sessionMessage}</span>
+                        </div>
+                        {onClearSessionMessage && (
+                          <button
+                            type="button"
+                            onClick={onClearSessionMessage}
+                            aria-label="إغلاق التنبيه"
+                            className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                     {/* Login Form (--space-5 between fields) */}
                     <form onSubmit={handleCustomLogin} noValidate className="space-y-[var(--space-5)]">

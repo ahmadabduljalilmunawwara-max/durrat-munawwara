@@ -10,8 +10,6 @@ import {
   doc,
   setDoc,
   updateDoc,
-  deleteDoc,
-  writeBatch,
 } from "firebase/firestore";
 import { format } from "date-fns";
 import {
@@ -35,6 +33,8 @@ import {
   ArrowLeft,
   BarChart3,
   Building2,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import {
   BarChart,
@@ -49,6 +49,20 @@ import * as XLSX from "xlsx";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../App";
 import { buildUsersLookupMap, resolveVoucherIssuerForUI } from "../lib/issuerName";
+import {
+  archiveVouchersAtomically,
+  BusMigrationReport,
+  countUniqueBusesInVouchers,
+  deleteVoucherWithBusReleaseAtomically,
+  extractVoucherBusesList,
+  normalizeBusNumber,
+  runBusAssignmentsMigration,
+  unarchiveVoucherAtomically,
+  updateVoucherWithBusSyncAtomically,
+} from "../lib/busAssignments";
+import { beginBusyActivity } from "../lib/activityTracker";
+
+let busMigrationAutoStarted = false;
 
 export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => void } = {}) {
   const { user: sessionUser } = useAuth();
@@ -74,6 +88,8 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
 
   // Edit/Delete State
   const [editingVoucher, setEditingVoucher] = useState<any | null>(null);
+  const [originalEditingVoucher, setOriginalEditingVoucher] = useState<any | null>(null);
+  const [editModalError, setEditModalError] = useState<string>("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [voucherToDelete, setVoucherToDelete] = useState<any | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -103,7 +119,16 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     useState(false);
   const [isArchiveErrorModalOpen, setIsArchiveErrorModalOpen] = useState(false);
   const [archivedCount, setArchivedCount] = useState(0);
+  const [releasedBusesResultCount, setReleasedBusesResultCount] = useState(0);
   const [archiveErrorMsg, setArchiveErrorMsg] = useState("");
+  const [archiveActionErrorTitle, setArchiveActionErrorTitle] = useState("فشلت عملية الأرشفة");
+  const [singleArchiveTarget, setSingleArchiveTarget] = useState<any | null>(null);
+  const [isSingleArchiveProcessing, setIsSingleArchiveProcessing] = useState<string | null>(null);
+
+  // BusAssignments Migration & Live Status Report
+  const [migrationReport, setMigrationReport] = useState<BusMigrationReport | null>(null);
+  const [isRunningMigration, setIsRunningMigration] = useState(false);
+  const [migrationError, setMigrationError] = useState("");
 
   // Interactive Distributed Buses Tracker
   const [activeVouchers, setActiveVouchers] = useState<any[]>([]);
@@ -142,9 +167,44 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     };
   }, []);
 
-  // Listen to Settings
+  // Report ongoing saves/archiving/exports as active activity
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "settings", "app"), (snap) => {
+    if (
+      !(
+        isSaving ||
+        isDeleting ||
+        isArchivingInProgress ||
+        isSeasonArchiving ||
+        isRunningMigration ||
+        isExporting ||
+        isExportingAll ||
+        isExportingStats ||
+        isExportingAllStats ||
+        isExportingApprovalBuses ||
+        Boolean(isSingleArchiveProcessing)
+      )
+    ) {
+      return;
+    }
+    const endBusy = beginBusyActivity();
+    return () => endBusy();
+  }, [
+    isSaving,
+    isDeleting,
+    isArchivingInProgress,
+    isSeasonArchiving,
+    isRunningMigration,
+    isExporting,
+    isExportingAll,
+    isExportingStats,
+    isExportingAllStats,
+    isExportingApprovalBuses,
+    isSingleArchiveProcessing,
+  ]);
+
+  // Listen to Settings & BusAssignments Migration Report
+  useEffect(() => {
+    const unsubApp = onSnapshot(doc(db, "settings", "app"), (snap) => {
       if (snap.exists()) {
         const d = snap.data();
         if (d.activeSeason) {
@@ -152,8 +212,54 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
         }
       }
     });
-    return unsub;
-  }, []);
+
+    const unsubMigration = onSnapshot(
+      doc(db, "settings", "busAssignmentsMigration"),
+      (snap) => {
+        if (snap.exists()) {
+          setMigrationReport(snap.data() as BusMigrationReport);
+        } else if (canManage && !busMigrationAutoStarted) {
+          busMigrationAutoStarted = true;
+          setIsRunningMigration(true);
+          runBusAssignmentsMigration({ saveReportToSettings: true })
+            .then((report) => {
+              setMigrationReport(report);
+              setMigrationError("");
+            })
+            .catch((err) => {
+              console.error("Auto busAssignments migration error:", err);
+              setMigrationError(err?.message || "تعذر تشغيل الترحيل التلقائي");
+            })
+            .finally(() => {
+              setIsRunningMigration(false);
+            });
+        }
+      },
+      (err) => {
+        console.warn("Migration report listener warning:", err);
+      }
+    );
+
+    return () => {
+      unsubApp();
+      unsubMigration();
+    };
+  }, [canManage]);
+
+  const handleManualMigrationRun = async () => {
+    if (isRunningMigration) return;
+    setIsRunningMigration(true);
+    setMigrationError("");
+    try {
+      const report = await runBusAssignmentsMigration({ saveReportToSettings: true });
+      setMigrationReport(report);
+    } catch (err: any) {
+      console.error("Manual busAssignments migration error:", err);
+      setMigrationError(err?.message || "تعذر تنفيذ فحص وترحيل الحافلات");
+    } finally {
+      setIsRunningMigration(false);
+    }
+  };
 
   // Dynamic Real-time Snapshot for All Vouchers
   useEffect(() => {
@@ -328,32 +434,40 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     setMatchingVouchers(list);
   }, [archiveTargetDate, archiveMode, dashboardTab, activeVouchers]);
 
-  // Execute Date-based Archiving
+  const bulkArchiveBusCount = useMemo(
+    () => countUniqueBusesInVouchers(matchingVouchers),
+    [matchingVouchers],
+  );
+
+  const vouchersToSeasonArchive = useMemo(
+    () =>
+      activeVouchers.filter(
+        (v) => v.hajjSeason !== "1448" || v.archived !== true,
+      ),
+    [activeVouchers],
+  );
+
+  const seasonArchiveBusCount = useMemo(
+    () => countUniqueBusesInVouchers(vouchersToSeasonArchive),
+    [vouchersToSeasonArchive],
+  );
+
+  // Execute Date-based Archiving (atomic voucher update + busAssignments release)
   const handleExecuteArchive = async () => {
     if (matchingVouchers.length === 0) return;
 
     setIsArchivingInProgress(true);
-    const countToArchive = matchingVouchers.length;
     try {
-      const batchSize = 400; // safe limit < 500
-      for (let i = 0; i < matchingVouchers.length; i += batchSize) {
-        const batch = writeBatch(db);
-        const chunk = matchingVouchers.slice(i, i + batchSize);
-        chunk.forEach((v) => {
-          const ref = doc(db, "vouchers", v.id);
-          batch.update(ref, {
-            archived: true,
-            archivedAt: new Date().toISOString(),
-            archivedBy: sessionUser?.displayName || "المسؤول",
-          });
-        });
-        await batch.commit();
-      }
-      setArchivedCount(countToArchive);
+      const result = await archiveVouchersAtomically(matchingVouchers, {
+        archivedBy: sessionUser?.displayName || "المسؤول",
+      });
+      setArchivedCount(result.archivedVouchersCount);
+      setReleasedBusesResultCount(result.releasedBusesCount);
       setIsArchiveModalOpen(false);
       setIsArchiveSuccessModalOpen(true);
     } catch (error: any) {
       console.error("Archive execution error:", error);
+      setArchiveActionErrorTitle("فشلت عملية الأرشفة");
       setArchiveErrorMsg(error?.message || "حدث خطأ غير معروف");
       setIsArchiveModalOpen(false);
       setIsArchiveErrorModalOpen(true);
@@ -362,32 +476,63 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     }
   };
 
+  // Archive single voucher atomically
+  const handleExecuteSingleArchive = async (voucher: any) => {
+    if (!voucher || isSingleArchiveProcessing) return;
+    setIsSingleArchiveProcessing(voucher.id);
+    try {
+      const result = await archiveVouchersAtomically([voucher], {
+        archivedBy: sessionUser?.displayName || "المسؤول",
+      });
+      setSingleArchiveTarget(null);
+      setArchivedCount(result.archivedVouchersCount);
+      setReleasedBusesResultCount(result.releasedBusesCount);
+      setIsArchiveSuccessModalOpen(true);
+    } catch (error: any) {
+      console.error("Single archive error:", error);
+      setSingleArchiveTarget(null);
+      setArchiveActionErrorTitle("فشلت عملية أرشفة السند");
+      setArchiveErrorMsg(error?.message || "حدث خطأ غير معروف");
+      setIsArchiveErrorModalOpen(true);
+    } finally {
+      setIsSingleArchiveProcessing(null);
+    }
+  };
+
+  // Restore single voucher from archive (blocked if any of its buses is active in another voucher)
+  const handleRestoreFromArchive = async (voucher: any) => {
+    if (!voucher || isSingleArchiveProcessing) return;
+    setIsSingleArchiveProcessing(voucher.id);
+    try {
+      await unarchiveVoucherAtomically(voucher);
+    } catch (error: any) {
+      const raw = error instanceof Error ? error.message : String(error);
+      const cleanMsg = raw.startsWith("UNARCHIVE_CONFLICT:")
+        ? raw.replace("UNARCHIVE_CONFLICT:", "")
+        : raw.startsWith("UNARCHIVE_ERROR:")
+          ? raw.replace("UNARCHIVE_ERROR:", "")
+          : raw || "تعذر استرجاع السند من الأرشيف";
+      setArchiveActionErrorTitle("تعذر استرجاع السند من الأرشيف");
+      setArchiveErrorMsg(cleanMsg);
+      setIsArchiveErrorModalOpen(true);
+    } finally {
+      setIsSingleArchiveProcessing(null);
+    }
+  };
+
   // Execute Complete Season 1447 Archiving and Open Season 1448
   const handleExecuteSeasonArchive = async () => {
     setIsSeasonArchiving(true);
     try {
-      // Find all vouchers that need archiving to 1447
-      const vouchersToArchive = activeVouchers.filter((v) => {
-        return v.hajjSeason !== "1448" || v.archived !== true;
+      const result = await archiveVouchersAtomically(vouchersToSeasonArchive, {
+        archivedBy: sessionUser?.displayName || "الإدارة العامة",
+        extraVoucherFields: {
+          hajjSeason: "1447",
+          seasonName: "موسم حج 1447 هـ",
+          archivedReason:
+            "أرشفة شاملة لجميع السندات في تبويب موسم حج 1447 هـ وفتح موسم حج 1448 هـ",
+        },
       });
-
-      const batchSize = 400;
-      for (let i = 0; i < vouchersToArchive.length; i += batchSize) {
-        const batch = writeBatch(db);
-        const chunk = vouchersToArchive.slice(i, i + batchSize);
-        chunk.forEach((v) => {
-          const ref = doc(db, "vouchers", v.id);
-          batch.update(ref, {
-            archived: true,
-            hajjSeason: "1447",
-            seasonName: "موسم حج 1447 هـ",
-            archivedAt: new Date().toISOString(),
-            archivedBy: sessionUser?.displayName || "الإدارة العامة",
-            archivedReason: "أرشفة شاملة لجميع السندات في تبويب موسم حج 1447 هـ وفتح موسم حج 1448 هـ"
-          });
-        });
-        await batch.commit();
-      }
 
       // Update settings with active season 1448
       const settingsRef = doc(db, "settings", "app");
@@ -399,16 +544,20 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
           lastSeasonArchivedAt: new Date().toISOString(),
         });
       } catch {
-        await setDoc(settingsRef, {
-          activeSeason: "1448",
-          activeSeasonName: "موسم حج 1448 هـ",
-          lastArchivedSeason: "1447",
-          lastSeasonArchivedAt: new Date().toISOString(),
-        }, { merge: true });
+        await setDoc(
+          settingsRef,
+          {
+            activeSeason: "1448",
+            activeSeasonName: "موسم حج 1448 هـ",
+            lastArchivedSeason: "1447",
+            lastSeasonArchivedAt: new Date().toISOString(),
+          },
+          { merge: true },
+        );
       }
 
       setActiveAppSeason("1448");
-      setSeasonArchiveResult({ totalArchived: vouchersToArchive.length });
+      setSeasonArchiveResult({ totalArchived: result.archivedVouchersCount });
       setIsSeasonArchiveModalOpen(false);
       setIsSeasonArchiveSuccessModalOpen(true);
       setSelectedSeason("1448");
@@ -746,20 +895,61 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
   const handleUpdateVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingVoucher) return;
+    const baseVoucher = originalEditingVoucher || editingVoucher;
     setIsSaving(true);
+    setEditModalError("");
     try {
-      const voucherRef = doc(db, "vouchers", editingVoucher.id);
-      await updateDoc(voucherRef, {
-        busNumber: editingVoucher.busNumber,
-        driverName: editingVoucher.driverName,
-        approvalNumber: editingVoucher.approvalNumber,
-        busType: editingVoucher.busType || "",
-        updatedAt: new Date().toISOString(),
-      });
+      const cleanBus = normalizeBusNumber(editingVoucher.busNumber);
+      if (!cleanBus) {
+        setEditModalError("يرجى إدخال رقم الحافلة");
+        setIsSaving(false);
+        return;
+      }
+
+      const currentBusesList = extractVoucherBusesList(baseVoucher);
+      const nextBusesList =
+        currentBusesList.length > 0
+          ? currentBusesList.map((b, idx) =>
+              idx === 0
+                ? {
+                    ...b,
+                    busNumber: cleanBus,
+                    driverName: String(editingVoucher.driverName || b.driverName || "").trim(),
+                    busType: String(editingVoucher.busType || b.busType || "").trim(),
+                  }
+                : b,
+            )
+          : [
+              {
+                busNumber: cleanBus,
+                driverName: String(editingVoucher.driverName || "").trim(),
+                busType: String(editingVoucher.busType || "حافلة").trim(),
+                driverPhone: String(editingVoucher.driverPhone || "").trim(),
+              },
+            ];
+
+      await updateVoucherWithBusSyncAtomically(
+        baseVoucher,
+        {
+          approvalNumber: editingVoucher.approvalNumber || "",
+          busNumber: cleanBus,
+          driverName: editingVoucher.driverName || "",
+          busType: editingVoucher.busType || "",
+        },
+        nextBusesList,
+      );
+
       setIsEditModalOpen(false);
       setEditingVoucher(null);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, "vouchers");
+      setOriginalEditingVoucher(null);
+      setEditModalError("");
+    } catch (error: any) {
+      const rawMsg = error instanceof Error ? error.message : String(error);
+      if (rawMsg.startsWith("CONFLICT:")) {
+        setEditModalError(rawMsg.replace("CONFLICT:", ""));
+      } else {
+        handleFirestoreError(error, OperationType.UPDATE, "vouchers");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -769,7 +959,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     if (!voucherToDelete) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "vouchers", voucherToDelete.id));
+      await deleteVoucherWithBusReleaseAtomically(voucherToDelete);
       setIsDeleteModalOpen(false);
       setVoucherToDelete(null);
     } catch (error) {
@@ -785,17 +975,15 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
   };
 
   const handleRemoveBusFromVoucher = async (voucher: any) => {
-    // If the voucher has multiple buses, we could implement filtering here.
-    // For now, based on the user request to free up the bus, deleting the voucher is the cleanest way
-    // if it's a single-bus voucher. If it has a buses list, we would filter it.
     if (voucher.buses && voucher.buses.length > 1) {
       const busToRemove = window.prompt(
         "أدخل رقم الحافلة المطلوب حذفها من السند:",
       );
       if (!busToRemove) return;
 
+      const cleanTarget = normalizeBusNumber(busToRemove);
       const updatedBuses = voucher.buses.filter(
-        (b: any) => b.busNumber !== busToRemove,
+        (b: any) => normalizeBusNumber(b.busNumber) !== cleanTarget,
       );
       if (updatedBuses.length === voucher.buses.length) {
         alert("رقم الحافلة غير موجود في هذا السند");
@@ -804,10 +992,7 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
 
       setIsSaving(true);
       try {
-        await updateDoc(doc(db, "vouchers", voucher.id), {
-          buses: updatedBuses,
-          updatedAt: new Date().toISOString(),
-        });
+        await updateVoucherWithBusSyncAtomically(voucher, {}, updatedBuses);
       } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, "vouchers");
       } finally {
@@ -1628,7 +1813,9 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingVoucher(v);
+                                    setOriginalEditingVoucher(v);
+                                    setEditingVoucher({ ...v });
+                                    setEditModalError("");
                                     setIsEditModalOpen(true);
                                   }}
                                   className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/15 text-[var(--primary)] flex items-center justify-center hover:bg-[var(--btn-primary)] hover:text-white transition-all shadow-sm border border-blue-200 dark:border-blue-500/30 cursor-pointer"
@@ -1636,6 +1823,35 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                                 >
                                   <Edit2 size={14} />
                                 </button>
+                                {!v.archived ? (
+                                  <button
+                                    type="button"
+                                    disabled={isSingleArchiveProcessing === v.id}
+                                    onClick={() => setSingleArchiveTarget(v)}
+                                    className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/15 text-[var(--warning)] flex items-center justify-center hover:bg-amber-600 hover:text-white transition-all shadow-sm border border-amber-200 dark:border-amber-500/30 cursor-pointer disabled:opacity-50"
+                                    title="أرشفة السند وتحرير حافلاته"
+                                  >
+                                    {isSingleArchiveProcessing === v.id ? (
+                                      <Loader2 size={14} className="animate-spin" />
+                                    ) : (
+                                      <Archive size={14} />
+                                    )}
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    disabled={isSingleArchiveProcessing === v.id}
+                                    onClick={() => handleRestoreFromArchive(v)}
+                                    className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-[var(--success)] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-200 dark:border-emerald-500/30 cursor-pointer disabled:opacity-50"
+                                    title="استرجاع السند من الأرشيف"
+                                  >
+                                    {isSingleArchiveProcessing === v.id ? (
+                                      <Loader2 size={14} className="animate-spin" />
+                                    ) : (
+                                      <RotateCcw size={14} />
+                                    )}
+                                  </button>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveBusFromVoucher(v)}
@@ -1898,6 +2114,93 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                   </div>
                 )}
               </div>
+
+              {/* BusAssignments Migration & Live Reservation Report */}
+              <div className="pt-[var(--space-6)] border-t border-[var(--border)] space-y-[var(--space-4)]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--space-3)]">
+                  <div>
+                    <h3 className="text-sm font-black text-[var(--text)]">
+                      حالة حجز الحافلات والترحيل (busAssignments)
+                    </h3>
+                    <p className="text-xs text-[var(--text-muted)] font-bold mt-[var(--space-1)]">
+                      ترحيل آمن لمرة واحدة لا يكتب فوق السجلات الموجودة، ويعرض الحافلات المحجوزة والمحررة والتعارضات.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleManualMigrationRun}
+                    disabled={isRunningMigration}
+                    className="inline-flex items-center justify-center gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)] rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] hover:border-[var(--primary)] text-xs font-black text-[var(--text)] cursor-pointer disabled:opacity-50 shrink-0"
+                  >
+                    <RefreshCw size={14} className={isRunningMigration ? "animate-spin" : ""} />
+                    <span>{isRunningMigration ? "جاري الفحص والترحيل..." : "فحص وتحديث التقرير"}</span>
+                  </button>
+                </div>
+
+                {migrationError && (
+                  <div className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-300 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300">
+                    {migrationError}
+                  </div>
+                )}
+
+                {migrationReport && (
+                  <div className="space-y-[var(--space-4)]">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-4)]">
+                      <div className="p-[var(--space-4)] rounded-2xl bg-red-50/70 dark:bg-red-950/30 border border-red-200 dark:border-red-800/70">
+                        <p className="text-xs font-bold text-[var(--text-secondary)]">الحافلات المحجوزة (active)</p>
+                        <p className="text-2xl font-black text-[var(--danger)] tabular-nums mt-[var(--space-1)]">
+                          {Number(migrationReport.totalActiveCount || 0).toLocaleString("en-US")}
+                        </p>
+                      </div>
+                      <div className="p-[var(--space-4)] rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/70">
+                        <p className="text-xs font-bold text-[var(--text-secondary)]">الحافلات المحررة (released)</p>
+                        <p className="text-2xl font-black text-[var(--success)] tabular-nums mt-[var(--space-1)]">
+                          {Number(migrationReport.totalReleasedCount || 0).toLocaleString("en-US")}
+                        </p>
+                      </div>
+                      <div className="p-[var(--space-4)] rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70">
+                        <p className="text-xs font-bold text-[var(--text-secondary)]">تعارضات السندات غير المؤرشفة</p>
+                        <p className="text-2xl font-black text-[var(--warning)] tabular-nums mt-[var(--space-1)]">
+                          {(migrationReport.conflicts?.length || 0).toLocaleString("en-US")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {migrationReport.conflicts && migrationReport.conflicts.length > 0 ? (
+                      <div className="border border-amber-300 dark:border-amber-700 rounded-2xl overflow-hidden bg-[var(--surface)]">
+                        <div className="px-[var(--space-4)] py-[var(--space-3)] bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-xs font-black text-[var(--warning)] flex items-center gap-[var(--space-2)]">
+                          <AlertTriangle size={15} />
+                          <span>قائمة التعارضات (حافلات وردت في أكثر من سند غير مؤرشف — حُجزت لأحدث سند):</span>
+                        </div>
+                        <div className="max-h-64 overflow-y-auto divide-y divide-[var(--border)] text-xs">
+                          {migrationReport.conflicts.map((c) => (
+                            <div key={c.busNumber} className="p-[var(--space-3)] flex flex-col gap-[var(--space-1)]">
+                              <div className="flex flex-wrap items-center gap-[var(--space-2)] font-black text-[var(--text)]">
+                                <span className="px-2 py-0.5 rounded bg-[var(--navy)] text-white tabular-nums">
+                                  حافلة {c.busNumber}
+                                </span>
+                                <span className="text-[var(--primary)]">
+                                  الأحدث: سند #{c.chosenVoucherNumber} ({c.chosenOfficeLabel})
+                                </span>
+                              </div>
+                              <div className="text-[var(--text-secondary)] font-semibold">
+                                السندات المتعارضة:{" "}
+                                {c.vouchers
+                                  .map((vr) => `#${vr.voucherNumber} (${vr.officeLabel})`)
+                                  .join(" | ")}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-[var(--space-3)] rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 text-xs font-bold text-[var(--success)]">
+                        لا توجد أي تعارضات لحافلات مسجّلة في أكثر من سند غير مؤرشف.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </div>
@@ -2017,6 +2320,12 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                   </select>
                 </div>
 
+                {editModalError && (
+                  <div className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300">
+                    {editModalError}
+                  </div>
+                )}
+
                 <div className="pt-[var(--space-4)] flex gap-[var(--space-3)]">
                   <button
                     type="submit"
@@ -2128,6 +2437,9 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
               <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
                 تأكيد أرشفة السندات
               </h3>
+              <p className="text-[var(--text)] font-black text-sm mb-[var(--space-2)] tabular-nums">
+                ستُحرَّر {bulkArchiveBusCount.toLocaleString("en-US")} حافلة من {matchingVouchers.length.toLocaleString("en-US")} سند
+              </p>
               <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
                 هل أنت متأكد من أرشفة عدد{" "}
                 <span className="font-bold text-[var(--warning)] tabular-nums">
@@ -2154,6 +2466,64 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                   type="button"
                   onClick={() => setIsArchiveModalOpen(false)}
                   disabled={isArchivingInProgress}
+                  className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50 text-xs cursor-pointer"
+                >
+                  تراجع
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Single Voucher Archive Confirmation Modal */}
+      <AnimatePresence>
+        {singleArchiveTarget && (
+          <div className="fixed inset-0 z-[115] flex items-center justify-center p-[var(--space-4)]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isSingleArchiveProcessing && setSingleArchiveTarget(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            ></motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-[var(--surface)] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
+            >
+              <div className="w-20 h-20 bg-amber-50 dark:bg-amber-500/15 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-6)] border border-amber-200 dark:border-amber-500/30">
+                <Archive size={32} className="text-[var(--warning)]" />
+              </div>
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
+                تأكيد أرشفة السند #{singleArchiveTarget.voucherNumber}
+              </h3>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
+                ستُحرَّر{" "}
+                <span className="font-bold text-[var(--warning)] tabular-nums">
+                  {countUniqueBusesInVouchers([singleArchiveTarget])}
+                </span>{" "}
+                حافلة مرتبطة بهذا السند وتصبح متاحة فوراً لإصدار سندات جديدة.
+              </p>
+              <div className="flex gap-[var(--space-3)]">
+                <button
+                  type="button"
+                  onClick={() => handleExecuteSingleArchive(singleArchiveTarget)}
+                  disabled={Boolean(isSingleArchiveProcessing)}
+                  className="flex-1 bg-[var(--btn-primary)] text-white font-black py-[var(--space-4)] rounded-2xl shadow-lg hover:bg-[var(--btn-primary-hover)] transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 text-xs cursor-pointer"
+                >
+                  {isSingleArchiveProcessing ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <Archive size={18} />
+                  )}
+                  <span>نعم، أرشفة السند</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSingleArchiveTarget(null)}
+                  disabled={Boolean(isSingleArchiveProcessing)}
                   className="px-[var(--space-6)] py-[var(--space-4)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all disabled:opacity-50 text-xs cursor-pointer"
                 >
                   تراجع
@@ -2193,7 +2563,11 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
                 <span className="font-bold text-[var(--success)] tabular-nums">
                   {archivedCount.toLocaleString("en-US")}
                 </span>{" "}
-                من السندات المحددة بنجاح. لقد تم إخلاء الحافلات المرتبطة بها وهي الآن{" "}
+                من السندات المحددة بنجاح وتحرير{" "}
+                <span className="font-bold text-[var(--success)] tabular-nums">
+                  {releasedBusesResultCount.toLocaleString("en-US")}
+                </span>{" "}
+                حافلة وهي الآن{" "}
                 <span className="text-[var(--success)] font-bold">
                   جاهزة في النظام
                 </span>{" "}
@@ -2250,6 +2624,12 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
               </p>
 
               <div className="bg-[var(--surface-subtle)] p-[var(--space-4)] rounded-2xl border border-[var(--border)] text-right space-y-[var(--space-2)] mb-[var(--space-6)] text-xs font-semibold text-[var(--text-secondary)]">
+                <div className="flex justify-between items-center py-[var(--space-1)] border-b border-[var(--border)]">
+                  <span className="text-[var(--text-muted)]">نطاق التحرير والأرشفة:</span>
+                  <span className="font-black text-[var(--warning)] tabular-nums">
+                    ستُحرَّر {seasonArchiveBusCount.toLocaleString("en-US")} حافلة من {vouchersToSeasonArchive.length.toLocaleString("en-US")} سند
+                  </span>
+                </div>
                 <div className="flex justify-between items-center py-[var(--space-1)] border-b border-[var(--border)]">
                   <span className="text-[var(--text-muted)]">إجمالي السندات الحالية:</span>
                   <span className="font-mono font-black text-[var(--text)] tabular-nums">
@@ -2372,12 +2752,10 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
               </div>
 
               <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
-                فشلت عملية الأرشفة
+                {archiveActionErrorTitle}
               </h3>
               <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-8)] px-[var(--space-4)]">
-                واجه النظام خطأً أثناء الأرشفة:
-                <br />
-                <span className="text-[var(--danger)] font-mono text-xs block mt-[var(--space-2)] p-[var(--space-2)] bg-[var(--surface-subtle)] rounded border border-[var(--border)]">
+                <span className="text-[var(--danger)] font-bold text-xs block mt-[var(--space-2)] p-[var(--space-3)] bg-[var(--surface-subtle)] rounded-xl border border-[var(--border)] leading-relaxed">
                   {archiveErrorMsg}
                 </span>
               </p>

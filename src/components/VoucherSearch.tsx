@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, query, where, orderBy, limit, doc, deleteDoc, onSnapshot, or, updateDoc } from 'firebase/firestore';
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { collection, query, orderBy, limit, doc, onSnapshot } from 'firebase/firestore';
+import { format } from 'date-fns';
 import { 
   Search, History, Bus, FileText, Calendar, Printer, Loader2, Trash2, X, 
   ChevronLeft, ChevronRight, Edit2, Save, ClipboardList, Download, 
-  Layers, Filter, CalendarDays, CheckCircle2, Building2, UserCheck, Sparkles, RefreshCw,
-  AlertCircle, ExternalLink, FileDown
+  Layers, Filter, CalendarDays, CheckCircle2, Building2, UserCheck, Sparkles,
+  AlertCircle, ExternalLink, FileDown, Archive, RotateCcw, PlusCircle, AlertTriangle
 } from 'lucide-react';
 import { generateVoucherPDF, exportVoucherLegacyPDF, generateBulkOfficePDF, generateStatementReportPDF } from '../lib/pdfGenerator';
 import { handleFirestoreError, OperationType } from '../lib/firebase';
@@ -18,6 +18,17 @@ import {
   resolveVoucherIssuerForPrint,
   resolveVoucherIssuerForUI,
 } from '../lib/issuerName';
+import {
+  archiveVouchersAtomically,
+  buildBusConflictMessage,
+  checkBusActiveAssignment,
+  deleteVoucherWithBusReleaseAtomically,
+  extractVoucherBusesList,
+  normalizeBusNumber,
+  unarchiveVoucherAtomically,
+  updateVoucherWithBusSyncAtomically,
+} from '../lib/busAssignments';
+import { beginBusyActivity } from '../lib/activityTracker';
 
 type SeasonFilter = '1448' | '1447' | 'all';
 type PeriodFilter = 'all' | 'today' | 'week' | 'month' | 'custom_month' | 'custom_range';
@@ -58,6 +69,15 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   const [busPages, setBusPages] = useState<Record<string, number>>({});
   const [voucherToDelete, setVoucherToDelete] = useState<any | null>(null);
   const [voucherToEdit, setVoucherToEdit] = useState<any | null>(null);
+  const [originalVoucherToEdit, setOriginalVoucherToEdit] = useState<any | null>(null);
+  const [editBusInput, setEditBusInput] = useState('');
+  const [editBusChecking, setEditBusChecking] = useState(false);
+  const [editBusError, setEditBusError] = useState('');
+  const [editSaveError, setEditSaveError] = useState('');
+  const [archiveModalVoucher, setArchiveModalVoucher] = useState<any | null>(null);
+  const [isArchivingSingle, setIsArchivingSingle] = useState(false);
+  const [unarchivingId, setUnarchivingId] = useState<string | null>(null);
+  const [unarchiveErrorModal, setUnarchiveErrorModal] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmSaveOpen, setIsConfirmSaveOpen] = useState(false);
@@ -107,6 +127,33 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   useEffect(() => {
     setReportSigner(currentIssuerName);
   }, [currentIssuerName]);
+
+  // Report ongoing save/print/report operations as user activity
+  useEffect(() => {
+    if (
+      !(
+        isDeleting ||
+        isUpdating ||
+        isArchivingSingle ||
+        Boolean(unarchivingId) ||
+        isPrinting !== null ||
+        isLegacyExporting !== null ||
+        isGeneratingReport
+      )
+    ) {
+      return;
+    }
+    const endBusy = beginBusyActivity();
+    return () => endBusy();
+  }, [
+    isDeleting,
+    isUpdating,
+    isArchivingSingle,
+    unarchivingId,
+    isPrinting,
+    isLegacyExporting,
+    isGeneratingReport,
+  ]);
 
   // Load Settings
   useEffect(() => {
@@ -527,12 +574,12 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
     }
   };
 
-  // Deleting voucher
+  // Deleting voucher (cancels voucher & releases its active busAssignments inside one transaction)
   const deleteVoucher = async () => {
     if (!voucherToDelete) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, 'vouchers', voucherToDelete.id));
+      await deleteVoucherWithBusReleaseAtomically(voucherToDelete);
       setIsDeleteModalOpen(false);
       setVoucherToDelete(null);
     } catch (error) {
@@ -548,33 +595,172 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
     setIsDeleteModalOpen(true);
   };
 
-  const handleEditVoucher = (voucher: any) => {
-    const v = { ...voucher };
-    if (!v.buses || !Array.isArray(v.buses)) {
-      v.buses = [{
-        busNumber: v.busNumber || '',
-        driverName: v.driverName || '',
-        driverPhone: v.driverPhone || '',
-        busType: v.busType || 'غير محدد'
-      }];
+  const handleConfirmSingleArchive = (voucher: any) => {
+    setArchiveModalVoucher(voucher);
+  };
+
+  const executeSingleArchive = async () => {
+    if (!archiveModalVoucher) return;
+    setIsArchivingSingle(true);
+    try {
+      await archiveVouchersAtomically([archiveModalVoucher], {
+        archivedBy: currentIssuerName || 'المسؤول',
+      });
+      setArchiveModalVoucher(null);
+    } catch (error) {
+      console.error('Single archive error:', error);
+      handleFirestoreError(error, OperationType.UPDATE, `vouchers/${archiveModalVoucher.id}`);
+    } finally {
+      setIsArchivingSingle(false);
     }
+  };
+
+  const handleUnarchiveVoucher = async (voucher: any) => {
+    setUnarchivingId(voucher.id);
+    setUnarchiveErrorModal(null);
+    try {
+      await unarchiveVoucherAtomically(voucher);
+    } catch (error: any) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.startsWith('UNARCHIVE_CONFLICT:')) {
+        setUnarchiveErrorModal(msg.replace('UNARCHIVE_CONFLICT:', ''));
+      } else if (msg.startsWith('UNARCHIVE_ERROR:')) {
+        setUnarchiveErrorModal(msg.replace('UNARCHIVE_ERROR:', ''));
+      } else {
+        handleFirestoreError(error, OperationType.UPDATE, `vouchers/${voucher.id}`);
+      }
+    } finally {
+      setUnarchivingId(null);
+    }
+  };
+
+  const handleEditVoucher = (voucher: any) => {
+    const normalizedBuses = extractVoucherBusesList(voucher);
+    const v = {
+      ...voucher,
+      buses:
+        normalizedBuses.length > 0
+          ? normalizedBuses
+          : [
+              {
+                busNumber: normalizeBusNumber(voucher.busNumber),
+                driverName: String(voucher.driverName || ''),
+                driverPhone: String(voucher.driverPhone || ''),
+                busType: String(voucher.busType || 'غير محدد'),
+              },
+            ].filter((b) => Boolean(b.busNumber)),
+    };
+    setOriginalVoucherToEdit(voucher);
     setVoucherToEdit(v);
+    setEditBusInput('');
+    setEditBusError('');
+    setEditSaveError('');
     setIsEditModalOpen(true);
+  };
+
+  const handleAddBusToEdit = async () => {
+    if (!voucherToEdit) return;
+    const cleanBus = normalizeBusNumber(editBusInput);
+    if (!cleanBus) {
+      setEditBusError('أدخل رقم الحافلة أولاً');
+      return;
+    }
+
+    const currentBuses = Array.isArray(voucherToEdit.buses) ? voucherToEdit.buses : [];
+    if (currentBuses.some((b: any) => normalizeBusNumber(b.busNumber) === cleanBus)) {
+      setEditBusError(`الحافلة ${cleanBus} موجودة بالفعل في هذا السند`);
+      return;
+    }
+
+    setEditBusChecking(true);
+    setEditBusError('');
+    setEditSaveError('');
+    try {
+      const conflict = await checkBusActiveAssignment(cleanBus, voucherToEdit.id);
+      if (conflict) {
+        setEditBusError(
+          buildBusConflictMessage(
+            conflict.busNumber,
+            conflict.voucherNumber,
+            conflict.officeLabel
+          )
+        );
+        return;
+      }
+
+      const masterEntry =
+        allBusesMaster[cleanBus] ||
+        Object.values(allBusesMaster).find(
+          (item: any) => normalizeBusNumber(item?.busNumber) === cleanBus
+        );
+
+      const newBusItem = {
+        busNumber: cleanBus,
+        driverName: String(masterEntry?.driverName || '').trim(),
+        driverPhone: String(masterEntry?.driverPhone || '').trim(),
+        busType: String(masterEntry?.busType || voucherToEdit.busType || 'حافلة').trim(),
+      };
+
+      setVoucherToEdit({
+        ...voucherToEdit,
+        buses: [...currentBuses, newBusItem],
+      });
+      setEditBusInput('');
+    } catch (error) {
+      console.error('Error checking bus assignment during edit:', error);
+      setEditBusError('تعذر التحقق من حالة الحافلة. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setEditBusChecking(false);
+    }
+  };
+
+  const handleRemoveBusFromEdit = (busNumberToRemove: string) => {
+    if (!voucherToEdit) return;
+    const currentBuses = Array.isArray(voucherToEdit.buses) ? voucherToEdit.buses : [];
+    if (currentBuses.length <= 1) {
+      setEditBusError('لا يمكن ترك السند بدون حافلة؛ إذا أردت إلغاء السند بالكامل استخدم خيار الحذف.');
+      return;
+    }
+    const cleanTarget = normalizeBusNumber(busNumberToRemove);
+    setEditBusError('');
+    setEditSaveError('');
+    setVoucherToEdit({
+      ...voucherToEdit,
+      buses: currentBuses.filter((b: any) => normalizeBusNumber(b.busNumber) !== cleanTarget),
+    });
   };
 
   const updateVoucher = async () => {
     if (!voucherToEdit) return;
+    const baseVoucher = originalVoucherToEdit || voucherToEdit;
+    const nextBuses = Array.isArray(voucherToEdit.buses) ? voucherToEdit.buses : [];
+    if (nextBuses.length === 0) {
+      setEditSaveError('يجب أن يحتوي السند على حافلة واحدة على الأقل');
+      setIsConfirmSaveOpen(false);
+      return;
+    }
+
     setIsUpdating(true);
+    setEditSaveError('');
     try {
-      const voucherRef = doc(db, 'vouchers', voucherToEdit.id);
-      const { id, ...updateData } = voucherToEdit;
-      await updateDoc(voucherRef, updateData);
+      const { id, buses: _buses, ...updateData } = voucherToEdit;
+      await updateVoucherWithBusSyncAtomically(baseVoucher, updateData, nextBuses);
       setIsConfirmSaveOpen(false);
       setIsEditModalOpen(false);
       setVoucherToEdit(null);
-    } catch (error) {
-      console.error('Update error:', error);
-      handleFirestoreError(error, OperationType.UPDATE, `vouchers/${voucherToEdit.id}`);
+      setOriginalVoucherToEdit(null);
+      setEditBusInput('');
+      setEditBusError('');
+      setEditSaveError('');
+    } catch (error: any) {
+      const rawMsg = error instanceof Error ? error.message : String(error);
+      if (rawMsg.startsWith('CONFLICT:')) {
+        setIsConfirmSaveOpen(false);
+        setEditSaveError(rawMsg.replace('CONFLICT:', ''));
+      } else {
+        console.error('Update error:', error);
+        handleFirestoreError(error, OperationType.UPDATE, `vouchers/${voucherToEdit.id}`);
+      }
     } finally {
       setIsUpdating(false);
     }
@@ -934,6 +1120,12 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                         </span>
                       )}
 
+                      {v.archived === true && (
+                        <span className="px-[var(--space-2)] py-[var(--space-1)] rounded-xl text-[11px] font-black bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/70 dark:border-amber-800">
+                          مؤرشف
+                        </span>
+                      )}
+
                       <span className="flex items-center gap-[var(--space-2)] bg-[var(--surface-subtle)] border border-[var(--border)] text-[var(--text-secondary)] px-[var(--space-3)] py-[var(--space-1)] rounded-xl text-xs font-bold mr-auto tabular-nums">
                         <Calendar size={13} className="text-[var(--text-muted)]" />
                         {v.customDate || (v.timestamp ? format(new Date(v.timestamp), 'yyyy/MM/dd | HH:mm') : '-')}
@@ -1110,6 +1302,31 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                         >
                           <Edit2 size={16} />
                         </button>
+
+                        {isAllowedToDelete && (
+                          v.archived === true ? (
+                            <button
+                              onClick={() => handleUnarchiveVoucher(v)}
+                              disabled={unarchivingId === v.id}
+                              className="p-[var(--space-3)] rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-[var(--success)] hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-all cursor-pointer disabled:opacity-50"
+                              title="استرجاع من الأرشيف وإعادة حجز الحافلات"
+                            >
+                              {unarchivingId === v.id ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <RotateCcw size={16} />
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleConfirmSingleArchive(v)}
+                              className="p-[var(--space-3)] rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-all cursor-pointer"
+                              title="أرشفة السند وتحرير حافلاته"
+                            >
+                              <Archive size={16} />
+                            </button>
+                          )
+                        )}
 
                         {isAllowedToDelete && (
                           <button
@@ -1552,7 +1769,92 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                       className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none"
                     />
                   </div>
+
+                  {/* Buses Management inside Edit Modal */}
+                  <div className="pt-[var(--space-4)] border-t border-[var(--border)] space-y-[var(--space-3)]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-[var(--text-secondary)] flex items-center gap-1.5">
+                        <Bus size={15} className="text-[var(--primary)]" />
+                        <span>الحافلات المسجّلة في السند ({Array.isArray(voucherToEdit.buses) ? voucherToEdit.buses.length : 0})</span>
+                      </label>
+                      <span className="text-[11px] font-bold text-[var(--text-muted)]">
+                        الحافلة المحذوفة تُحرَّر تلقائياً عند الحفظ
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={editBusInput}
+                        onChange={(e) => {
+                          setEditBusInput(e.target.value);
+                          if (editBusError) setEditBusError('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddBusToEdit();
+                          }
+                        }}
+                        placeholder="أدخل رقم الحافلة لإضافتها..."
+                        className="flex-1 px-[var(--space-4)] py-[var(--space-2)] bg-[var(--surface)] border border-[var(--border)] rounded-xl font-bold text-sm text-[var(--text)] outline-none tabular-nums"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddBusToEdit}
+                        disabled={editBusChecking}
+                        className="px-[var(--space-4)] py-[var(--space-2)] rounded-xl bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                      >
+                        {editBusChecking ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <PlusCircle size={15} />
+                        )}
+                        <span>إضافة حافلة</span>
+                      </button>
+                    </div>
+
+                    {editBusError && (
+                      <div className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300 flex items-start gap-2">
+                        <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                        <span>{editBusError}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(Array.isArray(voucherToEdit.buses) ? voucherToEdit.buses : []).map((busItem: any) => (
+                        <div
+                          key={busItem.busNumber}
+                          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-[var(--text)] tabular-nums">
+                              حافلة {busItem.busNumber}
+                            </p>
+                            <p className="text-[11px] font-semibold text-[var(--text-secondary)] truncate">
+                              {busItem.driverName || 'سائق غير محدد'}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBusFromEdit(busItem.busNumber)}
+                            className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 text-[var(--danger)] hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors shrink-0 cursor-pointer"
+                            title="إزالة الحافلة وتحريرها"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
+                {editSaveError && (
+                  <div className="p-[var(--space-3)] rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300 flex items-start gap-2">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                    <span>{editSaveError}</span>
+                  </div>
+                )}
               </div>
 
               <div className="mt-[var(--space-6)] flex gap-[var(--space-3)]">
@@ -1664,6 +1966,93 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
                   تراجع
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Single Voucher Archive Modal */}
+      <AnimatePresence>
+        {archiveModalVoucher && (
+          <div className="fixed inset-0 z-[125] flex items-center justify-center p-[var(--space-4)]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isArchivingSingle && setArchiveModalVoucher(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
+              dir="rtl"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-4)] border border-amber-200 dark:border-amber-800/70 text-[var(--gold-text)]">
+                <Archive size={28} />
+              </div>
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
+                أرشفة السند #{archiveModalVoucher.voucherNumber}
+              </h3>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-[var(--space-6)]">
+                سيتم أرشفة السند وتحرير جميع حافلاته لتصبح متاحة للإصدار مرة أخرى.
+              </p>
+              <div className="flex gap-[var(--space-3)]">
+                <button
+                  onClick={executeSingleArchive}
+                  disabled={isArchivingSingle}
+                  className="flex-1 bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black py-[var(--space-3)] rounded-2xl transition-all flex items-center justify-center gap-[var(--space-2)] disabled:opacity-50 shadow-lg cursor-pointer"
+                >
+                  {isArchivingSingle ? <Loader2 size={18} className="animate-spin" /> : <Archive size={18} />}
+                  <span>نعم، أرشفة وتحرير الحافلات</span>
+                </button>
+                <button
+                  onClick={() => setArchiveModalVoucher(null)}
+                  disabled={isArchivingSingle}
+                  className="px-[var(--space-5)] py-[var(--space-3)] border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-2xl hover:bg-[var(--surface-subtle)] transition-all cursor-pointer"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Unarchive Conflict Modal */}
+      <AnimatePresence>
+        {unarchiveErrorModal && (
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-[var(--space-4)]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setUnarchiveErrorModal(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-[var(--surface)] rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-[var(--border)] text-center p-[var(--space-4)] lg:p-[var(--space-8)]"
+              dir="rtl"
+            >
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center mx-auto mb-[var(--space-4)] border border-red-200 dark:border-red-800/70 text-[var(--danger)]">
+                <AlertTriangle size={28} />
+              </div>
+              <h3 className="text-xl font-black text-[var(--text)] mb-[var(--space-2)]">
+                تعذّر استرجاع السند
+              </h3>
+              <p className="text-red-700 dark:text-red-300 text-sm leading-relaxed font-bold mb-[var(--space-6)]">
+                {unarchiveErrorModal}
+              </p>
+              <button
+                onClick={() => setUnarchiveErrorModal(null)}
+                className="w-full bg-[var(--btn-primary)] hover:bg-[var(--btn-primary-hover)] text-white font-black py-[var(--space-3)] rounded-2xl transition-all cursor-pointer"
+              >
+                حسناً
+              </button>
             </motion.div>
           </div>
         )}
