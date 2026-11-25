@@ -95,8 +95,52 @@
       "description": "App-wide settings.",
       "type": "object",
       "properties": {
-        "nextVoucherNumber": { "type": "integer" }
+        "nextVoucherNumber": { "type": "integer" },
+        "logoUrl": { "type": "string", "maxLength": 900000 },
+        "sloganUrl": { "type": "string", "maxLength": 900000 },
+        "sloganHeightMm": { "type": "number" },
+        "welcomeTitle": { "type": "string", "maxLength": 120 },
+        "welcomeMessage": { "type": "string", "maxLength": 300 },
+        "welcomeEnabled": { "type": "boolean" },
+        "welcomeExpiresAt": { "type": "string", "maxLength": 20 },
+        "welcomeVersion": { "type": "integer" },
+        "printCopies": { "type": "integer" },
+        "printCopyLabels": { "type": "array", "items": { "type": "string", "maxLength": 40 } },
+        "pdfMargins": { "type": "object" },
+        "activeSeason": { "type": "string", "maxLength": 20 },
+        "activeSeasonName": { "type": "string", "maxLength": 100 },
+        "hijriOffsetDays": { "type": "integer" },
+        "companyAddress": { "type": "string", "maxLength": 200 },
+        "companyWebsite": { "type": "string", "maxLength": 120 },
+        "companyPhone": { "type": "string", "maxLength": 40 },
+        "idleTimeoutMinutes": { "type": "integer" },
+        "lastArchivedSeason": { "type": "string", "maxLength": 20 },
+        "lastSeasonArchivedAt": { "type": "string", "maxLength": 60 },
+        "lastBackupAt": { "type": "string", "maxLength": 60 },
+        "lastBackupByName": { "type": "string", "maxLength": 120 },
+        "lastBackupByUid": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 60 },
+        "updatedByUid": { "type": "string", "maxLength": 128 },
+        "updatedByName": { "type": "string", "maxLength": 120 }
       }
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Immutable administrative audit trail for settings, counter overrides, and backups.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "maxLength": 80 },
+        "targetPath": { "type": "string", "maxLength": 200 },
+        "summary": { "type": "string", "maxLength": 500 },
+        "changes": { "type": "array" },
+        "reason": { "type": "string", "maxLength": 500 },
+        "metadata": { "type": "object" },
+        "performedByUid": { "type": "string", "maxLength": 128 },
+        "performedByName": { "type": "string", "maxLength": 120 },
+        "performedByRole": { "type": "string", "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "targetPath", "summary", "performedByUid", "performedByName", "performedByRole", "createdAt"]
     },
     "AppUser": {
       "title": "App User",
@@ -142,9 +186,13 @@
       "schema": "BusAssignment",
       "description": "Latest active voucher assignment per bus."
     },
-    "settings/app": {
+    "settings/{docId}": {
       "schema": "Settings",
-      "description": "Global settings like next voucher ID."
+      "description": "Global application settings and migration summary."
+    },
+    "auditLog/{logId}": {
+      "schema": "AuditLog",
+      "description": "Immutable admin audit log."
     },
     "app_users/{username}": {
       "schema": "AppUser",

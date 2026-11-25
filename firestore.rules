@@ -95,7 +95,7 @@ service cloud.firestore {
       return data.keys().hasAll(['last'])
         && data.keys().hasOnly(['last'])
         && data.last is int
-        && data.last >= 1;
+        && data.last >= 0;
     }
 
     function isValidBusAssignmentShape(data) {
@@ -130,6 +130,103 @@ service cloud.firestore {
         && data.username.size() <= 128
         && exists(/databases/$(database)/documents/app_users/$(data.username))
         && data.updatedAt == request.time;
+    }
+
+    function isValidEmbeddedImageUrl(val) {
+      return val is string
+        && val.size() <= 900000
+        && (
+          val == ''
+          || (val.size() > 22 && val[0:22] == 'data:image/png;base64,')
+          || (val.size() > 23 && val[0:23] == 'data:image/jpeg;base64,')
+          || (val.size() > 22 && val[0:22] == 'data:image/jpg;base64,')
+          || (val.size() > 23 && val[0:23] == 'data:image/webp;base64,')
+        );
+    }
+
+    function isValidPdfMarginsMap(m) {
+      return m is map
+        && m.keys().hasAll(['top', 'bottom', 'left', 'right'])
+        && m.keys().hasOnly(['top', 'bottom', 'left', 'right', 'unit'])
+        && m.top is number && m.bottom is number && m.left is number && m.right is number
+        && (
+          ('unit' in m && m.unit == 'mm' && m.top >= 0 && m.top <= 20 && m.bottom >= 0 && m.bottom <= 20 && m.left >= 0 && m.left <= 20 && m.right >= 0 && m.right <= 20)
+          || (!('unit' in m) && m.top >= 0 && m.top <= 200 && m.bottom >= 0 && m.bottom <= 200 && m.left >= 0 && m.left <= 200 && m.right >= 0 && m.right <= 200)
+        );
+    }
+
+    function isValidPrintCopyLabels(labels) {
+      return labels is list
+        && labels.size() <= 5
+        && (labels.size() < 1 || (labels[0] is string && labels[0].size() <= 40))
+        && (labels.size() < 2 || (labels[1] is string && labels[1].size() <= 40))
+        && (labels.size() < 3 || (labels[2] is string && labels[2].size() <= 40))
+        && (labels.size() < 4 || (labels[3] is string && labels[3].size() <= 40))
+        && (labels.size() < 5 || (labels[4] is string && labels[4].size() <= 40));
+    }
+
+    function isValidSettingsApp(data) {
+      return data.keys().hasOnly([
+          'nextVoucherNumber', 'logoUrl', 'sloganUrl', 'sloganHeightMm',
+          'welcomeTitle', 'welcomeMessage', 'welcomeEnabled', 'welcomeExpiresAt', 'welcomeVersion',
+          'printCopies', 'printCopyLabels', 'pdfMargins',
+          'activeSeason', 'activeSeasonName', 'hijriOffsetDays',
+          'companyAddress', 'companyWebsite', 'companyPhone',
+          'idleTimeoutMinutes',
+          'lastArchivedSeason', 'lastSeasonArchivedAt',
+          'lastBackupAt', 'lastBackupByName', 'lastBackupByUid',
+          'updatedAt', 'updatedByUid', 'updatedByName'
+        ])
+        && (!('nextVoucherNumber' in data) || (data.nextVoucherNumber is int && data.nextVoucherNumber >= 1))
+        && (!('logoUrl' in data) || isValidEmbeddedImageUrl(data.logoUrl))
+        && (!('sloganUrl' in data) || isValidEmbeddedImageUrl(data.sloganUrl))
+        && (!('sloganHeightMm' in data) || (data.sloganHeightMm is number && data.sloganHeightMm >= 15 && data.sloganHeightMm <= 30))
+        && (!('welcomeTitle' in data) || (data.welcomeTitle is string && data.welcomeTitle.size() <= 120))
+        && (!('welcomeMessage' in data) || (data.welcomeMessage is string && data.welcomeMessage.size() <= 300))
+        && (!('welcomeEnabled' in data) || data.welcomeEnabled is bool)
+        && (!('welcomeExpiresAt' in data) || (data.welcomeExpiresAt is string && data.welcomeExpiresAt.size() <= 20))
+        && (!('welcomeVersion' in data) || (data.welcomeVersion is int && data.welcomeVersion >= 1))
+        && (!('printCopies' in data) || (data.printCopies is int && data.printCopies >= 1 && data.printCopies <= 5))
+        && (!('printCopyLabels' in data) || isValidPrintCopyLabels(data.printCopyLabels))
+        && (!('pdfMargins' in data) || isValidPdfMarginsMap(data.pdfMargins))
+        && (!('activeSeason' in data) || (data.activeSeason is string && data.activeSeason.size() <= 20))
+        && (!('activeSeasonName' in data) || (data.activeSeasonName is string && data.activeSeasonName.size() <= 100))
+        && (!('hijriOffsetDays' in data) || (data.hijriOffsetDays is int && data.hijriOffsetDays >= -2 && data.hijriOffsetDays <= 2))
+        && (!('companyAddress' in data) || (data.companyAddress is string && data.companyAddress.size() <= 200))
+        && (!('companyWebsite' in data) || (data.companyWebsite is string && data.companyWebsite.size() <= 120))
+        && (!('companyPhone' in data) || (data.companyPhone is string && data.companyPhone.size() <= 40))
+        && (!('idleTimeoutMinutes' in data) || (data.idleTimeoutMinutes is int && data.idleTimeoutMinutes >= 5 && data.idleTimeoutMinutes <= 120))
+        && (!('lastArchivedSeason' in data) || (data.lastArchivedSeason is string && data.lastArchivedSeason.size() <= 20))
+        && (!('lastSeasonArchivedAt' in data) || (data.lastSeasonArchivedAt is string && data.lastSeasonArchivedAt.size() <= 60))
+        && (!('lastBackupAt' in data) || (data.lastBackupAt is string && data.lastBackupAt.size() <= 60))
+        && (!('lastBackupByName' in data) || (data.lastBackupByName is string && data.lastBackupByName.size() <= 120))
+        && (!('lastBackupByUid' in data) || (data.lastBackupByUid is string && data.lastBackupByUid.size() <= 128))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60))
+        && (!('updatedByUid' in data) || (data.updatedByUid is string && data.updatedByUid.size() <= 128))
+        && (!('updatedByName' in data) || (data.updatedByName is string && data.updatedByName.size() <= 120));
+    }
+
+    function isValidSettingsDoc(docId, data) {
+      return (docId == 'app' && isValidSettingsApp(data))
+        || (docId == 'busAssignmentsMigration' && data.keys().hasOnly([
+          'completed', 'migratedAt', 'createdActiveCount', 'createdReleasedCount',
+          'skippedExistingCount', 'totalActiveCount', 'totalReleasedCount', 'conflicts'
+        ]));
+    }
+
+    function isValidAuditLog(data) {
+      return data.keys().hasAll(['action', 'targetPath', 'summary', 'performedByUid', 'performedByName', 'performedByRole', 'createdAt'])
+        && data.keys().hasOnly(['action', 'targetPath', 'summary', 'changes', 'reason', 'metadata', 'performedByUid', 'performedByName', 'performedByRole', 'createdAt'])
+        && data.action is string && data.action.size() >= 1 && data.action.size() <= 80
+        && data.targetPath is string && data.targetPath.size() >= 1 && data.targetPath.size() <= 200
+        && data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 500
+        && data.performedByUid == request.auth.uid
+        && data.performedByName is string && data.performedByName.size() >= 1 && data.performedByName.size() <= 120
+        && data.performedByRole is string && data.performedByRole.size() >= 1 && data.performedByRole.size() <= 40
+        && data.createdAt == request.time
+        && (!('reason' in data) || (data.reason is string && data.reason.size() <= 500))
+        && (!('changes' in data) || (data.changes is list && data.changes.size() <= 30 && (data.changes.size() == 0 || data.changes[0] is map)))
+        && (!('metadata' in data) || (data.metadata is map && data.metadata.keys().size() <= 20));
     }
 
     // 1. Buses
@@ -189,15 +286,29 @@ service cloud.firestore {
             && incoming().diff(existing()).affectedKeys().hasOnly(['voucherId', 'voucherNumber', 'officeNo', 'officeName', 'createdAt', 'status', 'releasedAt', 'releaseReason'])
             && existsAfter(/databases/$(database)/documents/vouchers/$(incoming().voucherId))
           )
+          || (
+            isAppAdmin()
+            && (isValidBusAssignmentActiveState(incoming()) || isValidBusAssignmentReleasedState(incoming()))
+            && existsAfter(/databases/$(database)/documents/vouchers/$(incoming().voucherId))
+          )
         );
       allow delete: if isAppAdmin();
     }
 
-    // 5. Settings (App settings, logo, print margins, migration report)
+    // 5. Settings (Readable by enabled users & login branding; writes restricted strictly to General Manager)
     match /settings/{docId} {
-      allow get: if docId == 'app' || isEnabledUser();
-      allow list: if isSignedIn();
-      allow create, update, delete: if isEnabledUser();
+      allow get: if docId == 'app' || (isEnabledUser() && docId == 'busAssignmentsMigration') || isAppAdmin();
+      allow list: if isAppAdmin();
+      allow create, update: if isAppAdmin() && isValidId(docId) && isValidSettingsDoc(docId, incoming());
+      allow delete: if isAppAdmin() && isValidId(docId);
+    }
+
+    // 6. Audit Log (Append-only by General Manager, immutable)
+    match /auditLog/{logId} {
+      allow get: if isAppAdmin() && isValidId(logId);
+      allow list: if isAppAdmin();
+      allow create: if isAppAdmin() && isValidId(logId) && isValidAuditLog(incoming());
+      allow update, delete: if false;
     }
 
     // 6. Active Sessions (Maps Firebase Auth UID -> app_users username for custom auth)

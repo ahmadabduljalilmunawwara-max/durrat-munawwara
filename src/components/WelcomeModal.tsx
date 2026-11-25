@@ -55,6 +55,9 @@ export interface WelcomeModalProps {
   isOpen: boolean;
   userName?: string | null;
   version: string;
+  title?: string;
+  message?: string;
+  seasonLabel?: string;
   onClose: (dontShowAgain: boolean) => void;
 }
 
@@ -62,6 +65,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
   isOpen,
   userName,
   version,
+  title,
+  message,
+  seasonLabel,
   onClose,
 }) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
@@ -128,7 +134,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   const cleanName =
     userName?.trim() && userName.trim() !== 'Google User' ? userName.trim() : '';
-  const greetingTitle = cleanName ? `أهلاً ${cleanName} 👋` : 'أهلاً بك 👋';
+  const defaultGreeting = cleanName ? `أهلاً ${cleanName} 👋` : 'أهلاً بك 👋';
+  const resolvedTitle = title?.trim() || defaultGreeting;
+  const resolvedSeason = (seasonLabel || '1448').trim().replace(/هـ/g, '');
+  const resolvedMessage = message?.trim() || '';
 
   const handleClose = () => {
     onClose(dontShowAgain);
@@ -181,12 +190,12 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
                 id="welcome-modal-title"
                 className="text-xl sm:text-2xl font-extrabold text-[var(--text)] mb-[var(--space-2)]"
               >
-                {greetingTitle}
+                {resolvedTitle}
               </h2>
 
               <div className="flex flex-wrap items-center justify-center gap-[var(--space-2)]">
                 <p className="text-[var(--text-secondary)] font-semibold text-xs sm:text-sm">
-                  نظام درة المنورة جاهز لموسم حج 1448هـ
+                  نظام درة المنورة جاهز لموسم حج {resolvedSeason}هـ
                 </p>
                 <span
                   dir="ltr"
@@ -197,8 +206,16 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
               </div>
             </div>
 
-            {/* Scrollable Features List */}
+            {/* Scrollable Message & Features List */}
             <div className="flex-1 overflow-y-auto px-[var(--space-4)] py-[var(--space-3)] sm:px-[var(--space-6)] sm:py-[var(--space-4)] space-y-[var(--space-2)]">
+              {resolvedMessage && (
+                <div className="p-[var(--space-4)] rounded-2xl bg-blue-50/70 dark:bg-blue-950/35 border border-blue-200/80 dark:border-blue-800/80 text-right mb-[var(--space-2)]">
+                  <p className="text-xs sm:text-sm font-bold text-[var(--text)] leading-relaxed whitespace-pre-line">
+                    {resolvedMessage}
+                  </p>
+                </div>
+              )}
+
               {WELCOME_FEATURES.map((feature, idx) => (
                 <div
                   key={idx}

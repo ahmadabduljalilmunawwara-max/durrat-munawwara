@@ -33,18 +33,18 @@ interface SWGlobalScope {
 
 const sw = self as unknown as SWGlobalScope;
 
-const CACHE_NAME = 'dmtc-app-shell-v1';
+const CACHE_NAME = 'dmtc-app-shell-v2';
 const FONT_CACHE = 'dmtc-fonts-v1';
 const OFFLINE_URL = '/offline.html';
 
 const CORE_SHELL_URLS = [
   OFFLINE_URL,
-  '/manifest.webmanifest',
-  '/icon.svg',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/pwa-maskable-512x512.png',
-  '/apple-touch-icon.png',
+  '/manifest.webmanifest?v=2',
+  '/logo.png',
+  '/pwa-192x192.png?v=2',
+  '/pwa-512x512.png?v=2',
+  '/pwa-maskable-512x512.png?v=2',
+  '/apple-touch-icon.png?v=2',
 ];
 
 const NEVER_CACHE_HOSTS = [
@@ -201,7 +201,26 @@ sw.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin static UI assets (JS, CSS, local fonts, company logos, manifest)
+  // Web App Manifest: network-first so updated app icons & metadata propagate immediately
+  if (url.origin === sw.location.origin && url.pathname === '/manifest.webmanifest') {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        try {
+          const networkResponse = await fetch(request, { cache: 'no-cache' });
+          if (networkResponse && networkResponse.ok) {
+            await cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          const cached = await cache.match(request);
+          return cached || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/manifest+json' } });
+        }
+      })
+    );
+    return;
+  }
+
+  // Same-origin static UI assets (JS, CSS, local fonts, company logos)
   if (
     url.origin === sw.location.origin &&
     (STATIC_ASSET_EXT_REGEX.test(url.pathname) ||

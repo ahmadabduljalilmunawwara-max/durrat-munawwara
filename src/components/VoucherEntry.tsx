@@ -60,29 +60,28 @@ import {
   IDLE_DRAFT_STORAGE_PREFIX,
   registerVoucherDraftSaver,
 } from '../lib/activityTracker';
+import {
+  DEFAULT_ACTIVE_SEASON,
+  DEFAULT_COMPANY_ADDRESS,
+  DEFAULT_COMPANY_PHONE,
+  DEFAULT_COMPANY_WEBSITE,
+  DEFAULT_HIJRI_OFFSET_DAYS,
+  DEFAULT_PDF_MARGINS,
+  DEFAULT_PRINT_COPY_LABELS,
+  DEFAULT_SLOGAN_HEIGHT_MM,
+  formatHijriDDMMYYYYWithOffset,
+  normalizeActiveSeason,
+  normalizeHijriOffsetDays,
+  normalizePdfMargins,
+  normalizePrintCopies,
+  normalizePrintCopyLabels,
+  normalizeSloganHeightMm,
+  PdfMargins,
+} from '../lib/printSettings';
 
-const computeHijriDDMMYYYY = (gregorianDateStr: string): string => {
+const computeHijriDDMMYYYY = (gregorianDateStr: string, offsetDays: number = 0): string => {
   if (!gregorianDateStr) return '';
-  try {
-    const [y, m, d] = gregorianDateStr.split('-').map(Number);
-    const date = y && m && d ? new Date(y, m - 1, d, 12, 0, 0) : new Date(gregorianDateStr);
-    if (isNaN(date.getTime())) return '';
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
-      day: 'numeric',
-      month: 'numeric',
-      year: 'numeric',
-    });
-    const parts = formatter.formatToParts(date);
-    const year = toEnglishDigits(parts.find((p) => p.type === 'year')?.value || '');
-    const month = toEnglishDigits(parts.find((p) => p.type === 'month')?.value || '').padStart(2, '0');
-    const day = toEnglishDigits(parts.find((p) => p.type === 'day')?.value || '').padStart(2, '0');
-    if (year && month && day) {
-      return `${day}/${month}/${year}`;
-    }
-  } catch (error) {
-    console.error('Hijri conversion error:', error);
-  }
-  return '';
+  return formatHijriDDMMYYYYWithOffset(gregorianDateStr, offsetDays);
 };
 
 export function VoucherEntry() {
@@ -259,18 +258,26 @@ export function VoucherEntry() {
     });
   }, []);
 
-  // Automatically calculate Hijri date in DD/MM/YYYY (e.g. DD/MM/1448) from Gregorian date
+  // Automatically calculate Hijri date in DD/MM/YYYY (e.g. DD/MM/1448) from Gregorian date + configured offset
+  const [hijriOffsetDays, setHijriOffsetDays] = useState<number>(DEFAULT_HIJRI_OFFSET_DAYS);
+  const [activeSeason, setActiveSeason] = useState<string>(DEFAULT_ACTIVE_SEASON);
+  const [logoUrl, setLogoUrl] = useState<string>('/logo.png');
+  const [sloganUrl, setSloganUrl] = useState<string>('');
+  const [sloganHeightMm, setSloganHeightMm] = useState<number>(DEFAULT_SLOGAN_HEIGHT_MM);
+  const [printCopies, setPrintCopies] = useState<number>(1);
+  const [printCopyLabels, setPrintCopyLabels] = useState<string[]>([...DEFAULT_PRINT_COPY_LABELS]);
+  const [companyAddress, setCompanyAddress] = useState<string>(DEFAULT_COMPANY_ADDRESS);
+  const [companyWebsite, setCompanyWebsite] = useState<string>(DEFAULT_COMPANY_WEBSITE);
+  const [companyPhone, setCompanyPhone] = useState<string>(DEFAULT_COMPANY_PHONE);
+  const [printTwoCopies, setPrintTwoCopies] = useState<boolean>(false);
+  const [pdfMargins, setPdfMargins] = useState<PdfMargins>({ ...DEFAULT_PDF_MARGINS });
+
   useEffect(() => {
-    const formatted = computeHijriDDMMYYYY(customDate);
+    const formatted = computeHijriDDMMYYYY(customDate, hijriOffsetDays);
     if (formatted) {
       setHijriDate(formatted);
     }
-  }, [customDate]);
-
-  const [logoUrl, setLogoUrl] = useState<string>('/logo.png');
-  const [sloganUrl, setSloganUrl] = useState<string>('');
-  const [printTwoCopies, setPrintTwoCopies] = useState<boolean>(false);
-  const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
+  }, [customDate, hijriOffsetDays]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLegacyExporting, setIsLegacyExporting] = useState(false);
@@ -423,9 +430,25 @@ export function VoucherEntry() {
       (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.logoUrl) setLogoUrl(data.logoUrl);
-          if (data.sloganUrl) setSloganUrl(data.sloganUrl);
-          if (data.pdfMargins) setPdfMargins(data.pdfMargins);
+          setLogoUrl(data.logoUrl || '/logo.png');
+          setSloganUrl(data.sloganUrl || '');
+          setSloganHeightMm(normalizeSloganHeightMm(data.sloganHeightMm));
+          setPdfMargins(normalizePdfMargins(data.pdfMargins));
+          setHijriOffsetDays(normalizeHijriOffsetDays(data.hijriOffsetDays));
+          setActiveSeason(normalizeActiveSeason(data.activeSeason));
+          setPrintCopies(normalizePrintCopies(data.printCopies));
+          setPrintCopyLabels(normalizePrintCopyLabels(data.printCopyLabels));
+          setCompanyAddress(
+            typeof data.companyAddress === 'string' && data.companyAddress.trim()
+              ? data.companyAddress.trim()
+              : DEFAULT_COMPANY_ADDRESS
+          );
+          setCompanyWebsite(
+            typeof data.companyWebsite === 'string' && data.companyWebsite.trim()
+              ? data.companyWebsite.trim()
+              : DEFAULT_COMPANY_WEBSITE
+          );
+          setCompanyPhone(typeof data.companyPhone === 'string' ? data.companyPhone.trim() : DEFAULT_COMPANY_PHONE);
         }
       },
       (err) => handleFirestoreError(err, OperationType.GET, 'settings/app')
@@ -760,8 +783,8 @@ export function VoucherEntry() {
         buses: sanitizedBuses,
         timestamp,
         hijriDate: hijriDate || '',
-        hajjSeason: '1448',
-        seasonName: 'موسم حج 1448 هـ',
+        hajjSeason: activeSeason,
+        seasonName: `موسم حج ${activeSeason} هـ`,
         archived: false,
         customDate: customDate || dateKey,
         dateKey: customDate || dateKey,
@@ -840,7 +863,14 @@ export function VoucherEntry() {
         voucherNumber: actualVoucherNumber,
         logoUrl,
         sloganUrl,
+        sloganHeightMm,
         pdfMargins,
+        hijriOffsetDays,
+        printCopies,
+        printCopyLabels,
+        companyAddress,
+        companyWebsite,
+        companyPhone,
       };
 
       setIssuedDisplayNumber(actualVoucherNumber);
@@ -1037,7 +1067,7 @@ export function VoucherEntry() {
       setSubmitAttempted(false);
       const today = format(new Date(), 'yyyy-MM-dd');
       setCustomDate(today);
-      setHijriDate(computeHijriDDMMYYYY(today));
+      setHijriDate(computeHijriDDMMYYYY(today, hijriOffsetDays));
       try {
         localStorage.removeItem(draftStorageKey);
       } catch {
@@ -1097,7 +1127,15 @@ export function VoucherEntry() {
     activeUserUid,
     logoUrl,
     sloganUrl,
+    sloganHeightMm,
     pdfMargins,
+    hijriOffsetDays,
+    activeSeason,
+    printCopies,
+    printCopyLabels,
+    companyAddress,
+    companyWebsite,
+    companyPhone,
     printTwoCopies,
   ]);
 
@@ -1147,7 +1185,7 @@ export function VoucherEntry() {
               </div>
               <div className="flex items-center gap-[var(--space-3)] mt-[var(--space-2)]">
                 <span className="px-[var(--space-3)] py-[var(--space-1)] rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[var(--primary)] font-bold text-xs border border-blue-200/80 dark:border-blue-800 tabular-nums">
-                  موسم حج 1448هـ
+                  موسم حج {activeSeason}هـ
                 </span>
                 <span className={`text-xs font-bold ${isOnline ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
                   {isOnline ? 'جاهز للترحيل' : 'غير متصل بالإنترنت'}

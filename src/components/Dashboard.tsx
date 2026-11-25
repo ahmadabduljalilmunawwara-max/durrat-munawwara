@@ -64,12 +64,20 @@ import { beginBusyActivity } from "../lib/activityTracker";
 
 let busMigrationAutoStarted = false;
 
-export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => void } = {}) {
+export function Dashboard({
+  onNavigateToEntry,
+  onNavigateToSettings,
+}: {
+  onNavigateToEntry?: () => void;
+  onNavigateToSettings?: () => void;
+} = {}) {
   const { user: sessionUser } = useAuth();
   
   // Hajj Seasons State
   const [selectedSeason, setSelectedSeason] = useState<"1448" | "1447">("1448");
   const [activeAppSeason, setActiveAppSeason] = useState<string>("1448");
+  const [lastBackupAt, setLastBackupAt] = useState<string | null>(null);
+  const [hasLoadedAppSettings, setHasLoadedAppSettings] = useState(false);
   const [isSeasonArchiveModalOpen, setIsSeasonArchiveModalOpen] = useState(false);
   const [isSeasonArchiveSuccessModalOpen, setIsSeasonArchiveSuccessModalOpen] = useState(false);
   const [isSeasonArchiving, setIsSeasonArchiving] = useState(false);
@@ -210,15 +218,20 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
         if (d.activeSeason) {
           setActiveAppSeason(d.activeSeason);
         }
+        setLastBackupAt(typeof d.lastBackupAt === "string" ? d.lastBackupAt : null);
+      } else {
+        setLastBackupAt(null);
       }
+      setHasLoadedAppSettings(true);
     });
 
+    const isGM = sessionUser?.role === "general_manager";
     const unsubMigration = onSnapshot(
       doc(db, "settings", "busAssignmentsMigration"),
       (snap) => {
         if (snap.exists()) {
           setMigrationReport(snap.data() as BusMigrationReport);
-        } else if (canManage && !busMigrationAutoStarted) {
+        } else if (isGM && !busMigrationAutoStarted) {
           busMigrationAutoStarted = true;
           setIsRunningMigration(true);
           runBusAssignmentsMigration({ saveReportToSettings: true })
@@ -244,14 +257,16 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
       unsubApp();
       unsubMigration();
     };
-  }, [canManage]);
+  }, [canManage, sessionUser?.role]);
 
   const handleManualMigrationRun = async () => {
     if (isRunningMigration) return;
     setIsRunningMigration(true);
     setMigrationError("");
     try {
-      const report = await runBusAssignmentsMigration({ saveReportToSettings: true });
+      const report = await runBusAssignmentsMigration({
+        saveReportToSettings: sessionUser?.role === "general_manager",
+      });
       setMigrationReport(report);
     } catch (err: any) {
       console.error("Manual busAssignments migration error:", err);
@@ -534,26 +549,28 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
         },
       });
 
-      // Update settings with active season 1448
-      const settingsRef = doc(db, "settings", "app");
-      try {
-        await updateDoc(settingsRef, {
-          activeSeason: "1448",
-          activeSeasonName: "موسم حج 1448 هـ",
-          lastArchivedSeason: "1447",
-          lastSeasonArchivedAt: new Date().toISOString(),
-        });
-      } catch {
-        await setDoc(
-          settingsRef,
-          {
+      // Update settings with active season 1448 (general_manager only per Firestore rules)
+      if (sessionUser?.role === "general_manager") {
+        const settingsRef = doc(db, "settings", "app");
+        try {
+          await updateDoc(settingsRef, {
             activeSeason: "1448",
             activeSeasonName: "موسم حج 1448 هـ",
             lastArchivedSeason: "1447",
             lastSeasonArchivedAt: new Date().toISOString(),
-          },
-          { merge: true },
-        );
+          });
+        } catch {
+          await setDoc(
+            settingsRef,
+            {
+              activeSeason: "1448",
+              activeSeasonName: "موسم حج 1448 هـ",
+              lastArchivedSeason: "1447",
+              lastSeasonArchivedAt: new Date().toISOString(),
+            },
+            { merge: true },
+          );
+        }
       }
 
       setActiveAppSeason("1448");
@@ -1067,6 +1084,21 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
     return v.busNumber ? `#${v.busNumber}` : "---";
   };
 
+  const backupStatusInfo = useMemo(() => {
+    if (sessionUser?.role !== "general_manager" || !hasLoadedAppSettings) {
+      return { shouldWarn: false, daysAgo: null as number | null };
+    }
+    if (!lastBackupAt) {
+      return { shouldWarn: true, daysAgo: null as number | null };
+    }
+    const parsedMs = Date.parse(lastBackupAt);
+    if (Number.isNaN(parsedMs)) {
+      return { shouldWarn: true, daysAgo: null as number | null };
+    }
+    const diffDays = Math.floor((Date.now() - parsedMs) / (1000 * 60 * 60 * 24));
+    return { shouldWarn: Date.now() - parsedMs > 7 * 24 * 60 * 60 * 1000, daysAgo: diffDays };
+  }, [sessionUser?.role, hasLoadedAppSettings, lastBackupAt]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-[var(--space-4)]">
@@ -1085,6 +1117,41 @@ export function Dashboard({ onNavigateToEntry }: { onNavigateToEntry?: () => voi
       animate="visible"
       className="w-full space-y-[var(--space-3)]"
     >
+      {/* Backup Overdue Warning Banner (> 7 days, General Manager only) */}
+      {backupStatusInfo.shouldWarn && (
+        <div
+          role="alert"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--space-3)] bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-100 p-[var(--space-3)] lg:p-[var(--space-4)] rounded-2xl shadow-2xs"
+        >
+          <div className="flex items-start sm:items-center gap-[var(--space-3)]">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-black">
+                {backupStatusInfo.daysAgo === null
+                  ? "تنبيه: لم يتم أخذ نسخة احتياطية للنظام حتى الآن"
+                  : `تنبيه: مضى ${backupStatusInfo.daysAgo} يوماً (أكثر من 7 أيام) على آخر نسخة احتياطية`}
+              </p>
+              <p className="text-xs font-semibold text-amber-800/90 dark:text-amber-200/80 mt-0.5">
+                {lastBackupAt
+                  ? `تاريخ آخر نسخة احتياطية: ${format(new Date(lastBackupAt), "yyyy-MM-dd HH:mm")}. يُنصح بتصدير نسخة احتياطية جديدة وحفظها في مكان آمن.`
+                  : "يُنصح بالدخول إلى إعدادات التطبيق وتصدير نسخة احتياطية كاملة وحفظها في مكان آمن."}
+              </p>
+            </div>
+          </div>
+          {onNavigateToSettings && (
+            <button
+              type="button"
+              onClick={onNavigateToSettings}
+              className="px-[var(--space-4)] py-[var(--space-2)] bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black transition-colors cursor-pointer shrink-0 self-end sm:self-center"
+            >
+              تصدير نسخة الآن
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Unified Compact Top Controls Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--space-4)] bg-[var(--surface)] p-[var(--space-3)] lg:p-[var(--space-4)] rounded-2xl border border-[var(--border)] shadow-2xs">
         {/* Two Main Tabs Only */}

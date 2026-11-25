@@ -29,6 +29,21 @@ import {
   updateVoucherWithBusSyncAtomically,
 } from '../lib/busAssignments';
 import { beginBusyActivity } from '../lib/activityTracker';
+import {
+  DEFAULT_COMPANY_ADDRESS,
+  DEFAULT_COMPANY_PHONE,
+  DEFAULT_COMPANY_WEBSITE,
+  DEFAULT_HIJRI_OFFSET_DAYS,
+  DEFAULT_PDF_MARGINS,
+  DEFAULT_PRINT_COPY_LABELS,
+  DEFAULT_SLOGAN_HEIGHT_MM,
+  normalizeHijriOffsetDays,
+  normalizePdfMargins,
+  normalizePrintCopies,
+  normalizePrintCopyLabels,
+  normalizeSloganHeightMm,
+  PdfMargins,
+} from '../lib/printSettings';
 
 type SeasonFilter = '1448' | '1447' | 'all';
 type PeriodFilter = 'all' | 'today' | 'week' | 'month' | 'custom_month' | 'custom_range';
@@ -86,7 +101,14 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   // Settings & Assets
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [sloganUrl, setSloganUrl] = useState<string>('');
-  const [pdfMargins, setPdfMargins] = useState({ top: 20, bottom: 20, left: 40, right: 40 });
+  const [sloganHeightMm, setSloganHeightMm] = useState<number>(DEFAULT_SLOGAN_HEIGHT_MM);
+  const [pdfMargins, setPdfMargins] = useState<PdfMargins>({ ...DEFAULT_PDF_MARGINS });
+  const [hijriOffsetDays, setHijriOffsetDays] = useState<number>(DEFAULT_HIJRI_OFFSET_DAYS);
+  const [printCopies, setPrintCopies] = useState<number>(1);
+  const [printCopyLabels, setPrintCopyLabels] = useState<string[]>([...DEFAULT_PRINT_COPY_LABELS]);
+  const [companyAddress, setCompanyAddress] = useState<string>(DEFAULT_COMPANY_ADDRESS);
+  const [companyWebsite, setCompanyWebsite] = useState<string>(DEFAULT_COMPANY_WEBSITE);
+  const [companyPhone, setCompanyPhone] = useState<string>(DEFAULT_COMPANY_PHONE);
   const [printTwoCopies, setPrintTwoCopies] = useState(false);
   const [allBusesMaster, setAllBusesMaster] = useState<Record<string, any>>({});
 
@@ -162,7 +184,22 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
         const data = docSnap.data();
         setLogoUrl(data.logoUrl || '');
         setSloganUrl(data.sloganUrl || '');
-        if (data.pdfMargins) setPdfMargins(data.pdfMargins);
+        setSloganHeightMm(normalizeSloganHeightMm(data.sloganHeightMm));
+        setPdfMargins(normalizePdfMargins(data.pdfMargins));
+        setHijriOffsetDays(normalizeHijriOffsetDays(data.hijriOffsetDays));
+        setPrintCopies(normalizePrintCopies(data.printCopies));
+        setPrintCopyLabels(normalizePrintCopyLabels(data.printCopyLabels));
+        setCompanyAddress(
+          typeof data.companyAddress === 'string' && data.companyAddress.trim()
+            ? data.companyAddress.trim()
+            : DEFAULT_COMPANY_ADDRESS
+        );
+        setCompanyWebsite(
+          typeof data.companyWebsite === 'string' && data.companyWebsite.trim()
+            ? data.companyWebsite.trim()
+            : DEFAULT_COMPANY_WEBSITE
+        );
+        setCompanyPhone(typeof data.companyPhone === 'string' ? data.companyPhone.trim() : DEFAULT_COMPANY_PHONE);
       }
     });
     return unsub;
@@ -372,7 +409,20 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
     setIsPrinting(v.id);
     setPrintAlert(null);
     const resolvedIssuerName = resolveVoucherIssuerForPrint(v, usersLookupMap);
-    const fullData = { ...v, resolvedIssuerName, logoUrl, sloganUrl, pdfMargins };
+    const fullData = {
+      ...v,
+      resolvedIssuerName,
+      logoUrl,
+      sloganUrl,
+      sloganHeightMm,
+      pdfMargins,
+      hijriOffsetDays,
+      printCopies,
+      printCopyLabels,
+      companyAddress,
+      companyWebsite,
+      companyPhone,
+    };
     try {
       const printRes = await generateVoucherPDF(fullData, { save: true, print: true, twoCopies: printTwoCopies });
       if (printRes.status === 'popup_blocked') {
@@ -400,7 +450,20 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
   const handleLegacyExport = async (v: any) => {
     setIsLegacyExporting(v.id);
     const resolvedIssuerName = resolveVoucherIssuerForPrint(v, usersLookupMap);
-    const fullData = { ...v, resolvedIssuerName, logoUrl, sloganUrl, pdfMargins };
+    const fullData = {
+      ...v,
+      resolvedIssuerName,
+      logoUrl,
+      sloganUrl,
+      sloganHeightMm,
+      pdfMargins,
+      hijriOffsetDays,
+      printCopies,
+      printCopyLabels,
+      companyAddress,
+      companyWebsite,
+      companyPhone,
+    };
     try {
       await exportVoucherLegacyPDF(fullData, { save: true, twoCopies: printTwoCopies });
     } catch (err) {
@@ -466,7 +529,14 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
       issuedByName: currentIssuerName,
       logoUrl,
       sloganUrl,
+      sloganHeightMm,
       pdfMargins,
+      hijriOffsetDays,
+      printCopies,
+      printCopyLabels,
+      companyAddress,
+      companyWebsite,
+      companyPhone,
       voucherNumber: 'كشف مـجمع',
       isBulkReport: true
     };
@@ -559,7 +629,9 @@ export function VoucherSearch({ initialSearchTerm = '' }: { initialSearchTerm?: 
         logoUrl,
         sloganUrl,
         generatedBy: reportSigner.trim() || currentIssuerName,
-        season: reportSeason
+        season: reportSeason,
+        hijriOffsetDays,
+        companyWebsite,
       }, {
         save: downloadOnly,
         print: !downloadOnly

@@ -5,6 +5,19 @@ import Bidi from 'bidi-js';
 import QRCode from 'qrcode';
 import { getFittedReceiptFontSizePt, resolveVoucherIssuerForPrint } from './issuerName';
 import { beginBusyActivity } from './activityTracker';
+import {
+  computePrintLayoutMetrics,
+  DEFAULT_COMPANY_ADDRESS,
+  DEFAULT_COMPANY_PHONE,
+  DEFAULT_COMPANY_WEBSITE,
+  formatHijriDDMMYYYYWithOffset,
+  formatHijriLongWithOffset,
+  normalizeHijriOffsetDays,
+  normalizePdfMargins,
+  normalizePrintCopies,
+  normalizePrintCopyLabels,
+  normalizeSloganHeightMm,
+} from './printSettings';
 
 import ibmPlexArabic400Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
 import ibmPlexArabic500Url from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-500-normal.woff2?url';
@@ -93,7 +106,18 @@ function formatGregorianDDMMYYYY(customDate?: string, timestamp?: string): { dis
   return { display, filePart };
 }
 
-function formatHijriDDMMYYYY(hijriDate?: string, customDate?: string, timestamp?: string): string {
+function formatHijriDDMMYYYY(
+  hijriDate?: string,
+  customDate?: string,
+  timestamp?: string,
+  hijriOffsetDays: number = 0
+): string {
+  const safeOffset = normalizeHijriOffsetDays(hijriOffsetDays);
+  if (safeOffset !== 0 && (customDate || timestamp)) {
+    const adjusted = formatHijriDDMMYYYYWithOffset(customDate || timestamp, safeOffset);
+    if (adjusted) return adjusted;
+  }
+
   const raw = toEnglishDigits(hijriDate || '').trim();
   const ymdMatch = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
   if (ymdMatch) {
@@ -106,31 +130,7 @@ function formatHijriDDMMYYYY(hijriDate?: string, customDate?: string, timestamp?
     return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
   }
 
-  try {
-    let refDate: Date;
-    const customClean = toEnglishDigits(customDate || '').trim();
-    const cMatch = customClean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
-    if (cMatch) {
-      refDate = new Date(Number(cMatch[1]), Number(cMatch[2]) - 1, Number(cMatch[3]), 12, 0, 0);
-    } else if (timestamp && !isNaN(new Date(timestamp).getTime())) {
-      refDate = new Date(timestamp);
-    } else {
-      refDate = new Date();
-    }
-
-    const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
-      day: 'numeric',
-      month: 'numeric',
-      year: 'numeric',
-    }).formatToParts(refDate);
-    const y = toEnglishDigits(parts.find((p) => p.type === 'year')?.value || '');
-    const m = toEnglishDigits(parts.find((p) => p.type === 'month')?.value || '').padStart(2, '0');
-    const d = toEnglishDigits(parts.find((p) => p.type === 'day')?.value || '').padStart(2, '0');
-    if (y && m && d) return `${d}/${m}/${y}`;
-  } catch {
-    // ignore fallback error
-  }
-  return '';
+  return formatHijriDDMMYYYYWithOffset(customDate || timestamp, safeOffset);
 }
 
 function formatAuditDateTime(timestamp?: string): string {
@@ -529,7 +529,7 @@ function getStandaloneVoucherCss(fontFaceCss: string): string {
 
 async function buildVoucherDocumentParts(
   data: any,
-  options: { twoCopies?: boolean } = {}
+  options: { twoCopies?: boolean; copyLabels?: string[] } = {}
 ): Promise<{
   fullHtml: string;
   pagesHtmlChunks: string[];
@@ -550,7 +550,12 @@ async function buildVoucherDocumentParts(
     data.customDate,
     data.timestamp
   );
-  const hijriStr = formatHijriDDMMYYYY(data.hijriDate, data.customDate, data.timestamp);
+  const hijriStr = formatHijriDDMMYYYY(
+    data.hijriDate,
+    data.customDate,
+    data.timestamp,
+    normalizeHijriOffsetDays(data?.hijriOffsetDays)
+  );
 
   // Collect filled bus rows
   const rawBuses =
@@ -697,11 +702,30 @@ async function buildVoucherDocumentParts(
     `background-color: #EEF2F6; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M-2,2 l4,-4 M0,10 l10,-10 M8,12 l4,-4' stroke='%23CBD5E1' stroke-width='1'/%3E%3C/svg%3E"); -webkit-print-color-adjust: exact; print-color-adjust: exact;`;
 
   const isBulkReport = Boolean(data?.isBulkReport);
-  const useTwoCopies = options.twoCopies === true;
-  const copyLabels = useTwoCopies ? ['نسخة المكتب', 'نسخة الشركة'] : [''];
+  const configuredCopiesCount = normalizePrintCopies(data?.printCopies);
+  const resolvedConfiguredLabels = normalizePrintCopyLabels(
+    data?.printCopyLabels,
+    Math.max(configuredCopiesCount, 2)
+  );
+  const copyLabels =
+    Array.isArray(options.copyLabels) && options.copyLabels.length > 0
+      ? options.copyLabels
+      : isBulkReport
+      ? options.twoCopies === true
+        ? resolvedConfiguredLabels.slice(0, 2)
+        : ['']
+      : options.twoCopies === true
+      ? normalizePrintCopyLabels(data?.printCopyLabels, Math.max(2, configuredCopiesCount))
+      : normalizePrintCopyLabels(data?.printCopyLabels, configuredCopiesCount);
 
   const pagesHtmlChunks: string[] = [];
   let pageCounter = 0;
+
+  const normalizedMargins = normalizePdfMargins(data?.pdfMargins);
+  const resolvedSloganHeightMm = normalizeSloganHeightMm(data?.sloganHeightMm);
+  const layoutMetrics = computePrintLayoutMetrics(normalizedMargins, resolvedSloganHeightMm);
+  const busRowHeightMm = layoutMetrics.isValid ? layoutMetrics.rowHeightMm : 6.0;
+  const busCellLineHeight = busRowHeightMm < 6.1 ? 1.25 : 1.6;
 
   for (const copyLabel of copyLabels) {
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
@@ -723,27 +747,27 @@ async function buildVoucherDocumentParts(
           const phone = escapeHtml(formatPhoneForPrint(bus.driverPhone));
 
           return `
-            <tr style="height: 6.2mm; background-color: #FFFFFF; break-inside: avoid; page-break-inside: avoid;">
-              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums;">
+            <tr style="height: ${busRowHeightMm}mm; background-color: #FFFFFF; break-inside: avoid; page-break-inside: avoid;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums;">
                 <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
               </td>
-              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; word-break: break-word;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight}; word-break: break-word;">
                 ${driver || '&nbsp;'}
               </td>
-              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums; white-space: nowrap;">
                 <span dir="ltr" style="unicode-bidi: isolate;">${plate || '&nbsp;'}</span>
               </td>
-              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight};">
                 ${type}
               </td>
               ${
                 isBulkReport
-                  ? `<td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+                  ? `<td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums; white-space: nowrap;">
                       <span dir="ltr" style="unicode-bidi: isolate;">${approval || '&nbsp;'}</span>
                     </td>`
                   : ''
               }
-              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: 1.6; font-variant-numeric: tabular-nums; white-space: nowrap;">
+              <td style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #0F172A; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums; white-space: nowrap;">
                 <span dir="ltr" style="unicode-bidi: isolate;">${phone || '&nbsp;'}</span>
               </td>
             </tr>
@@ -753,11 +777,11 @@ async function buildVoucherDocumentParts(
         const isFirstEmptyRow = rowIdx === pageBuses.length && isLastPageOfCopy;
         if (isFirstEmptyRow) {
           return `
-            <tr style="height: 6.2mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
-              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+            <tr style="height: ${busRowHeightMm}mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
+              <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums;">
                 <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
               </td>
-              <td colspan="${isBulkReport ? 5 : 4}" style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6;">
+              <td colspan="${isBulkReport ? 5 : 4}" style="border: 0.75pt solid #475569; padding: 0 1.5mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: ${busCellLineHeight};">
                 — لا توجد حافلات بعد هذا السطر —
               </td>
             </tr>
@@ -765,8 +789,8 @@ async function buildVoucherDocumentParts(
         }
 
         return `
-          <tr style="height: 6.2mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
-            <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: 1.6; font-variant-numeric: tabular-nums;">
+          <tr style="height: ${busRowHeightMm}mm; break-inside: avoid; page-break-inside: avoid; ${unusedRowHatchStyle}">
+            <td style="border: 0.75pt solid #475569; padding: 0 1mm; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: 500; color: #475569; line-height: ${busCellLineHeight}; font-variant-numeric: tabular-nums;">
               <span dir="ltr" style="unicode-bidi: isolate;">${rowNum}</span>
             </td>
             <td style="border: 0.75pt solid #475569; padding: 0 1.5mm;"></td>
@@ -779,7 +803,7 @@ async function buildVoucherDocumentParts(
       }).join('');
 
       pagesHtmlChunks.push(`
-        <section class="voucher-page" dir="rtl" lang="ar" style="${breakStyle} width: 210mm; min-height: 295mm; max-height: 296mm; padding: 1mm 9mm; background-color: #FFFFFF; color: #0F172A; direction: rtl; display: flex; flex-direction: column;">
+        <section class="voucher-page" dir="rtl" lang="ar" style="${breakStyle} width: 210mm; min-height: 295mm; height: 296mm; max-height: 296mm; overflow: hidden; padding: ${normalizedMargins.top}mm ${normalizedMargins.right}mm ${normalizedMargins.bottom}mm ${normalizedMargins.left}mm; background-color: #FFFFFF; color: #0F172A; direction: rtl; display: flex; flex-direction: column;">
           <div style="width: 100%; flex: 1; display: flex; flex-direction: column; gap: 0.4mm;">
 
             <!-- 1) Header (Enlarged Company Logo + Slogan) -->
@@ -799,9 +823,9 @@ async function buildVoucherDocumentParts(
                 <img src="${resolvedLogoUrl}" alt="شعار درة المنورة" style="height: 28mm; width: auto; max-width: 76mm; object-fit: contain; display: block;" />
               </div>
 
-              <!-- Left: Enlarged Slogan ("خدمة الحاج شرف لنا", 23mm) -->
+              <!-- Left: Enlarged Slogan ("خدمة الحاج شرف لنا", configurable 15..30mm) -->
               <div style="display: flex; align-items: center; justify-content: flex-end;">
-                <img src="${resolvedSloganUrl}" alt="خدمة الحاج شرف لنا" style="height: 23mm; width: auto; max-width: 64mm; object-fit: contain; display: block;" />
+                <img src="${resolvedSloganUrl}" alt="خدمة الحاج شرف لنا" style="height: ${resolvedSloganHeightMm}mm; width: auto; max-width: 64mm; object-fit: contain; display: block;" />
               </div>
             </div>
 
@@ -962,13 +986,25 @@ async function buildVoucherDocumentParts(
                 </div>
               </div>
 
-              <!-- Center: Website & HQ -->
+              <!-- Center: Website, Phone & HQ -->
               <div style="text-align: center; display: flex; flex-direction: column; align-items: center;">
                 <div dir="ltr" style="direction: ltr; unicode-bidi: isolate; font-size: 10pt; font-weight: 500; color: #475569; line-height: 1.45;">
-                  www.munawwara.com
+                  ${escapeHtml(
+                    String(data?.companyWebsite ?? DEFAULT_COMPANY_WEBSITE).trim() ||
+                      DEFAULT_COMPANY_WEBSITE
+                  )}${
+                    formatPhoneForPrint(data?.companyPhone ?? DEFAULT_COMPANY_PHONE)
+                      ? ` • ${escapeHtml(
+                          formatPhoneForPrint(data?.companyPhone ?? DEFAULT_COMPANY_PHONE)
+                        )}`
+                      : ''
+                  }
                 </div>
                 <div style="font-size: 10pt; font-weight: 400; color: #475569; line-height: 1.45;">
-                  المقر الرئيسي: العكيشية - ص.ب 20442 جدة 21455
+                  ${escapeHtml(
+                    String(data?.companyAddress ?? DEFAULT_COMPANY_ADDRESS).trim() ||
+                      DEFAULT_COMPANY_ADDRESS
+                  )}
                 </div>
               </div>
 
@@ -1030,7 +1066,13 @@ async function buildVoucherDocumentParts(
 
 export async function generateVoucherPDF(
   data: any,
-  options: { save?: boolean; print?: boolean; twoCopies?: boolean; targetWindow?: Window | null } = { save: true }
+  options: {
+    save?: boolean;
+    print?: boolean;
+    twoCopies?: boolean;
+    copyLabels?: string[];
+    targetWindow?: Window | null;
+  } = { save: true }
 ): Promise<VoucherPrintResult> {
   const endBusy = beginBusyActivity();
   try {
@@ -1053,6 +1095,7 @@ export async function generateVoucherPDF(
     try {
       const parts = await buildVoucherDocumentParts(data, {
         twoCopies: options.twoCopies,
+        copyLabels: options.copyLabels,
       });
       fullHtml = parts.fullHtml;
       printTitle = parts.printTitle;
@@ -1113,12 +1156,13 @@ export async function generateVoucherPDF(
 
 export async function exportVoucherLegacyPDF(
   data: any,
-  options: { save?: boolean; twoCopies?: boolean } = { save: true }
+  options: { save?: boolean; twoCopies?: boolean; copyLabels?: string[] } = { save: true }
 ): Promise<string> {
   const endBusy = beginBusyActivity();
   try {
     const { pagesHtmlChunks, fontFaceCss, printTitle } = await buildVoucherDocumentParts(data, {
       twoCopies: options.twoCopies,
+      copyLabels: options.copyLabels,
     });
 
     const pdf = new jsPDF({
@@ -1193,7 +1237,13 @@ export async function exportVoucherLegacyPDF(
  */
 export async function generateBulkOfficePDF(
   data: any,
-  options: { save?: boolean; print?: boolean; twoCopies?: boolean; targetWindow?: Window | null } = { save: true }
+  options: {
+    save?: boolean;
+    print?: boolean;
+    twoCopies?: boolean;
+    copyLabels?: string[];
+    targetWindow?: Window | null;
+  } = { save: true }
 ): Promise<VoucherPrintResult> {
   return generateVoucherPDF(
     {
@@ -1218,6 +1268,8 @@ export interface StatementReportConfig {
   season?: string;
   notes?: string;
   filterSummary?: string;
+  hijriOffsetDays?: number;
+  companyWebsite?: string;
 }
 
 /**
@@ -1276,17 +1328,10 @@ export async function generateStatementReportPDF(
 
   // Format generation dates
   const todayDate = new Date();
-  let hijriNow = '';
-  try {
-    hijriNow = new Intl.DateTimeFormat('ar-SA-u-nu-latn-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(todayDate);
-    if (!hijriNow.includes('هـ')) hijriNow += ' هـ';
-  } catch {
-    hijriNow = '1448 هـ';
-  }
+  const hijriNow = formatHijriLongWithOffset(
+    todayDate,
+    normalizeHijriOffsetDays(config.hijriOffsetDays)
+  );
 
   const gregorianNow = format(todayDate, 'yyyy/MM/dd | HH:mm');
 

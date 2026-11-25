@@ -52,11 +52,24 @@ import {
   isAnyBusyActivity,
   subscribeBusyActivity,
 } from './lib/activityTracker';
+import {
+  DEFAULT_ACTIVE_SEASON,
+  DEFAULT_HIJRI_OFFSET_DAYS,
+  DEFAULT_IDLE_TIMEOUT_MINUTES,
+  DEFAULT_WELCOME_MESSAGE,
+  DEFAULT_WELCOME_TITLE,
+  formatHijriLongWithOffset,
+  formatWelcomeTextWithName,
+  normalizeActiveSeason,
+  normalizeHijriOffsetDays,
+  normalizeIdleTimeoutMinutes,
+  WELCOME_MESSAGE_MAX_LENGTH,
+} from './lib/printSettings';
+import { resolveNewVoucherIssuerName } from './lib/issuerName';
 
 // ============================================================================
 // إعدادات الخمول والإصدار والمظهر
 // ============================================================================
-const IDLE_TIMEOUT_MINUTES = 30;
 const IDLE_WARNING_SECONDS = 60;
 const IDLE_BROADCAST_CHANNEL = 'dmtc_idle_session_channel';
 const LAST_ACTIVITY_STORAGE_KEY = 'dmtc_last_activity_at';
@@ -144,30 +157,6 @@ const getGregorianDate = () => {
   }
 };
 
-const getHijriDate = () => {
-  try {
-    const formatted = new Intl.DateTimeFormat('ar-SA-u-nu-latn-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date());
-    const normalized = toEnglishDigits(formatted);
-    return normalized.includes('هـ') ? normalized : `${normalized} هـ`;
-  } catch {
-    try {
-      const formatted = new Intl.DateTimeFormat('ar-SA-u-nu-latn-ca-islamic', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }).format(new Date());
-      const normalized = toEnglishDigits(formatted);
-      return normalized.includes('هـ') ? normalized : `${normalized} هـ`;
-    } catch {
-      return '1448 هـ';
-    }
-  }
-};
-
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -187,7 +176,24 @@ export default function App() {
   const [lastNotification, setLastNotification] = useState<{ msg: string; id: string } | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isEmailUnverified, setIsEmailUnverified] = useState(false);
-  const welcomeShownUidRef = useRef<string | null>(null);
+  const dismissedWelcomeTokenRef = useRef<string | null>(null);
+
+  // Dynamic app settings synced from Firestore settings/app
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [idleTimeoutMinutes, setIdleTimeoutMinutes] = useState<number>(DEFAULT_IDLE_TIMEOUT_MINUTES);
+  const idleTimeoutMinutesRef = useRef<number>(DEFAULT_IDLE_TIMEOUT_MINUTES);
+  idleTimeoutMinutesRef.current = idleTimeoutMinutes;
+  const [hijriOffsetDays, setHijriOffsetDays] = useState<number>(DEFAULT_HIJRI_OFFSET_DAYS);
+  const [activeSeason, setActiveSeason] = useState<string>(DEFAULT_ACTIVE_SEASON);
+  const [welcomeTitle, setWelcomeTitle] = useState<string>(DEFAULT_WELCOME_TITLE);
+  const [welcomeMessage, setWelcomeMessage] = useState<string>(DEFAULT_WELCOME_MESSAGE);
+  const [welcomeEnabled, setWelcomeEnabled] = useState<boolean>(true);
+  const [welcomeExpiresAt, setWelcomeExpiresAt] = useState<string>('');
+  const [welcomeVersion, setWelcomeVersion] = useState<number>(1);
+
+  // Unsaved settings navigation guard
+  const [hasUnsavedSettingsChanges, setHasUnsavedSettingsChanges] = useState(false);
+  const [pendingTabTarget, setPendingTabTarget] = useState<ActiveTab | null>(null);
 
   // Shell UI states
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -429,10 +435,16 @@ export default function App() {
             }
           );
 
-          const settingsRef = doc(db, 'settings', 'app');
-          const settingsSnap = await getDoc(settingsRef);
-          if (!settingsSnap.exists()) {
-            await setDoc(settingsRef, { nextVoucherNumber: 1001 });
+          if (role === 'general_manager') {
+            try {
+              const settingsRef = doc(db, 'settings', 'app');
+              const settingsSnap = await getDoc(settingsRef);
+              if (!settingsSnap.exists()) {
+                await setDoc(settingsRef, { nextVoucherNumber: 1001 });
+              }
+            } catch {
+              // ignore non-critical bootstrap error
+            }
           }
         }
       } else {
@@ -534,35 +546,107 @@ export default function App() {
     }
   }, [activeTab]);
 
-  // Show welcome modal once per APP_VERSION using localStorage (key: lastSeenVersion)
+  // Subscribe to settings/app for global runtime configuration
   useEffect(() => {
     if (!user) {
-      welcomeShownUidRef.current = null;
+      setSettingsLoaded(false);
+      setIdleTimeoutMinutes(DEFAULT_IDLE_TIMEOUT_MINUTES);
+      setHijriOffsetDays(DEFAULT_HIJRI_OFFSET_DAYS);
+      setActiveSeason(DEFAULT_ACTIVE_SEASON);
+      setWelcomeTitle(DEFAULT_WELCOME_TITLE);
+      setWelcomeMessage(DEFAULT_WELCOME_MESSAGE);
+      setWelcomeEnabled(true);
+      setWelcomeExpiresAt('');
+      setWelcomeVersion(1);
+      return;
+    }
+
+    const unsubSettings = onSnapshot(
+      doc(db, 'settings', 'app'),
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setIdleTimeoutMinutes(normalizeIdleTimeoutMinutes(data.idleTimeoutMinutes));
+          setHijriOffsetDays(normalizeHijriOffsetDays(data.hijriOffsetDays));
+          setActiveSeason(normalizeActiveSeason(data.activeSeason));
+          setWelcomeTitle(
+            typeof data.welcomeTitle === 'string' && data.welcomeTitle.trim()
+              ? data.welcomeTitle.trim()
+              : DEFAULT_WELCOME_TITLE
+          );
+          setWelcomeMessage(
+            typeof data.welcomeMessage === 'string'
+              ? data.welcomeMessage.slice(0, WELCOME_MESSAGE_MAX_LENGTH)
+              : DEFAULT_WELCOME_MESSAGE
+          );
+          setWelcomeEnabled(data.welcomeEnabled !== false);
+          setWelcomeExpiresAt(
+            typeof data.welcomeExpiresAt === 'string' ? data.welcomeExpiresAt.trim() : ''
+          );
+          const parsedVer = Number(data.welcomeVersion);
+          setWelcomeVersion(
+            Number.isFinite(parsedVer) && parsedVer >= 1 ? Math.trunc(parsedVer) : 1
+          );
+        }
+        setSettingsLoaded(true);
+      },
+      () => {
+        setSettingsLoaded(true);
+      }
+    );
+
+    return () => unsubSettings();
+  }, [user?.uid]);
+
+  // Show welcome modal once per (APP_VERSION + welcomeVersion) when enabled & not expired
+  const welcomeSeenToken = `${CURRENT_VERSION_TAG}__wv_${welcomeVersion}`;
+
+  useEffect(() => {
+    if (!user) {
+      dismissedWelcomeTokenRef.current = null;
       setShowWelcome(false);
       return;
     }
-    if (loading || isEmailUnverified) {
+    if (loading || isEmailUnverified || !settingsLoaded) {
       setShowWelcome(false);
       return;
     }
 
-    if (welcomeShownUidRef.current !== user.uid) {
-      welcomeShownUidRef.current = user.uid;
-      let lastSeen: string | null = null;
-      try {
-        lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
-      } catch {
-        lastSeen = null;
-      }
-      if (lastSeen !== CURRENT_VERSION_TAG) {
-        setShowWelcome(true);
-      }
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const isExpired = Boolean(welcomeExpiresAt && todayStr > welcomeExpiresAt);
+    if (!welcomeEnabled || isExpired) {
+      setShowWelcome(false);
+      return;
     }
-  }, [user, loading, isEmailUnverified]);
 
-  const closeWelcome = () => {
+    if (dismissedWelcomeTokenRef.current === welcomeSeenToken) {
+      return;
+    }
+
+    let lastSeen: string | null = null;
     try {
-      localStorage.setItem(LAST_SEEN_VERSION_KEY, CURRENT_VERSION_TAG);
+      lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
+    } catch {
+      lastSeen = null;
+    }
+
+    if (lastSeen !== welcomeSeenToken) {
+      setShowWelcome(true);
+    }
+  }, [
+    user,
+    loading,
+    isEmailUnverified,
+    settingsLoaded,
+    welcomeEnabled,
+    welcomeExpiresAt,
+    welcomeSeenToken,
+  ]);
+
+  const closeWelcome = (_dontShowAgain?: boolean) => {
+    dismissedWelcomeTokenRef.current = welcomeSeenToken;
+    try {
+      localStorage.setItem(LAST_SEEN_VERSION_KEY, welcomeSeenToken);
     } catch {
       // ignore storage errors
     }
@@ -651,7 +735,6 @@ export default function App() {
     }
 
     isLoggingOutIdleRef.current = false;
-    const timeoutMs = Math.max(1, IDLE_TIMEOUT_MINUTES) * 60 * 1000;
     const warningMs = IDLE_WARNING_SECONDS * 1000;
 
     const nowInit = Date.now();
@@ -757,6 +840,7 @@ export default function App() {
       }
 
       const now = Date.now();
+      const timeoutMs = Math.max(1, idleTimeoutMinutesRef.current) * 60 * 1000;
       const elapsed = now - lastActivityRef.current;
       const remainingMs = timeoutMs - elapsed;
 
@@ -813,11 +897,28 @@ export default function App() {
   };
 
   const handleSelectTab = (tab: ActiveTab) => {
+    if (activeTab === 'settings' && tab !== 'settings' && hasUnsavedSettingsChanges) {
+      setPendingTabTarget(tab);
+      setMobileMenuOpen(false);
+      return;
+    }
     if (tab === 'search') {
       setInitialVoucherSearch('');
     }
     setActiveTab(tab);
     setMobileMenuOpen(false);
+  };
+
+  const confirmLeaveSettings = () => {
+    const target = pendingTabTarget;
+    setPendingTabTarget(null);
+    setHasUnsavedSettingsChanges(false);
+    if (target) {
+      if (target === 'search') {
+        setInitialVoucherSearch('');
+      }
+      setActiveTab(target);
+    }
   };
 
   const handleOpenVoucherFromBuses = (voucherNumber: string) => {
@@ -1078,8 +1179,64 @@ export default function App() {
           isOpen={showWelcome}
           userName={userDisplayName}
           version={CURRENT_VERSION_TAG}
+          title={welcomeTitle}
+          message={formatWelcomeTextWithName(
+            welcomeMessage,
+            resolveNewVoucherIssuerName(user) || userDisplayName
+          )}
+          seasonLabel={activeSeason}
           onClose={closeWelcome}
         />
+
+        {/* Unsaved Settings Leave Confirmation Modal */}
+        <AnimatePresence>
+          {pendingTabTarget && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[125] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-[var(--space-4)]"
+            >
+              <motion.div
+                initial={{ scale: 0.94, opacity: 0, y: 14 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.94, opacity: 0, y: 14 }}
+                className="bg-[var(--surface)] rounded-3xl p-[var(--space-6)] max-w-md w-full shadow-2xl border border-amber-300 dark:border-amber-800 text-right relative overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+              >
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-[var(--gold)]" />
+                <div className="flex items-start gap-[var(--space-3)] mb-[var(--space-4)]">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-[var(--gold-text)] flex items-center justify-center shrink-0">
+                    <AlertCircle size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-[var(--text)]">تغييرات غير محفوظة</h3>
+                    <p className="text-xs font-bold text-[var(--text-secondary)] mt-1 leading-relaxed">
+                      لديك تعديلات غير محفوظة في إعدادات التطبيق. هل تريد تجاهل التغييرات والانتقال إلى الصفحة المختارة؟
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-[var(--space-2)] justify-end pt-[var(--space-2)]">
+                  <button
+                    type="button"
+                    onClick={() => setPendingTabTarget(null)}
+                    className="px-[var(--space-4)] py-[var(--space-2)] rounded-xl border border-[var(--border)] bg-[var(--surface-subtle)] text-[var(--text)] font-bold text-xs cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-800"
+                  >
+                    البقاء في الإعدادات
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmLeaveSettings}
+                    className="px-[var(--space-4)] py-[var(--space-2)] rounded-xl bg-[var(--danger)] hover:opacity-95 text-white font-black text-xs cursor-pointer"
+                  >
+                    تجاهل التغييرات والمتابعة
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* PWA Update Available Banner */}
         <PWAUpdateBanner />
@@ -1266,7 +1423,7 @@ export default function App() {
 
               {activeTab !== 'dashboard' && (
                 <span className="hidden sm:inline-flex items-center px-[var(--space-3)] py-[var(--space-1)] rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 text-[var(--primary)] text-xs font-extrabold whitespace-nowrap tabular-nums">
-                  موسم حج 1448هـ
+                  موسم حج {activeSeason}هـ
                 </span>
               )}
             </div>
@@ -1276,7 +1433,7 @@ export default function App() {
               {/* Single Combined Date Badge (Hijri + Gregorian) */}
               <div className="hidden lg:inline-flex items-center gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-1)] rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] text-xs font-bold text-[var(--text)] tabular-nums whitespace-nowrap">
                 <Calendar size={14} className="text-[var(--gold)] shrink-0" />
-                <span>{getHijriDate()}</span>
+                <span>{formatHijriLongWithOffset(new Date(), hijriOffsetDays)}</span>
                 <span aria-hidden="true" className="text-[var(--text-muted)]">|</span>
                 <span>{getGregorianDate()}</span>
               </div>
@@ -1469,7 +1626,10 @@ export default function App() {
                     <VoucherEntry />
                   ))}
                 {activeTab === 'dashboard' && user.role !== 'pending' && user.role !== 'rejected' && (
-                  <Dashboard onNavigateToEntry={() => handleSelectTab('entry')} />
+                  <Dashboard
+                    onNavigateToEntry={() => handleSelectTab('entry')}
+                    onNavigateToSettings={() => handleSelectTab('settings')}
+                  />
                 )}
                 {activeTab === 'search' && user.role !== 'pending' && user.role !== 'rejected' && (
                   <VoucherSearch initialSearchTerm={initialVoucherSearch} />
@@ -1478,7 +1638,9 @@ export default function App() {
                   <BusesManagement onOpenVoucher={handleOpenVoucherFromBuses} />
                 )}
                 {activeTab === 'users' && canManageAdmin && <UsersManagement />}
-                {activeTab === 'settings' && canManageAdmin && <AppSettings />}
+                {activeTab === 'settings' && canManageAdmin && (
+                  <AppSettings onDirtyChange={setHasUnsavedSettingsChanges} />
+                )}
                 {activeTab === 'about' && <AboutApp />}
               </motion.div>
             </AnimatePresence>
